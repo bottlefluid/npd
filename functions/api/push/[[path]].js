@@ -111,7 +111,7 @@ async function fsGet(env, path, mask) {
   for (const f of mask || []) q.append('mask.fieldPaths', f);
   const r = await dbFetch(env, `${fsBase(env)}/${docPath(path)}?${q}`);
   if (r.status === 404) return null;
-  if (!r.ok) fail(502, 'Could not read Frixion.');
+  if (!r.ok) fail(502, 'Could not read NPD.');
   return decFields((await r.json()).fields);
 }
 const fsCommit = (env, writes) => dbFetch(env, `${fsBase(env)}:commit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ writes }) });
@@ -253,7 +253,7 @@ async function vapid(env, endpoint) {
     signer = { raw: env.VAPID_PRIVATE_KEY, key, pub: b64u(concat(new Uint8Array([4]), unb64u(jwk.x), unb64u(jwk.y))) };
   }
   const part = o => b64u(te(JSON.stringify(o)));
-  const unsigned = part({ typ: 'JWT', alg: 'ES256' }) + '.' + part({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'https://frixionbeta.pages.dev' });
+  const unsigned = part({ typ: 'JWT', alg: 'ES256' }) + '.' + part({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'https://newbgi.pages.dev' });
   const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, signer.key, te(unsigned));
   return `vapid t=${unsigned}.${b64u(sig)}, k=${signer.pub}`;
 }

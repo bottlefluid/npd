@@ -279,15 +279,21 @@ a { color: var(--text-link); text-decoration: none; }
 
 /* ============ APP LAYOUT ============ */
 #app {
+  width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: 72px 240px 1fr;
-  grid-template-rows: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
 }
-#app.member-list-open { grid-template-columns: 72px 240px 1fr 240px; }
+#app.member-list-open {
+  display: flex;
+}
 
 /* ---- server rail ---- */
 #server-rail {
+  width: 72px;
+  min-width: 72px;
+  flex-shrink: 0;
   background: var(--bg-deepest);
   display: flex; flex-direction: column; align-items: center;
   padding: 12px 0; gap: 8px; overflow-y: auto;
@@ -5901,15 +5907,103 @@ body.is-mobile .lt-sidebar {
   display: none !important;
 }
 
+/* ── NPD FULL-SCREEN FLEXBOX LAYOUT & SCALING OVERRIDE ── */
+body:not(.is-mobile) #app,
+body:not(.is-mobile) #app.member-list-open {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
+}
+body:not(.is-mobile) #lt-sidebar {
+  width: clamp(216px, 15.5vw, 252px) !important;
+  min-width: 216px !important;
+  max-width: 252px !important;
+  height: 100vh !important;
+  flex: 0 0 auto !important;
+}
+body:not(.is-mobile) #server-rail {
+  width: 68px !important;
+  min-width: 68px !important;
+  flex: 0 0 68px !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+body:not(.is-mobile) #side-panel {
+  width: 232px !important;
+  min-width: 232px !important;
+  flex: 0 0 232px !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+body:not(.is-mobile) #main-col {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transform: none !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+}
+body:not(.is-mobile) #main-col > .main-page-view:not(.hidden) {
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+body:not(.is-mobile) #main-col > #chat-view:not(.hidden) {
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+body:not(.is-mobile) #member-panel {
+  width: 232px !important;
+  min-width: 232px !important;
+  flex: 0 0 232px !important;
+}
+
 /* ── NPD MAIN PAGES: RED-BLACK MOTORSPORT STYLING ── */
 .npd-page-wrap {
-  padding: 28px 32px 64px;
-  max-width: 1200px;
+  padding: clamp(20px, 2.5vw, 40px) clamp(20px, 3vw, 48px) 64px;
+  max-width: 1640px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: clamp(18px, 2vw, 26px);
+  box-sizing: border-box;
+}
+.npd-svg-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.npd-car-svg-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+.lt-sbt-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .npd-hero-banner {
@@ -6546,3 +6640,164 @@ body.is-mobile .lt-sidebar {
 }
 
 
+
+/* ── NPD VECTOR CARS, RANK BADGES & RESPONSIVE SCALING POLISH ── */
+.btn-primary, .btn-secondary, .btn-accent-inline, .npd-cta-btn, .npd-pill-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.npd-lane-road {
+  height: 22px !important;
+  margin-top: 6px;
+}
+.npd-lane-car {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.npd-lane-finish {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  right: 8px !important;
+  color: rgba(255, 255, 255, 0.75);
+}
+.npd-place-pill.p-2 {
+  background: rgba(192, 200, 214, 0.2);
+  color: #dbe4f0;
+  border: 1px solid rgba(192, 200, 214, 0.45);
+}
+.npd-place-pill.p-3 {
+  background: rgba(205, 127, 50, 0.22);
+  color: #f0a868;
+  border: 1px solid rgba(205, 127, 50, 0.45);
+}
+.npd-lb-left, .npd-res-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.npd-lb-right, .npd-res-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.npd-lb-rank, .npd-res-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.25rem;
+  letter-spacing: 1px;
+  min-width: 44px;
+  color: var(--text-muted);
+}
+.npd-lb-rank.rank-1, .npd-res-place.p-1 { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+.npd-lb-rank.rank-2, .npd-res-place.p-2 { color: #dbe4f0; }
+.npd-lb-rank.rank-3, .npd-res-place.p-3 { color: #f0a868; }
+.npd-lb-user {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.npd-lb-name, .npd-res-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.npd-lb-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.npd-lb-metric {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  color: var(--accent2);
+}
+.npd-lb-metric small {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 3px;
+}
+.npd-res-wpm {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.45rem;
+  letter-spacing: 1px;
+  color: #fff;
+}
+.npd-res-acc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.npd-res-orbs {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.npd-car-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 4px 12px rgba(230, 0, 0, 0.35));
+}
+
+/* Compact top-bar mode for narrow desktop windows (<= 720px) */
+@media (max-width: 720px) {
+  body:not(.is-mobile) #app,
+  body:not(.is-mobile) #app.member-list-open {
+    flex-direction: column !important;
+  }
+  body:not(.is-mobile) #lt-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 156px !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(230, 0, 0, 0.28) !important;
+  }
+  body:not(.is-mobile) #lt-sidebar .lt-sb-logo {
+    padding: 10px 14px;
+  }
+  body:not(.is-mobile) #lt-sidebar .lt-sb-user-chip,
+  body:not(.is-mobile) #lt-sidebar .lt-sb-section,
+  body:not(.is-mobile) #lt-sidebar .lt-sb-bottom {
+    display: none !important;
+  }
+  body:not(.is-mobile) #lt-sidebar .lt-sb-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+  body:not(.is-mobile) #lt-sidebar .lt-sbtab {
+    flex: 0 0 auto !important;
+    border-left: none !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    white-space: nowrap !important;
+  }
+  body:not(.is-mobile) #main-col {
+    height: auto !important;
+    flex: 1 1 0% !important;
+  }
+}

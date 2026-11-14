@@ -1,4 +1,4 @@
-// Frixion and Discord, linked: a Frixion server channel and a Discord channel that act like one room.
+// Frixion and Discord, linked: an NPD server channel and a Discord channel that act like one room.
 // A Cloudflare Pages Function, served at /api/discord/* on the main site (the beta site and the computer app call it
 // there too, so only this site needs the bot's token).
 //   POST /api/discord/send    the sender's Frixion calls this right after a message goes into a linked channel: it is
@@ -117,7 +117,7 @@ async function hookFor(env, channel, create) {
   const me = await botUser(env);
   const list = await dc(env, 'GET', `/channels/${channel}/webhooks`);
   let hook = (list || []).find(w => w.type === 1 && w.token && w.user && w.user.id === me.id);
-  if (!hook && create) hook = await dc(env, 'POST', `/channels/${channel}/webhooks`, { name: 'Frixion' });
+  if (!hook && create) hook = await dc(env, 'POST', `/channels/${channel}/webhooks`, { name: 'NPD' });
   const out = hook ? { id: hook.id, token: hook.token } : null;
   if (out) hooks.set(channel, { at: Date.now(), hook: out });
   return out;
@@ -196,7 +196,7 @@ async function fsGet(env, path, mask) {
   for (const f of mask || []) q.append('mask.fieldPaths', f);
   const r = await dbFetch(env, `${fsBase(env)}/${docPath(path)}?${q}`);
   if (r.status === 404) return null;
-  if (!r.ok) fail(502, 'Could not read Frixion.');
+  if (!r.ok) fail(502, 'Could not read NPD.');
   const j = await r.json();
   return { data: decFields(j.fields), updateTime: j.updateTime };
 }
@@ -274,7 +274,7 @@ async function runsServer(env, guild, uid) {
 async function verify(env, { sid, cid, channel, code }) {
   if (!ID.test(sid || '') || !ID.test(cid || '') || !SNOWFLAKE.test(channel || '') || !/^[A-Z0-9]{6}$/.test(code || '')) fail(400, 'Something is missing. Paste the channel ID again.');
   const [server, here] = await Promise.all([fsGet(env, `servers/${sid}`, ['name']), fsGet(env, `servers/${sid}/channels/${cid}`, ['name'])]);
-  if (!server || !here) fail(404, 'That Frixion channel is gone.');
+  if (!server || !here) fail(404, 'That NPD channel is gone.');
   const ch = await dc(env, 'GET', `/channels/${channel}`).catch(e => fail(e.status === 429 ? 429 : 404, e.status === 429 ? e.message : 'The bot can\'t see that Discord channel. Invite the bot to the server, check the channel ID, and make sure the bot can view the channel.', e.extra));
   if (ch.type !== 0 && ch.type !== 5) fail(400, 'That Discord channel isn\'t a text channel.');
   const [guild, recent] = await Promise.all([dc(env, 'GET', `/guilds/${ch.guild_id}`), dc(env, 'GET', `/channels/${channel}/messages?limit=30`)]);
@@ -286,13 +286,13 @@ async function verify(env, { sid, cid, channel, code }) {
   await dc(env, 'DELETE', `/channels/${channel}/messages/${post.id}`).catch(() => {});   // tidy the code away (needs Manage Messages)
   links.delete(sid + '/' + cid);
   const name = here.data.name || 'channel';
-  await hookSend(env, channel, { username: 'Frixion', content: `This channel is now linked to **#${name}** in **${server.data.name || 'a Frixion server'}** on Frixion. Messages sent here show up there, and messages sent there show up here.`, allowed_mentions: { parse: [] } }).catch(() => {});
+  await hookSend(env, channel, { username: 'NPD', content: `This channel is now linked to **#${name}** in **${server.data.name || 'an NPD server'}** on NPD. Messages sent here show up there, and messages sent there show up here.`, allowed_mentions: { parse: [] } }).catch(() => {});
   return { channel, name: ch.name, guild: guild.name, since: snowflakeOf(Date.now()), sig: await sign(env, sid, cid, channel) };
 }
 
 // ---------------- Frixion to Discord ----------------
 // a webhook's name: 1 to 80 characters, and Discord refuses ones containing "discord" or "clyde"
-const hookName = s => (String(s || '').replace(/\s+/g, ' ').trim().replace(/discord/gi, w => w.replace(/o/i, 'ο')).replace(/clyde/gi, w => w.replace(/y/i, 'у')).slice(0, 80) || 'Frixion user').replace(/^(everyone|here)$/i, '$1 (Frixion)');
+const hookName = s => (String(s || '').replace(/\s+/g, ' ').trim().replace(/discord/gi, w => w.replace(/o/i, 'ο')).replace(/clyde/gi, w => w.replace(/y/i, 'у')).slice(0, 80) || 'NPD user').replace(/^(everyone|here)$/i, '$1 (Frixion)');
 const oneLine = s => String(s || '').replace(/\s+/g, ' ').trim();
 // A message sent with /raw (v4.60) shows exactly as typed in Discord too: its formatting marks get Discord's backslash,
 // and so do the ones that only count at the start of a line (quotes, headings, lists).

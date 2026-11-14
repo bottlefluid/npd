@@ -129,7 +129,7 @@ if (USING_EMULATORS) {
   db.useEmulator('127.0.0.1', 8080);
   if (rtdb) rtdb.useEmulator('127.0.0.1', 9000);
   auth.useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
-  console.info('Frixion is using the local Firebase emulators.');
+  console.info('NPD is using the local Firebase emulators.');
 }
 
 // Get a free key at https://klipy.com/developers (their API is free, no billing needed) and paste it here to enable GIF search.
@@ -189,7 +189,7 @@ const STATUSES = [
 // (functions/api/push skips you too), and everyone sees a red Do Not Disturb icon instead of online or idle.
 function dndOn() { return !!(myProfile && myProfile.dnd === true); }
 
-// ---------- Frixion Premium economy ----------
+// ---------- NPD Premium economy ----------
 const STARTING_ORBS = 50;
 const PREMIUM_COST_ORBS = 1400;
 
@@ -492,11 +492,11 @@ const UPDATES = [
       'added a 5-minute max queue timer for live lobbies. if nobody else joins before the timer runs out (or if you get tired of waiting and hit "Fill with Bots & Start Now"), the lobby automatically adds bots: ytggobs, Marco, TheFinnyShow, Default, Doodlehoney2021, and Perridise6099 — each with a red BOT tag next to their name.',
       'typing anti-cheat is active on the track: no pasting, no dropping text, and every character is checked one by one.',
       'cleaned up the mobile layout so racing, the sidebar, and chat all fit nicely on phones without anything getting squished.',
-      'kept the default Frixion PFP for everyone who hasn\'t uploaded their own picture yet, and skipped the PFP shop so you can just upload whatever custom avatar you want.',
+      'kept the default NPD PFP for everyone who hasn\'t uploaded their own picture yet, and skipped the PFP shop so you can just upload whatever custom avatar you want.',
     ] },
-  { v: '1.3', date: '2026-11-12', title: 'Sapphire, Wordle & Full Frixion Chat',
+  { v: '1.3', date: '2026-11-12', title: 'Sapphire, Wordle & Full NPD Chat',
     notes: [
-      'brought over the full Frixion chat system: servers, channels, categories, DMs, group DMs, threads, replies, reactions, polls, custom emojis, stickers, and KLIPY GIF search.',
+      'brought over the full NPD chat system: servers, channels, categories, DMs, group DMs, threads, replies, reactions, polls, custom emojis, stickers, and KLIPY GIF search.',
       'Sapphire bot is here for moderation (/purge, /mute, /unmute, /ban, /unban, /kick, /vanish, /sfmode). the Owner can manage who gets /purge everywhere in the Owner Panel\'s Purge Perms tab.',
       'Wordle bot (/wordle) is built right into chat so you can drop a daily 5-letter word game in any channel or DM.',
       'you can block people from their profile, turn on Do Not Disturb in Settings, and format messages with bold, italics, code blocks, and ||spoilers||.',
@@ -505,20 +505,20 @@ const UPDATES = [
     notes: [
       'scrapped all the old password-gated LiquidType panels — they were honestly kinda bad and easy to mess with.',
       'NPD now uses three separate role-based panels: Admin Panel (admin=true or op=true), Co-Owner Panel (coowner=true), and Owner Panel (owner=true). if your account has the flag in Firebase, your panel shows up automatically in the sidebar and settings.',
-      'added a Racing Stats editor right inside player management so staff can fix or adjust someone\'s Best WPM, Avg WPM, Races, and Wins alongside Orbs and Premium.',
+      'added a Racing Stats editor right inside player management so staff can fix or adjust someone\'s Best WPM, Avg WPM, Races, and Wins alongside Bottlecaps and Premium.',
       'full Shop Editor is in: staff can create and edit avatar decorations, masks, themes, banners, nameplates, profile effects, frames, and music tracks, plus manage the word filter and generate multi-use redeem codes.',
     ] },
-  { v: '1.1', date: '2026-11-10', title: 'Frixion-Grade Security, Device Bans & IP Network Bans',
+  { v: '1.1', date: '2026-11-10', title: 'Enterprise Security, Device Bans & IP Network Bans',
     notes: [
-      'locked down the database with the same auth and security rules as Frixion so the Firebase project cannot be mirrored or cheated from the browser console.',
+      'locked down the database with strict auth and security rules so the Firebase project cannot be mirrored or cheated from the browser console.',
       'accounts are bound 1-to-1 with Firebase Auth (username + password or Continue with Google), and Owner one-time login codes are supported if someone forgets their password.',
       'added hardware device fingerprinting, VM detection, full device bans, and IP network bans with #A3F2 short tags in the Owner Panel. banned users get sent straight to Nitro Type lol.',
     ] },
   { v: '1.0', date: '2026-11-09', title: 'Welcome to NPD (NewBGI) — The LiquidType Sequel',
     notes: [
-      'welcome to NPD (NewBGI)! we took the best parts of LiquidType (BGI) and rebuilt it from the ground up on top of Frixion\'s engine and UI.',
+      'welcome to NPD (NewBGI)! we took the best parts of LiquidType (BGI) and rebuilt it from the ground up with a brand-new engine and UI.',
       'new upgraded sidebar on the left with quick access to your Dashboard, Race Track, Leaderboard, My Stats, Locker, Daily Quests, Codes, Shop, Friends, and Direct Messages.',
-      'earn Orbs from racing and daily quests, redeem codes, and customize your profile in the Shop and Locker.',
+      'earn Bottlecaps from racing and daily quests, redeem codes, and customize your profile in the Shop and Locker.',
     ] },
 ];
 function renderUpdates() {
@@ -545,7 +545,7 @@ const ICONS = {
   shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.6-3 8.3-7 9.5-4-1.2-7-4.9-7-9.5V6z"/></svg>',
   smiley: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c.8 1.2 2 2 3.5 2s2.7-.8 3.5-2" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/></svg>',
   pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 2-5 5-4 1 7 7 1-4 5-5 2 2"/><path d="M9 15l-5 5"/></svg>',
-  orb: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg>',
+  orb: '<svg viewBox="0 0 24 24"><path d="M12 1.5l1.9 1.3 2.3-.3 1.2 1.9 2.2.8.3 2.3 1.6 1.6-.7 2.2.7 2.2-1.6 1.6-.3 2.3-2.2.8-1.2 1.9-2.3-.3L12 22.5l-1.9-1.3-2.3.3-1.2-1.9-2.2-.8-.3-2.3-1.6-1.6.7-2.2-.7-2.2 1.6-1.6.3-2.3 2.2-.8 1.2-1.9 2.3.3z" fill="currentColor"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-width="1.7" opacity=".75"/></svg>',
   file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>',
   reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
@@ -1027,7 +1027,7 @@ const SAPPHIRE_BOT_PROFILE = {
   username: 'Sapphire', bio: 'An NPD bot for admins.', bot: true,
   avatarColor: '#2b8de8', avatarUrl: SAPPHIRE_AVATAR_URL, pronouns: '', premiumUntil: null,
 };
-// Wordle is a Frixion app. It posts its game cards as this bot, the same way Sapphire posts purge results.
+// Wordle is a NPD app. It posts its game cards as this bot, the same way Sapphire posts purge results.
 const WORDLE_BOT_UID = 'bot-wordle';
 const WORDLE_AVATAR_URL = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#538d4e"/><g font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="40" fill="#fff" text-anchor="middle"><rect x="14" y="14" width="46" height="46" rx="6" fill="#3a3a3c"/><rect x="68" y="14" width="46" height="46" rx="6" fill="#b59f3b"/><rect x="14" y="68" width="46" height="46" rx="6" fill="#b59f3b"/><rect x="68" y="68" width="46" height="46" rx="6" fill="#3a3a3c"/><text x="37" y="48">W</text><text x="91" y="48">O</text><text x="37" y="102">R</text><text x="91" y="102">D</text></g></svg>');
 const WORDLE_BOT_PROFILE = {
@@ -1036,12 +1036,12 @@ const WORDLE_BOT_PROFILE = {
 };
 const BOT_PROFILES = { [SAPPHIRE_BOT_UID]: SAPPHIRE_BOT_PROFILE, [WORDLE_BOT_UID]: WORDLE_BOT_PROFILE };
 const NPD_RACE_BOTS = [
-  { username: 'ytggobs', wpmBase: 92, accBase: 97.5, car: '🏎️', color: '#ef4444', bio: 'Official NPD Racing Bot — Always ready on the grid.' },
-  { username: 'Marco', wpmBase: 84, accBase: 96.8, car: '🚓', color: '#3b82f6', bio: 'Official NPD Racing Bot — Smooth corners, clean keystrokes.' },
-  { username: 'TheFinnyShow', wpmBase: 105, accBase: 98.2, car: '🚀', color: '#a855f7', bio: 'Official NPD Racing Bot — Live from the fast lane.' },
-  { username: 'Default', wpmBase: 68, accBase: 95.0, car: '🚗', color: '#64748b', bio: 'Official NPD Racing Bot — Steady pace, zero mistakes.' },
-  { username: 'Doodlehoney2021', wpmBase: 77, accBase: 96.2, car: '🚕', color: '#f59e0b', bio: 'Official NPD Racing Bot — Sweet speed on every track.' },
-  { username: 'Perridise6099', wpmBase: 98, accBase: 97.9, car: '🛸', color: '#10b981', bio: 'Official NPD Racing Bot — Full throttle in paradise.' },
+  { username: 'ytggobs', wpmBase: 92, accBase: 97.5, car: 'car-apex', color: '#ef4444', bio: 'Official NPD Racing Bot — Always ready on the grid.' },
+  { username: 'Marco', wpmBase: 84, accBase: 96.8, car: 'car-interceptor', color: '#3b82f6', bio: 'Official NPD Racing Bot — Smooth corners, clean keystrokes.' },
+  { username: 'TheFinnyShow', wpmBase: 105, accBase: 98.2, car: 'car-rocket', color: '#a855f7', bio: 'Official NPD Racing Bot — Live from the fast lane.' },
+  { username: 'Default', wpmBase: 68, accBase: 95.0, car: 'car-classic', color: '#64748b', bio: 'Official NPD Racing Bot — Steady pace, zero mistakes.' },
+  { username: 'Doodlehoney2021', wpmBase: 77, accBase: 96.2, car: 'car-metro', color: '#f59e0b', bio: 'Official NPD Racing Bot — Sweet speed on every track.' },
+  { username: 'Perridise6099', wpmBase: 98, accBase: 97.9, car: 'car-saucer', color: '#10b981', bio: 'Official NPD Racing Bot — Full throttle in paradise.' },
 ];
 function seedBotProfiles() {
   Object.entries(BOT_PROFILES).forEach(([uid, p]) => { profileCache[uid] = p; });
@@ -1080,7 +1080,7 @@ function safeUrl(u, kind) {
   return '';
 }
 // A colour for a style attribute: #rgb / #rrggbb(aa), rgb()/hsl(), or a plain name. Anything else uses the fallback.
-// Frixion Premium (v4.56): a name in two colors (nameGradient on the profile: two #rrggbb), on messages and in member
+// NPD Premium (v4.56): a name in two colors (nameGradient on the profile: two #rrggbb), on messages and in member
 // lists, instead of the role color. Only while Premium is active, and only plain colors (the rules check them too).
 const HEX6 = /^#[0-9a-f]{6}$/i;
 function nameGradientOf(p) {
@@ -1230,7 +1230,7 @@ function avatarHTML(size, color, letter, status, avatarUrl, decorationId, uid, m
       const grad = `radial-gradient(circle ${holeR}px at calc(100% - ${center}px) calc(100% - ${center}px), transparent ${holeR - 1}px, #000 ${holeR}px)`;
       maskStyle = `-webkit-mask-image:${grad};mask-image:${grad};`;
       const label = status === 'idle' ? 'Idle' : status === 'dnd' ? 'Do Not Disturb' : status === 'offline' ? 'Offline' : 'Online';
-      const where = status !== 'offline' && uid && isOnApp(uid) ? ' on the Frixion app' : '';
+      const where = status !== 'offline' && uid && isOnApp(uid) ? ' on the NPD app' : '';
       dotHTML = `<span class="status-dot ${status}" title="${label}${where}" style="width:${dotD}px;height:${dotD}px;right:${dotOffset}px;bottom:${dotOffset}px;"></span>`;
     }
   }
@@ -1783,7 +1783,7 @@ const ACTIVITY_TYPES = { playing: 'Playing', listening: 'Listening to', watching
 // The Frixion desktop app (see frixion-desktop) puts window.frixionDesktop on the page. In a normal browser this is undefined and nothing below runs.
 const DESKTOP = (window.frixionDesktop && window.frixionDesktop.isDesktop) ? window.frixionDesktop : null;
 if (DESKTOP) document.documentElement.classList.add('is-electron');
-// The Frixion app for Android phones (android/ in the computer app's repo) shows this site full screen and adds
+// The NPD app for Android phones (android/ in the computer app's repo) shows this site full screen and adds
 // window.FrixionAndroid: version() and notification(json). See THE FRIXION APP FOR ANDROID below.
 const ANDROID_APP = (window.FrixionAndroid && typeof window.FrixionAndroid.notification === 'function') ? window.FrixionAndroid : null;
 if (ANDROID_APP) document.documentElement.classList.add('is-android-app');
@@ -2815,7 +2815,7 @@ async function boot() {
     showAuthScreen();
     // someone signed in from before real sign-in (only their username was remembered): they log in once more
     const old = getSession();
-    if (old) { $('login-username').value = old; $('login-sub').textContent = 'Frixion has a safer sign-in now. Log in once more with your password.'; }
+    if (old) { $('login-username').value = old; $('login-sub').textContent = 'NPD has a safer sign-in now. Log in once more with your password.'; }
     return;
   }
   let failed = null;
@@ -2876,8 +2876,8 @@ const GOOGLE_G = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA433
 function authErrorText(e) {
   const c = (e && e.code) || '';
   if (c === 'auth/too-many-requests') return 'Too many tries. Wait a minute, then try again.';
-  if (c === 'auth/network-request-failed') return 'Can\'t reach Frixion. Check your internet connection.';
-  if (c === 'auth/popup-blocked') return 'Your browser blocked the Google window. Allow pop-ups for Frixion, then try again.';
+  if (c === 'auth/network-request-failed') return 'Can\'t reach NPD. Check your internet connection.';
+  if (c === 'auth/popup-blocked') return 'Your browser blocked the Google window. Allow pop-ups for NPD, then try again.';
   if (c === 'auth/popup-closed-by-user') return 'The Google window closed before it finished. Try again.';
   if (c === 'auth/unauthorized-domain') return 'Google sign-in isn\'t set up for this address yet.';
   // Signing in reads your own account, which the database always allows, unless this browser can't get App Check's
@@ -2885,7 +2885,7 @@ function authErrorText(e) {
   if (c === 'permission-denied' || c === 'unauthenticated') return SECURITY_CHECK_BLOCKED;
   return (e && e.message) || 'Something went wrong.';
 }
-const SECURITY_CHECK_BLOCKED = 'Frixion can\'t reach its database from this browser. Something here, usually an ad blocker or a strict privacy setting, is blocking Google\'s security check (reCAPTCHA) that Frixion needs. Allow it for this site, or try another browser.';
+const SECURITY_CHECK_BLOCKED = 'NPD can\'t reach its database from this browser. Something here, usually an ad blocker or a strict privacy setting, is blocking Google\'s security check (reCAPTCHA) that NPD needs. Allow it for this site, or try another browser.';
 // Google sign-in opens a Google window, which Google refuses inside the computer app, the Android app and the overlay;
 // an iPhone home screen app can't get the answer back from it either.
 const googleSignInWorks = () => !DESKTOP && !ANDROID_APP && !OVERLAY_WINDOW && !(HOME_SCREEN_APP && appOS === null && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent));
@@ -3073,7 +3073,7 @@ function renderAccountSignin() {
   box.innerHTML = `
     <div class="as-row">${GOOGLE_G}<div class="as-text">Google<small>${google ? `Connected${gmail ? ` (${esc(gmail)})` : ''}. You can log in with Continue with Google.` : 'Not connected. Connect it to log in with Continue with Google too.'}</small></div>
       ${google ? '' : googleSignInWorks() ? '<button type="button" class="btn-secondary slim" id="as-google">Connect Google</button>' : ''}</div>
-    <div class="as-row"><div class="as-text">Password<small>${hasPass ? 'Log in with your username and this password, here and in the Frixion apps.' : 'None yet. Set one to log in with your username in the Frixion apps.'}</small></div></div>
+    <div class="as-row"><div class="as-text">Password<small>${hasPass ? 'Log in with your username and this password, here and in the NPD apps.' : 'None yet. Set one to log in with your username in the NPD apps.'}</small></div></div>
     <div class="as-form"><input type="password" id="as-pass" placeholder="${hasPass ? 'New password' : 'Password'}" autocomplete="new-password"><button type="button" class="btn-secondary slim" id="as-pass-btn">${hasPass ? 'Change password' : 'Set password'}</button></div>
     <div class="as-msg" id="as-msg"></div>
     <div class="as-row"><div class="as-text">Security check<small id="as-appcheck">Checking...</small></div></div>`;
@@ -3084,7 +3084,7 @@ function renderAccountSignin() {
     try { await auth.currentUser.linkWithPopup(googleProvider()); renderAccountSignin(); toast('Google is connected.'); }
     catch (e) {
       if (e.code === 'auth/cancelled-popup-request') return;
-      msg.textContent = /already-in-use/.test(e.code || '') ? 'That Google account is already used by another Frixion account.' : authErrorText(e);
+      msg.textContent = /already-in-use/.test(e.code || '') ? 'That Google account is already used by another NPD account.' : authErrorText(e);
     }
   };
   $('as-pass-btn').onclick = async () => {
@@ -3113,7 +3113,7 @@ $('logout-btn').onclick = async () => {
   // this device stops getting their notifications (waited for: once signed out, the database won't let it)
   if (pushOn()) { await db.collection('pushSubs').doc(pushId).delete().catch(() => {}); pushId = null; }
   clearMyTypingDoc();
-  // Orbs a game just paid go out first (sent as this account, so they can't land on the next one)
+  // Bottlecaps a game just paid go out first (sent as this account, so they can't land on the next one)
   await Promise.race([flushEarn(), new Promise(r => setTimeout(r, 3000))]);
   cleanupAllListeners();
   setSession(null);
@@ -3555,8 +3555,8 @@ $('confirm-create-server').onclick = async () => {
 // Invite links look like https://frixionbeta.pages.dev/abc12 (new servers use a
 // 4 to 6 character code; older servers keep theirs). Older ?invite= links still work, and so do links to
 // Frixion's other sites (equilibrium-incarnate was the main one before v4.47).
-const INVITE_BASE = 'https://frixionbeta.pages.dev/';
-const FRIXION_SITES = ['frixionbeta', 'equilibrium-incarnate', 'frixionalpha', 'skymc', 'airmc'].map(s => `https://${s}.pages.dev`);
+const INVITE_BASE = 'https://newbgi.pages.dev/';
+const FRIXION_SITES = ['newbgi', 'npd', 'frixionbeta', 'equilibrium-incarnate', 'frixionalpha', 'skymc', 'airmc'].map(s => `https://${s}.pages.dev`);
 const INVITE_CODE_RE = /^[a-z0-9]{4,6}$/i;
 $('new-server-code').addEventListener('input', () => {
   const el = $('new-server-code');
@@ -3982,7 +3982,6 @@ function showHomeView() {
   const defaultNav = document.querySelector('.home-nav-item[data-home-view="dashboard"]') || document.querySelector('.home-nav-item[data-home-view="friends"]');
   if (defaultNav) defaultNav.classList.add('active');
   openHomeMainView(defaultNav ? defaultNav.dataset.homeView : 'dashboard');
-  setMobilePane('list');
   renderDMRows();
 }
 
@@ -4366,7 +4365,7 @@ function noteChannelMessage(sid, cid, payload, ref, tid, channelName) {
 // DISCORD BRIDGE  (v4.45)
 // NOTES FOR AI MODELS:
 //  - A server channel can be linked with one Discord channel (Channel Settings > Discord). Messages sent here are
-//    posted there through a webhook with the sender's Frixion name and profile picture; messages sent there show up
+//    posted there through a webhook with the sender's NPD name and profile picture; messages sent there show up
 //    here with the Discord user's name and picture and a DISCORD tag.
 //  - The Discord side is functions/api/discord on the main site. It holds the bot's token (a Cloudflare secret), so
 //    every copy of Frixion (the beta site, the computer app) calls it there. Its comment has the setup steps.
@@ -4508,7 +4507,7 @@ async function renderChannelDiscordPane() {
   const d = ch.discord || {}, linkIcon = `<span class="cs-dc-icon">${icon('link')}</span>`;
   if (bridgeLinked(ch)) {
     box.innerHTML = `<div class="cs-dc-card">${linkIcon}<div class="cs-dc-card-text"><b>Linked with #${esc(d.name || 'channel')}</b><span>in ${esc(d.guild || 'a Discord server')}</span></div></div>
-      <p class="ss-hint">Messages sent in #${esc(ch.name)} are posted in that Discord channel with the sender's Frixion name and profile picture, and messages sent there show up here with a DISCORD tag.</p>
+      <p class="ss-hint">Messages sent in #${esc(ch.name)} are posted in that Discord channel with the sender's NPD name and profile picture, and messages sent there show up here with a DISCORD tag.</p>
       <div class="ss-footer-actions"><button type="button" class="ds-btn ds-btn-danger-outline" id="cs-dc-unlink">Unlink</button></div>`;
     $('cs-dc-unlink').onclick = () => confirmAction({ title: 'Unlink from Discord', body: `Stop linking #${ch.name} with #${d.name || 'channel'} on Discord? Messages already sent stay where they are.`, confirmLabel: 'Unlink',
       onConfirm: async () => { try { await channelRef(ch.id).update({ discord: FieldValue.delete() }); db.collection('discordLinks').doc(`${currentServerId}__${ch.id}`).delete().catch(() => {}); toast('Unlinked from Discord.'); logAudit(currentServerId, `unlinked #${ch.name} from Discord`); } catch (e) { toast('Could not unlink it.', 'error'); } setTimeout(renderChannelDiscordPane, 300); } });
@@ -4565,7 +4564,7 @@ function notifyMessage(n, force) {
   if (OVERLAY_WINDOW || !n || (!force && (!notifyOn() || dndOn() || lookingAtFrixion()))) return;
   if (!force && n.pushed && pushOn()) return;   // this device gets it as a push notification instead (see PUSH NOTIFICATIONS)
   if (n.key) { if (notifiedKeys.has(n.key)) return; notifiedKeys.add(n.key); }
-  const body = String(n.body || '').slice(0, 180), title = String(n.title || 'Frixion').slice(0, 100);
+  const body = String(n.body || '').slice(0, 180), title = String(n.title || 'NPD').slice(0, 100);
   if (ANDROID_APP) { try { ANDROID_APP.notification(JSON.stringify({ title, body, open: n.open || null })); } catch (e) {} return; }
   if (desktopNotifies()) { DESKTOP.notify({ title, body, icon: n.icon || '', open: n.open || null, inGame: notifyInGame() }); return; }
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -4635,17 +4634,17 @@ function populateNotifySettings() {
   $('notify-game-toggle').checked = notifyInGame();
   $('notify-game-row').classList.toggle('hidden', !desktopNotifies());
   $('notify-app-note').classList.toggle('hidden', !inApp || appNotifies());
-  $('notify-where').textContent = ANDROID_APP ? 'In the Frixion app for Android they show as phone notifications while Frixion is in the background.'
-    : inApp ? 'In the Frixion app they show as Windows notifications, or over your game while you play.'
-    : push ? (pushOn() ? 'They show up on this device even when Frixion is closed.' : 'Allow them, and they show up on this device even when Frixion is closed.')
-    : appOS === 'ios' ? 'On iPhone, put Frixion on your home screen first (Settings, Frixion App), then turn notifications on there.'
-    : isMobile() ? 'This browser can\'t show them. Notifications work in the Frixion apps, and from the home screen on iPhone.'
-    : 'Your browser shows them while Frixion is open in a tab, even in the background.';
+  $('notify-where').textContent = ANDROID_APP ? 'In the NPD app for Android they show as phone notifications while NPD is in the background.'
+    : inApp ? 'In the NPD app they show as Windows notifications, or over your game while you play.'
+    : push ? (pushOn() ? 'They show up on this device even when NPD is closed.' : 'Allow them, and they show up on this device even when NPD is closed.')
+    : appOS === 'ios' ? 'On iPhone, put NPD on your home screen first (Settings, NPD App), then turn notifications on there.'
+    : isMobile() ? 'This browser can\'t show them. Notifications work in the NPD apps, and from the home screen on iPhone.'
+    : 'Your browser shows them while NPD is open in a tab, even in the background.';
   $('notify-permission').classList.toggle('hidden', !canAsk || (Notification.permission === 'granted' && (!push || pushOn())));
   if (canAsk) {
     const denied = Notification.permission === 'denied';
     $('notify-permission-text').textContent = denied ? 'Notifications from NPD are blocked. Allow them in this site\'s settings (in a browser, the icon to the left of the address; on iPhone, Settings, Notifications, NPD).'
-      : push ? 'Frixion needs your OK to send notifications to this device.' : 'Your browser needs your OK before Frixion can show notifications.';
+      : push ? 'NPD needs your OK to send notifications to this device.' : 'Your browser needs your OK before NPD can show notifications.';
     $('notify-allow-btn').classList.toggle('hidden', denied);
   }
 }
@@ -4664,11 +4663,11 @@ $('notify-game-toggle').onchange = e => { try { localStorage.setItem(NOTIFY_GAME
 $('notify-allow-btn').onclick = () => askNotifyPermission();
 $('notify-test-btn').onclick = () => {
   const hint = $('notify-test-hint'), push = pushSupported() && Notification.permission === 'granted';
-  if (!DESKTOP && !ANDROID_APP && (!('Notification' in window) || Notification.permission !== 'granted')) { hint.textContent = appOS === 'ios' ? 'Put Frixion on your home screen first.' : 'Allow notifications first.'; return; }
+  if (!DESKTOP && !ANDROID_APP && (!('Notification' in window) || Notification.permission !== 'granted')) { hint.textContent = appOS === 'ios' ? 'Put NPD on your home screen first.' : 'Allow notifications first.'; return; }
   hint.textContent = ANDROID_APP || (push && isMobile()) ? 'Sending one in 5 seconds. Go to your home screen to see it.'
     : DESKTOP ? 'Sending one in 5 seconds. Switch to a game or another window to see it.' : 'Sending one in 5 seconds. Switch to another tab or window to see it.';
   setTimeout(async () => {
-    const n = { title: 'Frixion', body: 'This is what a notification looks like.', icon: (myProfile && myProfile.avatarUrl) || DEFAULT_AVATAR_URL, open: null };
+    const n = { title: 'NPD', body: 'This is what a notification looks like.', icon: (myProfile && myProfile.avatarUrl) || DEFAULT_AVATAR_URL, open: null };
     // shown the way a push is (an iPhone home screen app can't show any other kind)
     if (push) { try { (pushReg || await navigator.serviceWorker.ready).showNotification(n.title, { body: n.body, icon: '/icons/icon-192.png' }); } catch (e) {} }
     else notifyMessage(n, true);
@@ -4722,7 +4721,7 @@ function openWhenReady(o) {
 // opts in with Allow notifications (Settings > Notifications, or the ask after signing in), which needs a tap; iPhones
 // also need Frixion on the home screen. Its pushSubs/{id} doc says who is signed in there and which chats it muted.
 // Not in the computer app or the Android app, which show their own (see notifyMessage).
-const PUSH_API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8788/api/push' : 'https://frixionbeta.pages.dev/api/push';
+const PUSH_API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8788/api/push' : 'https://newbgi.pages.dev/api/push';
 const VAPID_PUBLIC = 'BI0G-1ruzfkYfbVq9inwLSoZWLNn1ci7ad5wCJ9_6kSuTIRfeU8sOARfXTfm2y9Icy_bWn8lzWpJb8CIgGIt31A';   // its private half is the function's VAPID_PRIVATE_KEY
 const pushSupported = () => !DESKTOP && !ANDROID_APP && !OVERLAY_WINDOW && window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 let pushReg = null, pushId = null;   // this device's service worker, and its pushSubs doc once notifications are on
@@ -4795,7 +4794,7 @@ function maybeAskPush() {
     try { localStorage.setItem('frixion_push_asked', String(Date.now())); } catch (e) {}
     confirmAction({
       title: 'Turn on notifications?', danger: false, confirmLabel: 'Turn on',
-      body: 'Get a notification when someone messages you or mentions you, even when Frixion is closed. You can change this any time in Settings, Notifications.',
+      body: 'Get a notification when someone messages you or mentions you, even when NPD is closed. You can change this any time in Settings, Notifications.',
       onConfirm: async () => {
         const r = await turnOnPush();
         toast(r === 'granted' ? 'Notifications are on.' : r === 'denied' ? 'Notifications are blocked. Allow them in this site\'s settings to turn them on.' : 'Notifications could not be turned on.', r === 'granted' ? undefined : 'error');
@@ -5139,7 +5138,7 @@ function renderBannerSwatches(current) {
   gradWrap.innerHTML = '';
   const premium = isPremium(myProfile);
   BANNER_GRADIENTS.forEach(g => gradWrap.appendChild(makeSwatch(g, !premium)));
-  $('banner-gradient-label').textContent = premium ? 'Gradient Banners' : 'Gradient Banners (Frixion Premium)';
+  $('banner-gradient-label').textContent = premium ? 'Gradient Banners' : 'Gradient Banners (NPD Premium)';
   // Premium (v4.56): mix your own two-color banner (saved like the others: linear-gradient(135deg,#..,#..))
   const mix = $('banner-mix'), m1 = $('banner-mix-1'), m2 = $('banner-mix-2');
   const own = /^linear-gradient\(135deg,(#[0-9a-f]{6}),(#[0-9a-f]{6})\)$/i.exec(current || '');
@@ -5169,7 +5168,7 @@ function renderNameGradientPicker() {
   const premium = isPremium(myProfile), g = Array.isArray(myProfile.nameGradient) && myProfile.nameGradient.length === 2 ? myProfile.nameGradient : null;
   if (g && HEX6.test(g[0]) && HEX6.test(g[1])) { c1.value = g[0]; c2.value = g[1]; }
   row.dataset.on = g ? '1' : '0';
-  $('name-grad-label').textContent = premium ? 'Name Gradient' : 'Name Gradient (Frixion Premium)';
+  $('name-grad-label').textContent = premium ? 'Name Gradient' : 'Name Gradient (NPD Premium)';
   prev.textContent = displayNameOf(myProfile);
   const draw = () => {
     prev.style.background = `linear-gradient(90deg,${c1.value},${c2.value})`;
@@ -5181,7 +5180,7 @@ function renderNameGradientPicker() {
 }
 
 function openGiftModal(username) {
-  $('gift-modal-desc').textContent = `Send Frixion Premium to ${username}.`;
+  $('gift-modal-desc').textContent = `Send NPD Premium to ${username}.`;
   $('gift-modal-orb-amt').textContent = fmtOrbs(myProfile.orbs);
   $('confirm-gift-premium').onclick = () => giftPremiumTo(username);
   openModal('gift-modal');
@@ -5444,7 +5443,7 @@ async function uploadFileGeneric(file, isImage, onProgress) {
 // together as one message, matching how the real Discord client stages
 // images before you hit send.
 let draftAttachments = []; // { id, file, type: 'image'|'file', previewUrl }
-// Chat upload limits (v4.56): regular accounts get 5 MB a file and 50 MB a video or song; Frixion Premium, Admins and
+// Chat upload limits (v4.56): regular accounts get 5 MB a file and 50 MB a video or song; NPD Premium, Admins and
 // Co-Owners the full 10 MB and 100 MB that Cloudinary's free plan allows; the Owner isn't checked here at all
 // (Cloudinary still stops every file at its own 10 MB / 100 MB). A picture over the limit is shrunk to fit.
 function uploadLimitMb(media) {
@@ -5477,7 +5476,7 @@ async function stageFile(file) {
   const maxMb = uploadLimitMb(!isImage && isMediaFile(file));
   if (isImage && file.size > maxMb * 1024 * 1024) file = await shrinkImage(file, maxMb * 1024 * 1024);
   if (file.size > maxMb * 1024 * 1024) {
-    const more = maxMb === 5 || maxMb === 50 ? ' Frixion Premium doubles it.' : '';   // (the regular limits)
+    const more = maxMb === 5 || maxMb === 50 ? ' NPD Premium doubles it.' : '';   // (the regular limits)
     toast(`${file.name} is over ${maxMb} MB.${more}`, 'error');
     return;
   }
@@ -9316,7 +9315,7 @@ async function runPurgeCommand(rawCountText) {
   } catch (e) { toast(e.message || 'Could not purge messages.', 'error'); }
 }
 
-// Returns 'platform' (Frixion staff, anywhere) or 'server' (a server owner/mod using the Sapphire
+// Returns 'platform' (NPD staff, anywhere) or 'server' (a server owner/mod using the Sapphire
 // app their server added), or null after telling the person why they can't.
 function sapphireReady(action) {
   const mode = sapphireModeFor(action);
@@ -9343,12 +9342,12 @@ async function runServerModerationCommand(action, rawName, reason) {
     const tp = await getProfile(uid);
     const targetIsStaff = !!(tp && (tp.owner || tp.coowner || tp.op));
     if (isFrixionStaff()) {
-      // Frixion staff can moderate any member, except staff who outrank them.
+      // NPD staff can moderate any member, except staff who outrank them.
       if (targetIsStaff && !canManagePlatformUser(Object.assign({ username: uid }, tp))) { toast("You can't moderate someone who outranks you.", 'error'); return; }
     } else {
       if (topRoleOf(server, uid).position >= topRoleOf(server, myUid).position) { toast("You can't moderate someone who outranks you.", 'error'); return; }
-      // A server's Sapphire can't touch Frixion staff.
-      if (targetIsStaff) { toast("You can't moderate Frixion staff.", 'error'); return; }
+      // A server's Sapphire can't touch NPD staff.
+      if (targetIsStaff) { toast("You can't moderate NPD staff.", 'error'); return; }
     }
   }
   const why = reason ? ` (${reason})` : '';
@@ -9697,7 +9696,7 @@ function currentContextUsernames() {
 
 
 // ============================================================
-// APPS — small Frixion apps that post interactive cards in chat.
+// APPS — small NPD apps that post interactive cards in chat.
 // A server only offers an app once its owner has added it (Server menu →
 // Add App). In DMs and group DMs every app is available, like Discord's
 // user-installed apps. Right now there is one: Wordle.
@@ -9705,7 +9704,7 @@ function currentContextUsernames() {
 const FRIXION_APPS = [
   { id: 'wordle', name: 'Wordle', command: 'wordle', desc: 'Guess the secret five-letter word in six tries. Anyone in the chat can play along.', avatar: WORDLE_AVATAR_URL },
   // Sapphire adds moderation commands. Server owners can add it to their own server, where the
-  // commands only affect that server's members. Frixion staff (owner, co-owners, admins) can use
+  // commands only affect that server's members. NPD staff (owner, co-owners, admins) can use
   // Sapphire everywhere without adding it, and their commands act on the whole of Frixion.
   { id: 'sapphire', name: 'Sapphire', command: 'purge', commands: ['purge', 'mute', 'unmute', 'ban', 'unban', 'kick'],
     desc: 'Moderation commands for your server: /purge, /mute, /unmute, /ban, /unban and /kick. They only affect your server\'s members.', avatar: SAPPHIRE_AVATAR_URL },
@@ -9728,7 +9727,7 @@ function appInstalledHere(appId) {
   if (currentView === 'channel') return serverHasApp(currentServerData, appId);
   return true;
 }
-// Sapphire's commands: Frixion staff can use them anywhere (they act on all of Frixion). Everyone
+// Sapphire's commands: NPD staff can use them anywhere (they act on all of Frixion). Everyone
 // else needs a server that added Sapphire plus the matching server permission, and then the
 // command only touches that server.
 const SAPPHIRE_SERVER_PERM = { purge: 'manageMessages', mute: 'timeoutMembers', unmute: 'timeoutMembers', ban: 'banMembers', unban: 'banMembers', kick: 'kickMembers' };
@@ -10055,7 +10054,7 @@ const SLASH_IMAGES = {
 // Sapphire's commands all show Sapphire's own picture, like a bot's commands do in Discord.
 SLASH_COMMANDS.forEach(c => { if (!c.img) c.img = c.group === 'sapphire' ? SAPPHIRE_AVATAR_URL : SLASH_IMAGES[c.name] || ''; });
 const SLASH_GROUPS = [
-  { id: 'frixion', name: 'Frixion', img: slashTile('#5865f2', '<path d="M23 49V17h20M23 32h14"/>') },
+  { id: 'frixion', name: 'NPD', img: slashTile('#5865f2', '<path d="M23 49V17h20M23 32h14"/>') },
   { id: 'sapphire', name: 'Sapphire', img: SAPPHIRE_AVATAR_URL },
   { id: 'wordle', name: 'Wordle', img: typeof WORDLE_AVATAR_URL === 'string' ? WORDLE_AVATAR_URL : '' },
 ];
@@ -11226,7 +11225,7 @@ $('emoji-search').addEventListener('input', renderEmojiPickerGrids);
 document.addEventListener('click', emojiPickerOutsideClick);
 
 // ============================================================
-// THE FRIXION APP FOR COMPUTERS, ANDROID PHONES AND IPHONES: a reminder to get it, and the Settings > Frixion App tab.
+// THE FRIXION APP FOR COMPUTERS, ANDROID PHONES AND IPHONES: a reminder to get it, and the Settings > NPD App tab.
 // Downloads come from the GitHub Releases of the app's repo (publish a release there and the newest one is picked up
 // here). A release's APK is the Android app, built from android/ in the same repo. iPhones and iPads can't install
 // apps from outside the App Store, so there Frixion goes on the home screen instead (manifest.json and the
@@ -11254,9 +11253,9 @@ const APP_TIPS = {
   linux: 'Make the file runnable (right-click, Properties, Allow executing as program), then open it.',
   android: 'Open the file once it has downloaded. If your phone asks, allow installing apps from your browser, then tap Install.',
 };
-const ANDROID_PERKS = '<li>Notifications show up as phone notifications</li><li>Frixion links and invites open in the app</li><li>Full screen, with its own icon</li>';
+const ANDROID_PERKS = '<li>Notifications show up as phone notifications</li><li>NPD links and invites open in the app</li><li>Full screen, with its own icon</li>';
 const IOS_PERKS = '<li>Opens full screen from its own icon, like an app</li><li>No App Store needed, and it is always up to date</li>';
-const IOS_STEPS = '<ol class="app-perks"><li>Tap <b>Share</b> (the square with an arrow pointing up). In Safari it is at the bottom; in Chrome, next to the address bar.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open Frixion from its new icon and sign in once.</li></ol>';
+const IOS_STEPS = '<ol class="app-perks"><li>Tap <b>Share</b> (the square with an arrow pointing up). In Safari it is at the bottom; in Chrome, next to the address bar.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open NPD from its new icon and sign in once.</li></ol>';
 const newerVersion = (a, b) => { const x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
 let appReleaseP = null;
 // { version, win, mac: [{label,url}], linux, android } from the newest release, or null if it cannot be read (then the Releases page is linked).
@@ -11330,12 +11329,12 @@ function maybeShowAppPrompt() {
     if (appOS === 'android') {
       const rel = await getAppRelease();
       if (!rel || !rel.android) return;
-      document.querySelector('#app-prompt-modal .desc').textContent = 'Frixion works best as an app on your phone.';
+      document.querySelector('#app-prompt-modal .desc').textContent = 'NPD works best as an app on your phone.';
       document.querySelector('#app-prompt-modal .app-perks').innerHTML = ANDROID_PERKS;
     }
     if (appOS === 'ios') {
-      $('app-prompt-title').textContent = 'Put Frixion on your home screen';
-      document.querySelector('#app-prompt-modal .desc').textContent = 'Frixion works best from your home screen.';
+      $('app-prompt-title').textContent = 'Put NPD on your home screen';
+      document.querySelector('#app-prompt-modal .desc').textContent = 'NPD works best from your home screen.';
       document.querySelector('#app-prompt-modal .app-perks').innerHTML = IOS_PERKS;
     }
     renderAppDownloads($('app-prompt-dl'));
@@ -11343,12 +11342,12 @@ function maybeShowAppPrompt() {
   }, 2500);
 }
 $('app-prompt-later').onclick = () => closeModal('app-prompt-modal');
-$('app-prompt-never').onclick = () => { closeModal('app-prompt-modal'); setAppPromptOff(true); toast("Okay. You can still get the app in Settings, under Frixion App."); };
+$('app-prompt-never').onclick = () => { closeModal('app-prompt-modal'); setAppPromptOff(true); toast("Okay. You can still get the app in Settings, under NPD App."); };
 function populateAppPane() {
   const box = $('app-pane-body');
   if (!box) return;
   if (DESKTOP) {
-    box.innerHTML = `<p class="desc">You are using the Frixion app${DESKTOP.version ? ` (version ${esc(DESKTOP.version)})` : ''}. It updates itself, so there is nothing to do.</p>
+    box.innerHTML = `<p class="desc">You are using the NPD app${DESKTOP.version ? ` (version ${esc(DESKTOP.version)})` : ''}. It updates itself, so there is nothing to do.</p>
       <div class="rpc-auto-list"><div class="rpc-form-title">What the app does</div><ul>
         <li>Shows your game and Spotify song to friends (Settings, then Activity Status)</li><li>Stays in the system tray when you close the window</li><li>Can start with your computer (right-click the tray icon)</li></ul></div>`;
     return;
@@ -11356,7 +11355,7 @@ function populateAppPane() {
   if (ANDROID_APP) {
     let v = '';
     try { v = String(ANDROID_APP.version() || ''); } catch (e) {}
-    box.innerHTML = `<p class="desc">You are using the Frixion app for Android${v ? ` (version ${esc(v)})` : ''}. Frixion itself always stays up to date; the app only needs a new version now and then, and this is where it shows up.</p><div id="app-pane-dl" class="app-dl"></div>`;
+    box.innerHTML = `<p class="desc">You are using the NPD app for Android${v ? ` (version ${esc(v)})` : ''}. NPD itself always stays up to date; the app only needs a new version now and then, and this is where it shows up.</p><div id="app-pane-dl" class="app-dl"></div>`;
     getAppRelease().then(rel => {
       const dl = $('app-pane-dl');
       if (dl && rel && rel.android && newerVersion(rel.version, v)) dl.innerHTML = `<a class="app-dl-main" href="${esc(rel.android)}">Get version ${esc(rel.version)}</a><div class="app-dl-tip">${APP_TIPS.android}</div>`;
@@ -11364,14 +11363,14 @@ function populateAppPane() {
     return;
   }
   if (HOME_SCREEN_APP) {
-    box.innerHTML = '<p class="desc">You are using Frixion from your home screen. It always stays up to date, so there is nothing to do.</p>';
+    box.innerHTML = '<p class="desc">You are using NPD from your home screen. It always stays up to date, so there is nothing to do.</p>';
     return;
   }
   const android = appOS === 'android', ios = appOS === 'ios';
-  box.innerHTML = `<p class="desc">${android ? 'Get Frixion as an app on your phone.' : ios ? 'Put Frixion on your home screen, and it opens like an app.' : appOS ? 'Get Frixion as an app on your computer.' : 'The Frixion app is for Android phones, iPhones and Windows, Mac and Linux computers. Open Frixion on one of those to get it.'}</p>
+  box.innerHTML = `<p class="desc">${android ? 'Get NPD as an app on your phone.' : ios ? 'Put NPD on your home screen, and it opens like an app.' : appOS ? 'Get NPD as an app on your computer.' : 'The NPD app is for Android phones, iPhones and Windows, Mac and Linux computers. Open NPD on one of those to get it.'}</p>
     <ul class="app-perks">${android ? ANDROID_PERKS : ios ? IOS_PERKS : '<li>Your friends see the game you are playing and your Spotify song</li><li>Stays in your tray so you do not miss messages</li><li>Can start with your computer</li><li>Updates itself</li>'}</ul>
     <div id="app-pane-dl" class="app-dl"></div>
-    ${appOS ? `<div class="setting-row"><div class="setting-row-text"><div class="setting-row-title">Remind me to get the app</div><div class="setting-row-desc">Shows a reminder when you open Frixion in a browser.</div></div>
+    ${appOS ? `<div class="setting-row"><div class="setting-row-text"><div class="setting-row-title">Remind me to get the app</div><div class="setting-row-desc">Shows a reminder when you open NPD in a browser.</div></div>
       <label class="toggle-switch"><input type="checkbox" id="app-remind-toggle"${appPromptOff() ? '' : ' checked'}><span class="toggle-slider"></span></label></div>` : ''}`;
   if (appOS) renderAppDownloads($('app-pane-dl'));
   if ($('app-remind-toggle')) $('app-remind-toggle').onchange = e => setAppPromptOff(!e.target.checked);
@@ -11481,7 +11480,7 @@ function renderMobileYou() {
     document.querySelectorAll('#dm-rows .dm-row.active').forEach(r => r.classList.remove('active'));
     openHomeMainView(view);
   });
-  $('myou-logout').onclick = () => confirmAction({ title: 'Log Out', body: 'Log out of Frixion?', confirmLabel: 'Log Out', onConfirm: () => { setMobileTab('home'); $('logout-btn').click(); } });
+  $('myou-logout').onclick = () => confirmAction({ title: 'Log Out', body: 'Log out of NPD?', confirmLabel: 'Log Out', onConfirm: () => { setMobileTab('home'); $('logout-btn').click(); } });
 }
 // The background art of a nameplate, as used behind DM rows and the phone's profile bar.
 function nameplateBgHTML(nameplate, cls = 'dm-row-nameplate-bg') {
@@ -11573,14 +11572,14 @@ function buildPremiumActionHTML() {
   if (active) {
     const until = premiumUntilText(myProfile.premiumUntil, { month: 'long', day: 'numeric', year: 'numeric' });
     return `
-      <span class="premium-active-badge">${icon('star')} Frixion Premium Active</span>
+      <span class="premium-active-badge">${icon('star')} NPD Premium Active</span>
       <p class="desc" style="margin-top:12px;">${until ? `Active until ${until}.` : 'Active forever.'} Renewing early adds another ${days} days on top of your current expiry.</p>
-      <button class="btn-accent-inline" style="width:100%;" data-premium-action="renew">Renew Now — ${PREMIUM_COST_ORBS} Orbs</button>`;
+      <button class="btn-accent-inline" style="width:100%;" data-premium-action="renew">Renew Now — ${PREMIUM_COST_ORBS} Bottlecaps</button>`;
   }
   const canAfford = balance >= PREMIUM_COST_ORBS;
   return `
-    <button class="btn-accent-inline" style="width:100%;" data-premium-action="subscribe" ${canAfford ? '' : 'disabled'}>Subscribe — ${PREMIUM_COST_ORBS} Orbs / ${days} days</button>
-    ${canAfford ? '' : `<p class="desc" style="margin-top:10px;">You have ${balance} Orbs. Play games to earn the rest.</p>`}`;
+    <button class="btn-accent-inline" style="width:100%;" data-premium-action="subscribe" ${canAfford ? '' : 'disabled'}>Subscribe — ${PREMIUM_COST_ORBS} Bottlecaps / ${days} days</button>
+    ${canAfford ? '' : `<p class="desc" style="margin-top:10px;">You have ${balance} Bottlecaps. Play games to earn the rest.</p>`}`;
 }
 function wirePremiumActionButtons(containerId) {
   const btn = $(containerId).querySelector('[data-premium-action]');
@@ -11590,7 +11589,7 @@ function wirePremiumActionButtons(containerId) {
 function genRedeemCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const seg = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `FRX-${seg()}-${seg()}`;
+  return `NPD-${seg()}-${seg()}`;
 }
 // maxUses: how many times the code can be redeemed in total (0 = no limit). Each account can redeem a code once.
 // usedBy lists who has redeemed it; redeemedBy is the latest one (older code only looked at that).
@@ -11620,14 +11619,14 @@ $('code-reveal-copy').onclick = () => {
   navigator.clipboard.writeText($('code-reveal-text').textContent).then(() => toast('Code copied.')).catch(() => {});
 };
 
-// Pays for a Premium code and creates it in one transaction: the Orbs are checked and taken at the same moment the code is
-// made, so clicking twice (or two open tabs) can't spend the same Orbs twice or push the balance below zero.
+// Pays for a Premium code and creates it in one transaction: the Bottlecaps are checked and taken at the same moment the code is
+// made, so clicking twice (or two open tabs) can't spend the same Bottlecaps twice or push the balance below zero.
 let premiumPurchaseBusy = false;
 async function buyPremiumCode(days) {
   if (premiumPurchaseBusy) throw new Error('busy');
   premiumPurchaseBusy = true;
   try {
-    await flushEarn();   // Orbs a game just paid count too
+    await flushEarn();   // Bottlecaps a game just paid count too
     const userRef = db.collection('users').doc(myUid);
     let code = null;
     for (let tries = 0; tries < 5 && !code; tries++) {
@@ -11651,27 +11650,27 @@ async function subscribeToPremium() {
   try {
     const code = await buyPremiumCode(days);
     closeModal('premium-modal');
-    showCodeModal(code, `This code adds ${days} days of Frixion Premium. Redeem it any time from Codes.`);
+    showCodeModal(code, `This code adds ${days} days of NPD Premium. Redeem it any time from Codes.`);
   } catch (e) {
     if (e.message === 'busy') return;
-    toast(e.message === 'not-enough-orbs' ? 'Not enough Orbs. Play games to earn more.' : 'Something went wrong.', 'error');
+    toast(e.message === 'not-enough-orbs' ? 'Not enough Bottlecaps. Play games to earn more.' : 'Something went wrong.', 'error');
   }
 }
 
 async function giftPremiumTo(recipientUsername) {
   await flushEarn();
   const fresh = (await db.collection('users').doc(myUid).get()).data();
-  if ((fresh.orbs || 0) < PREMIUM_COST_ORBS) { toast(`You need ${PREMIUM_COST_ORBS} Orbs to gift Premium.`); return; }
+  if ((fresh.orbs || 0) < PREMIUM_COST_ORBS) { toast(`You need ${PREMIUM_COST_ORBS} Bottlecaps to gift Premium.`); return; }
   const days = Math.round(PREMIUM_DURATION_MS / 86400000);
   confirmAction({
-    title: 'Gift Frixion Premium', body: `Gift Frixion Premium to ${recipientUsername} for ${PREMIUM_COST_ORBS} Orbs?`,
+    title: 'Gift NPD Premium', body: `Gift NPD Premium to ${recipientUsername} for ${PREMIUM_COST_ORBS} Bottlecaps?`,
     confirmLabel: 'Gift Premium', danger: false,
     onConfirm: async () => {
   try {
     let code;
     try { code = await buyPremiumCode(days); } catch (e) {
       if (e.message === 'busy') return;
-      toast(e.message === 'not-enough-orbs' ? `You need ${PREMIUM_COST_ORBS} Orbs to gift Premium.` : 'Something went wrong.', 'error');
+      toast(e.message === 'not-enough-orbs' ? `You need ${PREMIUM_COST_ORBS} Bottlecaps to gift Premium.` : 'Something went wrong.', 'error');
       return;
     }
     const dmId = dmIdFor(myUid, recipientUsername);
@@ -11679,7 +11678,7 @@ async function giftPremiumTo(recipientUsername) {
     const dsnap = await ref.get();
     if (!dsnap.exists) await ref.set({ participants: [myUid, recipientUsername], autoDelete: true, createdAt: FieldValue.serverTimestamp() });
     await ref.collection('messages').add({
-      text: `Gifted Frixion Premium! Redeem this code in Settings > Codes for ${days} days: ${code}`,
+      text: `Gifted NPD Premium! Redeem this code in Settings > Codes for ${days} days: ${code}`,
       uid: myUid, username: myProfile.username, createdAt: FieldValue.serverTimestamp(),
     });
     await ref.update({ updatedAt: FieldValue.serverTimestamp() });
@@ -11692,7 +11691,7 @@ async function giftPremiumTo(recipientUsername) {
 
 // The server (functions/api/admin/code) checks the code, marks it used and gives the reward in one go, so a code can only
 // ever pay out once, even if the button is pressed twice or two people try the same code at the same moment (v4.57: a
-// page can't add Orbs or Premium time to itself).
+// page can't add Bottlecaps or Premium time to itself).
 async function redeemCode() {
   const code = ($('redeem-code-input').value || '').trim().toUpperCase();
   const btn = $('redeem-code-btn');
@@ -11703,7 +11702,7 @@ async function redeemCode() {
   btn.disabled = true;
   try {
     const result = await orbsCall('code', { code });
-    toast(result.type === 'orbs' ? `+${result.value} Orbs redeemed!` : `Frixion Premium extended by ${result.value} days!`);
+    toast(result.type === 'orbs' ? `+${result.value} Bottlecaps redeemed!` : `NPD Premium extended by ${result.value} days!`);
     $('redeem-code-input').value = '';
     renderCodesView();
   } catch (e) { $('redeem-code-error').textContent = e.message || 'Something went wrong.'; }
@@ -12226,7 +12225,7 @@ function renderShopCategoryPane(key) {
     const list = def.catalog.filter(matches);
     wrap.innerHTML = `<div class="shop-section-label">Avatar Masks</div>` + (list.length
       ? `<div class="shop-grid">${list.map(i => shopItemCardHTML(key, i)).join('')}</div>`
-      : `<div class="shop-empty-state"><b>${q ? 'No masks found' : 'No masks yet'}</b><span>${q ? 'Try a different search.' : 'Full avatar masks published by Frixion staff will show up here.'}</span></div>`);
+      : `<div class="shop-empty-state"><b>${q ? 'No masks found' : 'No masks yet'}</b><span>${q ? 'Try a different search.' : 'Full avatar masks published by NPD staff will show up here.'}</span></div>`);
     wireShopCardButtons(wrap);
     return;
   }
@@ -12245,7 +12244,7 @@ function renderShopCategoryPane(key) {
     return;
   }
   if (key === 'banners' && !def.catalog.length) {
-    wrap.innerHTML = `<div class="shop-section-label">Banners</div><div class="shop-empty-state"><b>No banners yet</b><span>Gradient banners published by Frixion staff will show up here.</span></div>`;
+    wrap.innerHTML = `<div class="shop-section-label">Banners</div><div class="shop-empty-state"><b>No banners yet</b><span>Gradient banners published by NPD staff will show up here.</span></div>`;
     return;
   }
   wrap.innerHTML =
@@ -12270,16 +12269,16 @@ async function buyShopItem(key, id) {
   if (!item || shopBuying) return;
   if (item.disabled) { toast('That item is not available right now.', 'error'); return; }
   if ((myProfile[def.ownedField] || []).includes(id)) { toast('You already own this.'); return; }
-  if ((myProfile.orbs || 0) + pendingOrbs() < item.price) { toast('Not enough Orbs. Play games to earn more.'); return; }
+  if ((myProfile.orbs || 0) + pendingOrbs() < item.price) { toast('Not enough Bottlecaps. Play games to earn more.'); return; }
   shopBuying = true;
   try {
-    await flushEarn();   // Orbs a game just paid count too
+    await flushEarn();   // Bottlecaps a game just paid count too
     // The first purchase of a track with a cutscene plays it, so hold the music back until it ends.
     const cuts = itemCutscenes(item);
     const showCut = cuts.length && !epilepsyMode();   // Epilepsy mode: not played automatically (it can be replayed from the Shop)
     if (showCut) cutsceneActive = true;
     // The server (functions/api/admin/buy) charges the database's price, adds it and equips it right away, matching how
-    // Discord's own shop works (v4.57: a page can't add items or Orbs to itself).
+    // Discord's own shop works (v4.57: a page can't add items or Bottlecaps to itself).
     await orbsCall('buy', { cat: key, id });
     toast(`Purchased ${item.name}!`);
     refreshOpenShopPanes();
@@ -12308,7 +12307,7 @@ function replayCutscene(key, id, seg) {
     else musicSync((myProfile && myProfile.equippedMusic) || null);
   };
   if (epilepsyMode()) {
-    confirmAction({ title: 'Flashing Lights Warning', body: 'Epilepsy mode is on, but this cutscene is a video and it may contain flashing lights that Frixion can\'t remove. Play it anyway?', confirmLabel: 'Play Cutscene', danger: false, onConfirm: run });
+    confirmAction({ title: 'Flashing Lights Warning', body: 'Epilepsy mode is on, but this cutscene is a video and it may contain flashing lights that NPD can\'t remove. Play it anyway?', confirmLabel: 'Play Cutscene', danger: false, onConfirm: run });
   } else run();
 }
 
@@ -12447,7 +12446,7 @@ function openAdminPanel(requestedMode) {
   renderAdminList();
 }
 // ---------- Purge Perms (v4.59): the Owner's alone ----------
-// Anyone on this list can use /purge in any chat they're in (servers, DMs and groups), the way Frixion staff can. It's
+// Anyone on this list can use /purge in any chat they're in (servers, DMs and groups), the way NPD staff can. It's
 // purgePerm on their profile, which only the Owner can change (firestore.rules: nobody can give it to themselves, and
 // Co-Owners can't hand it out either).
 function realOwner() { return !sfMode && !!(myProfile && myProfile.owner === true); }
@@ -12629,7 +12628,7 @@ async function renderAdminCodesList() {
     wrap.innerHTML = rows.length ? rows.map(r => `
       <div class="admin-row" style="cursor:default;"${codeUsage(r).usedBy.length > 1 ? ` title="${esc('Redeemed by ' + codeUsage(r).usedBy.join(', '))}"` : ''}>
         <span class="ar-name" style="font-family:monospace;">${esc(r.code)}</span>
-        <span class="ab-note">${r.type === 'premium' ? esc(r.value) + 'd Premium' : esc(r.value) + ' Orbs'}</span>
+        <span class="ab-note">${r.type === 'premium' ? esc(r.value) + 'd Premium' : esc(r.value) + ' Bottlecaps'}</span>
         <span class="${codeUsage(r).usedUp ? 'ban-tag' : 'op-tag'}">${usageLabel(r)}</span>
       </div>`).join('') : '<div class="empty">No codes generated yet.</div>';
   } catch (e) { wrap.innerHTML = '<div class="empty">Could not load codes.</div>'; }
@@ -13832,7 +13831,7 @@ async function renderAdminActions() {
   wrap.innerHTML = `
     <div class="admin-sel-head">${avatarHTML(44, u.avatarColor, initials(u.username), null, u.avatarUrl)}<div><div class="as-name">${esc(u.username)}${roleTag(u)}</div><div class="as-sub">${ban.banned ? ('Banned — ' + esc(ban.reason)) : 'Not banned'}</div></div></div>
     <div class="admin-block">
-      <div class="ab-title">Orbs — Balance: ${fmtOrbs(u.orbs)}</div>
+      <div class="ab-title">Bottlecaps — Balance: ${fmtOrbs(u.orbs)}</div>
       <div class="ab-row">
         <input id="admin-orbs-amt" type="number" min="1" placeholder="Amount" class="fld-input">
         <button class="btn-accent-inline slim" id="admin-orbs-grant">Grant</button>
@@ -13979,9 +13978,9 @@ async function adminAdjustOrbs(username, sign) {
   if (!amt || amt < 1) { toast('Enter an amount.'); return; }
   try {
     await db.collection('users').doc(username).update({ orbs: FieldValue.increment(sign * amt) });
-    toast(`${sign > 0 ? 'Granted' : 'Removed'} ${amt} Orbs ${sign > 0 ? 'to' : 'from'} ${username}.`);
+    toast(`${sign > 0 ? 'Granted' : 'Removed'} ${amt} Bottlecaps ${sign > 0 ? 'to' : 'from'} ${username}.`);
     renderAdminActions();
-  } catch (e) { toast('Could not update Orbs.', 'error'); }
+  } catch (e) { toast('Could not update Bottlecaps.', 'error'); }
 }
 
 // Only the real Owner can hand out or take away Co-Owner.
@@ -14060,7 +14059,7 @@ async function adminUnban() {
 }
 // Owner tools that need Google's admin powers (functions/api/admin), which checks each request comes from the Owner's
 // own sign-in: one-time passwords (showPasswordHelp()) and the claims below.
-const ADMIN_API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8788/api/admin' : 'https://frixionbeta.pages.dev/api/admin';
+const ADMIN_API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8788/api/admin' : 'https://newbgi.pages.dev/api/admin';
 // The Realtime Database (the games' shared lobby, database.rules.json) can't look at profiles, so it knows who is writing
 // from claims on the sign-in: n (username) and r (rank), which functions/api/admin/claims sets from the profile, so
 // nobody can fake them. Asked for once per sign-in (enterApp()), and again if the rank changed; the game waits for it.
@@ -14173,7 +14172,7 @@ async function adminRemoveItem(username, field, id) {
   const hit = defs.map(d => d.catalog.find(i => i.id === id)).find(Boolean);
   const name = hit ? hit.name : id;
   confirmAction({
-    title: 'Remove Item', body: `Remove ${name} from ${username}? It is taken off their account and unequipped. No Orbs are refunded.`, confirmLabel: 'Remove Item',
+    title: 'Remove Item', body: `Remove ${name} from ${username}? It is taken off their account and unequipped. No Bottlecaps are refunded.`, confirmLabel: 'Remove Item',
     onConfirm: async () => {
       try {
         const fresh = (await db.collection('users').doc(username).get()).data() || {};
@@ -14247,8 +14246,8 @@ boot();
 // ============================================================
 // GAMES
 // Twenty in-page games, ported from Toblox. Each game keeps its progress in
-// the `UC` object and pays Orbs when a run ends, using its own payout rules
-// (the same way Toblox paid out Bottlecaps). Orbs are the profile's `orbs`
+// the `UC` object and pays Bottlecaps when a run ends, using its own payout rules
+// (the same way Toblox paid out Bottlecaps). Bottlecaps are the profile's `orbs`
 // field. Everything else a game saves lives under `tb` on the user document.
 // ============================================================
 
@@ -14300,7 +14299,7 @@ async function dbUpdateUser(uid, changes) {
     Object.assign(UC, changes);
   }
   if (spend) {
-    await flushEarn();   // Orbs a game just paid have to be in before they can be spent
+    await flushEarn();   // Bottlecaps a game just paid have to be in before they can be spent
     update.orbs = firebase.firestore.FieldValue.increment(spend);
   }
   if (Object.keys(update).length) await db.collection('users').doc(uid).update(update);
@@ -14329,10 +14328,10 @@ function refreshCaps() {
   document.querySelectorAll('.fg-orbs').forEach(e => { e.textContent = fmtOrbs(UC.coins); });
 }
 
-// ---------- Orbs through the server (v4.57) ----------
-// A page can't add Orbs, Premium time or Shop items to its own account any more (firestore.rules). Those go through
-// functions/api/admin, which works the amounts out itself: earn (what games pay, up to 20,000 Orbs a day per account),
-// buy (Shop items, at the database's prices) and code (Orbs and Premium codes). Taking Orbs away (a game's costs, Quick
+// ---------- Bottlecaps through the server (v4.57) ----------
+// A page can't add Bottlecaps, Premium time or Shop items to its own account any more (firestore.rules). Those go through
+// functions/api/admin, which works the amounts out itself: earn (what games pay, up to 20,000 Bottlecaps a day per account),
+// buy (Shop items, at the database's prices) and code (Orbs and Premium codes). Taking Bottlecaps away (a game's costs, Quick
 // Roll, buying a Premium code) still happens right in the page.
 const EARN_CAP = 20000;
 let earnQueued = 0, earnSending = 0, earnFor = null, earnTimer = 0, earnTries = 0, earnChain = Promise.resolve(), earnCapDay = '', lastIdToken = '';
@@ -14386,7 +14385,7 @@ async function orbsLocalFallback(route, body) {
       if (item.premiumOnly && !isPremium(u)) throw new Error('NPD Premium required for this item.');
       const owned = Array.isArray(u[cfg.field]) ? u[cfg.field] : [];
       if (!owned.includes(id)) {
-        if ((u.orbs || 0) < price) throw new Error('Not enough Orbs.');
+        if ((u.orbs || 0) < price) throw new Error('Not enough Bottlecaps.');
         const up = { orbs: (u.orbs || 0) - price, [cfg.field]: FieldValue.arrayUnion(id) };
         if (cfg.eq) up[cfg.eq] = id;
         tx.update(uRef, up);
@@ -14426,7 +14425,7 @@ async function orbsLocalFallback(route, body) {
   }
   throw new Error('Unsupported action.');
 }
-// Orbs still on their way to the server count in the balance games show.
+// Bottlecaps still on their way to the server count in the balance games show.
 function pendingOrbs() { return earnFor === myUid ? earnQueued + earnSending : 0; }
 function settleOrbs() {
   if (!myProfile || gameStateOwner !== myUid) return;
@@ -14469,14 +14468,14 @@ function earnResetText() {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
-function earnCapText() { return `You've reached today's limit of ${fmtOrbs(EARN_CAP)} Orbs from games. It starts over at ${earnResetText()}.`; }
+function earnCapText() { return `You've reached today's limit of ${fmtOrbs(EARN_CAP)} Bottlecaps from games. It starts over at ${earnResetText()}.`; }
 function earnCapped() {
   const day = new Date().toISOString().slice(0, 10);
   if (earnCapDay === day) return;   // once a day is enough
   earnCapDay = day;
   toast(earnCapText());
 }
-// How many more Orbs games can pay today: orbDays/<you> (only the server writes it), less what's on its way.
+// How many more Bottlecaps games can pay today: orbDays/<you> (only the server writes it), less what's on its way.
 async function earnRoom() {
   let got = 0;
   try {
@@ -15368,17 +15367,97 @@ if ($('lt-btn-logout')) $('lt-btn-logout').onclick = () => {
   if ($('logout-btn')) $('logout-btn').click();
 };
 
+// ============================================================
+// NPD (NewBGI) CUSTOM VECTOR SVG ICONS & RACE CARS (ZERO EMOJIS)
+// ============================================================
+const NPD_SVG_ICONS = {
+  flag: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+  bot: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  target: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  garage: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5v5Z"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
+  cart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  image: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  close: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  cap: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 1.5l1.9 1.3 2.3-.3 1.2 1.9 2.2.8.3 2.3 1.6 1.6-.7 2.2.7 2.2-1.6 1.6-.3 2.3-2.2.8-1.2 1.9-2.3-.3L12 22.5l-1.9-1.3-2.3.3-1.2-1.9-2.2-.8-.3-2.3-1.6-1.6.7-2.2-.7-2.2 1.6-1.6.3-2.3 2.2-.8 1.2-1.9 2.3.3z" fill="currentColor"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-width="1.7" opacity=".75"/></svg>'
+};
+
+function npdIcon(name) {
+  return `<span class="npd-svg-ico">${NPD_SVG_ICONS[name] || ''}</span>`;
+}
+
+function npdPlaceBadge(place) {
+  const p = Number(place) || 0;
+  if (p === 1) return `<span class="npd-place-pill p-1">1ST</span>`;
+  if (p === 2) return `<span class="npd-place-pill p-2">2ND</span>`;
+  if (p === 3) return `<span class="npd-place-pill p-3">3RD</span>`;
+  return `<span class="npd-place-pill">#${p}</span>`;
+}
+
 const NPD_CARS = [
-  { id: 'car-apex', emoji: '🏎️', name: 'Apex GT', price: 0, desc: 'Standard factory tuner built for high-rev sprints.' },
-  { id: 'car-interceptor', emoji: '🚓', name: 'Interceptor', price: 0, desc: 'High-pursuit patrol cruiser with siren-grade launch.' },
-  { id: 'car-metro', emoji: '🚕', name: 'Metro Cruiser', price: 0, desc: 'Street-tested yellow cab that never misses a shift.' },
-  { id: 'car-classic', emoji: '🚗', name: 'Street Classic', price: 0, desc: 'Clean daily driver with balanced handling.' },
-  { id: 'car-rocket', emoji: '🚀', name: 'Starlight Rocket', price: 500, desc: 'Orbital thruster chassis built for 100+ WPM bursts.' },
-  { id: 'car-saucer', emoji: '🛸', name: 'Nebula Saucer', price: 1200, desc: 'Zero-friction anti-gravity disc.' },
-  { id: 'car-volt', emoji: '⚡', name: 'Volt Hypercar', price: 2500, desc: 'Pure arc-lightning propulsion down the straightaway.' },
-  { id: 'car-dragon', emoji: '🐉', name: 'Cyber Dragon', price: 5000, desc: 'Mythic circuit drifter forged for podium finishers.' },
-  { id: 'car-sovereign', emoji: '👑', name: 'Sovereign Crown', price: 0, premiumOnly: true, desc: 'Exclusive NPD Premium & Staff flagship.' }
+  { id: 'car-apex', name: 'Apex GT', color: '#ff1a1a', accent: '#ffffff', price: 0, desc: 'Factory crimson twin-turbo GT built for high-rev straightaways.' },
+  { id: 'car-interceptor', name: 'Interceptor', color: '#3b82f6', accent: '#93c5fd', price: 0, desc: 'Pursuit spec interceptor with launch-control telemetry.' },
+  { id: 'car-metro', name: 'Metro Spec', color: '#f59e0b', accent: '#fde68a', price: 0, desc: 'Street-tuned yellow coupe with short-ratio gearing.' },
+  { id: 'car-classic', name: 'Street Classic', color: '#94a3b8', accent: '#e2e8f0', price: 0, desc: 'Balanced touring chassis built for clean consistency.' },
+  { id: 'car-rocket', name: 'Starlight V12', color: '#a855f7', accent: '#e9d5ff', price: 500, desc: 'Low-drag aero prototype engineered for 100+ WPM bursts.' },
+  { id: 'car-saucer', name: 'Nebula X', color: '#10b981', accent: '#a7f3d0', price: 1200, desc: 'Zero-lift carbon track weapon with active ground effect.' },
+  { id: 'car-volt', name: 'Volt Hypercar', color: '#06b6d4', accent: '#cffafe', price: 2500, desc: 'Quad-motor electric hypercar with instant torque vectoring.' },
+  { id: 'car-dragon', name: 'Crimson Wraith', color: '#e11d48', accent: '#fecdd3', price: 5000, desc: 'Mythic endurance flagship forged for circuit champions.' },
+  { id: 'car-sovereign', name: 'Sovereign Gold', color: '#eab308', accent: '#fef08a', price: 0, premiumOnly: true, desc: 'Exclusive 24K gold-trimmed flagship for NPD Premium & Staff.' }
 ];
+
+const LEGACY_CAR_MAP = {
+  '🏎️': 'car-apex',
+  '🚓': 'car-interceptor',
+  '🚕': 'car-metro',
+  '🚗': 'car-classic',
+  '🚀': 'car-rocket',
+  '🛸': 'car-saucer',
+  '⚡': 'car-volt',
+  '🐉': 'car-dragon',
+  '👑': 'car-sovereign'
+};
+
+function normalizeCarId(raw) {
+  if (!raw) return 'car-apex';
+  if (LEGACY_CAR_MAP[raw]) return LEGACY_CAR_MAP[raw];
+  if (NPD_CARS.some(c => c.id === raw)) return raw;
+  return 'car-apex';
+}
+
+function getCarMeta(raw) {
+  const id = normalizeCarId(raw);
+  return NPD_CARS.find(c => c.id === id) || NPD_CARS[0];
+}
+
+function renderNpdCarSvg(rawCar, widthPx = 44) {
+  const car = getCarMeta(rawCar);
+  const h = Math.round(widthPx * 0.48);
+  return `<span class="npd-car-svg-wrap" title="${esc(car.name)}">
+    <svg viewBox="0 0 64 30" width="${widthPx}" height="${h}" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rear Wing -->
+      <path d="M4 10L9 10L11 16H5L4 10Z" fill="${car.accent}" opacity="0.9"/>
+      <!-- Sleek Aerodynamic Chassis -->
+      <path d="M6 16L18 14L27 8H43L53 14L61 17V22H54C54 18.5 46 18.5 46 22H24C24 18.5 16 18.5 16 22H6V16Z" fill="${car.color}" stroke="${car.accent}" stroke-width="1.2" stroke-linejoin="round"/>
+      <!-- Cockpit Canopy -->
+      <path d="M27 9.5H41.5L49 14H21.5L27 9.5Z" fill="#090d16" stroke="${car.accent}" stroke-width="0.9"/>
+      <!-- Racing Stripe & Headlight -->
+      <path d="M22 17H52" stroke="${car.accent}" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
+      <path d="M57 16.5L61 17.5V19.5L57 18.5V16.5Z" fill="#ffffff"/>
+      <!-- Front & Rear Wheels -->
+      <circle cx="20" cy="22" r="4.8" fill="#0b0b0e" stroke="${car.accent}" stroke-width="1.6"/>
+      <circle cx="20" cy="22" r="1.8" fill="${car.color}"/>
+      <circle cx="50" cy="22" r="4.8" fill="#0b0b0e" stroke="${car.accent}" stroke-width="1.6"/>
+      <circle cx="50" cy="22" r="1.8" fill="${car.color}"/>
+    </svg>
+  </span>`;
+}
 
 const NPD_QUOTES = [
   "The art of racing on a keyboard comes down to rhythm and calm focus. Every clean keystroke builds momentum down the straightaway while hesitation costs precious tenths of a second.",
@@ -15401,8 +15480,8 @@ function getMyRaceStats(p = myProfile) {
     bestWpm: Number(rs.bestWpm) || 0,
     avgWpm: Number(rs.avgWpm) || 0,
     avgAcc: Number(rs.avgAcc) || 100,
-    equippedCar: rs.equippedCar || '🏎️',
-    ownedCars: Array.isArray(rs.ownedCars) ? rs.ownedCars : ['car-apex', 'car-interceptor', 'car-metro', 'car-classic'],
+    equippedCar: normalizeCarId(rs.equippedCar),
+    ownedCars: Array.isArray(rs.ownedCars) ? rs.ownedCars.map(normalizeCarId) : ['car-apex', 'car-interceptor', 'car-metro', 'car-classic'],
     history: Array.isArray(rs.history) ? rs.history : []
   };
 }
@@ -15424,8 +15503,10 @@ async function renderNpdDashboard() {
   const el = $('dashboard-view');
   if (!el || !myProfile) return;
   const rs = getMyRaceStats(myProfile);
+  const carMeta = getCarMeta(rs.equippedCar);
   const winRate = rs.races > 0 ? Math.round((rs.wins / rs.races) * 100) : 0;
-  const orbs = (myProfile.orbs || 0) + pendingOrbs();
+  const caps = (myProfile.orbs || 0) + pendingOrbs();
+  const claimed = (myProfile.dailyStats && Array.isArray(myProfile.dailyStats.claimedQuests)) ? myProfile.dailyStats.claimedQuests : [];
 
   el.innerHTML = `
     <div class="npd-page-wrap">
@@ -15433,17 +15514,17 @@ async function renderNpdDashboard() {
         <div class="npd-hero-left">
           <div class="npd-hero-tag">NPD // NEWBGI SEQUEL</div>
           <h1 class="npd-hero-title">Welcome back, ${esc(displayNameOf(myProfile))}${premiumStar(myProfile)}${roleTag(myProfile)}</h1>
-          <p class="npd-hero-sub">Jump into live RTDB multiplayer typing races, test your top WPM against official NPD bots, customize your ride in the Locker, or hang out in chat.</p>
+          <p class="npd-hero-sub">Compete in live RTDB multiplayer typing races, earn Bottlecaps, customize your vehicle in the Garage, and climb the global player leaderboard.</p>
           <div class="npd-hero-actions">
-            <button type="button" class="btn-primary npd-cta-btn" id="dash-live-race-btn">🏁 Enter Live Race Track</button>
-            <button type="button" class="btn-secondary npd-cta-btn" id="dash-solo-race-btn">⚡ Quick Bot Race</button>
-            <button type="button" class="btn-secondary npd-cta-btn" id="dash-locker-btn">${esc(rs.equippedCar)} My Locker</button>
+            <button type="button" class="btn-primary npd-cta-btn" id="dash-live-race-btn">${npdIcon('flag')} Enter Live Race Track</button>
+            <button type="button" class="btn-secondary npd-cta-btn" id="dash-solo-race-btn">${npdIcon('bolt')} Quick Bot Race</button>
+            <button type="button" class="btn-secondary npd-cta-btn" id="dash-locker-btn">${npdIcon('garage')} Garage &amp; Locker</button>
           </div>
         </div>
         <div class="npd-hero-car-card">
-          <div class="npd-hero-car-emoji">${esc(rs.equippedCar)}</div>
-          <div class="npd-hero-car-label">Equipped Ride</div>
-          <div class="npd-hero-orbs">${icon('orb', 'orb-inline')} <span>${fmtOrbs(orbs)} Orbs</span></div>
+          <div class="npd-hero-car-emoji">${renderNpdCarSvg(rs.equippedCar, 96)}</div>
+          <div class="npd-hero-car-label">${esc(carMeta.name)}</div>
+          <div class="npd-hero-orbs">${icon('orb', 'orb-inline')} <span>${fmtOrbs(caps)} Bottlecaps</span></div>
         </div>
       </div>
 
@@ -15464,38 +15545,43 @@ async function renderNpdDashboard() {
           <div class="npd-stat-foot">${winRate}% Win Rate</div>
         </div>
         <div class="npd-stat-card">
-          <div class="npd-stat-label">Orbs Balance</div>
-          <div class="npd-stat-val cyan">${fmtOrbs(orbs)}</div>
-          <div class="npd-stat-foot">Spend in Shop & Locker</div>
+          <div class="npd-stat-label">Bottlecaps</div>
+          <div class="npd-stat-val cyan">${fmtOrbs(caps)}</div>
+          <div class="npd-stat-foot">Spend in Shop &amp; Garage</div>
         </div>
       </div>
 
       <div class="npd-dash-columns">
         <div class="npd-dash-panel">
           <div class="npd-panel-head">
-            <h3>🏆 Top Circuit Racers</h3>
-            <button type="button" class="btn-link" id="dash-view-lb">Full Leaderboard →</button>
+            <h3>${npdIcon('trophy')} Top Circuit Players</h3>
+            <button type="button" class="btn-link" id="dash-view-lb">Full Leaderboard</button>
           </div>
           <div id="dash-mini-lb" class="npd-mini-lb">
-            <div class="empty">Loading racers...</div>
+            <div class="empty">Loading player standings...</div>
           </div>
         </div>
 
         <div class="npd-dash-panel">
           <div class="npd-panel-head">
-            <h3>🤖 Official NPD Grid Bots</h3>
-            <span class="npd-panel-sub">Auto-join after 5m max queue or on demand</span>
+            <h3>${npdIcon('target')} Daily Racing Quests</h3>
+            <button type="button" class="btn-link" id="dash-view-quests">All Quests</button>
           </div>
-          <div class="npd-bot-roster">
-            ${NPD_RACE_BOTS.map(b => `
-              <div class="npd-bot-chip">
-                <span class="npd-bot-car">${b.car}</span>
-                <div class="npd-bot-meta">
-                  <div class="npd-bot-name">${esc(b.username)} <span class="bot-tag-red">BOT</span></div>
-                  <div class="npd-bot-wpm">~${b.wpmBase} WPM · ${b.accBase}% ACC</div>
+          <div class="npd-quests-list">
+            ${NPD_DAILY_QUESTS.slice(0, 3).map(q => {
+              const prog = Math.min(q.target, q.metric(myProfile));
+              const pct = Math.round((prog / q.target) * 100);
+              const isClaimed = claimed.includes(q.id);
+              return `
+                <div class="npd-bot-chip" style="justify-content:space-between">
+                  <div style="flex:1;min-width:0">
+                    <div class="npd-bot-name">${esc(q.title)} <span class="npd-quest-reward">+${q.reward} Bottlecaps</span></div>
+                    <div class="npd-quest-bar"><div class="npd-quest-fill" style="width:${pct}%"></div></div>
+                    <div class="npd-bot-wpm">${prog} / ${q.target} ${isClaimed ? '· Claimed' : ''}</div>
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         </div>
       </div>
@@ -15512,6 +15598,7 @@ async function renderNpdDashboard() {
   };
   $('dash-locker-btn').onclick = () => navigateToNpdView('locker');
   $('dash-view-lb').onclick = () => navigateToNpdView('leaderboard');
+  $('dash-view-quests').onclick = () => navigateToNpdView('quests');
 
   loadMiniLeaderboard();
 }
@@ -15523,14 +15610,21 @@ async function loadMiniLeaderboard() {
     const racers = await fetchCombinedRacers();
     racers.sort((a, b) => b.bestWpm - a.bestWpm);
     const top = racers.slice(0, 5);
+    if (!top.length) {
+      box.innerHTML = '<div class="empty">No player races recorded yet. Complete a race to claim #1!</div>';
+      return;
+    }
     box.innerHTML = top.map((r, idx) => `
       <div class="npd-lb-row mini" data-user="${esc(r.username)}">
-        <span class="npd-lb-rank">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</span>
-        <span class="npd-lb-car">${esc(r.car || '🏎️')}</span>
-        <span class="npd-lb-name">${esc(r.username)} ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : roleTag(r.raw)}</span>
+        ${npdPlaceBadge(idx + 1)}
+        <span class="npd-lb-car">${renderNpdCarSvg(r.car, 38)}</span>
+        <span class="npd-lb-name">${esc(r.username)} ${roleTag(r.raw)}</span>
         <span class="npd-lb-stat"><strong>${r.bestWpm}</strong> WPM</span>
       </div>
     `).join('');
+    box.querySelectorAll('[data-user]').forEach(row => {
+      row.onclick = () => openProfileModal(row.dataset.user);
+    });
   } catch (_) {
     box.innerHTML = '<div class="empty">Could not load leaderboard preview.</div>';
   }
@@ -15559,7 +15653,7 @@ let npdRaceState = {
   finishTime: 0,
   wpm: 0,
   acc: 100,
-  racers: {} // key -> { username, car, isBot, wpmBase, progress, wpm, acc, finishedAt, place, roleBadge }
+  racers: {}
 };
 
 function cleanupNpdRaceTimers() {
@@ -15585,18 +15679,19 @@ function renderNpdRaceView() {
   const el = $('race-view');
   if (!el || !myProfile) return;
   const rs = getMyRaceStats(myProfile);
+  const carMeta = getCarMeta(rs.equippedCar);
 
   el.innerHTML = `
     <div class="npd-page-wrap">
       <div class="npd-race-header">
         <div>
-          <h2 class="npd-section-title">🏁 NPD Live Circuit</h2>
-          <p class="npd-section-sub">Real-time multiplayer matchmaking via RTDB. Max queue time is <strong>5:00</strong> — if nobody else joins, official NPD bots (<span class="bot-tag-red">BOT</span>) automatically fill the grid!</p>
+          <h2 class="npd-section-title">${npdIcon('flag')} NPD Live Circuit</h2>
+          <p class="npd-section-sub">Real-time multiplayer matchmaking via RTDB. Max queue time is <strong>5:00</strong> — if nobody else joins, official NPD bots (<span class="bot-tag-red">BOT</span>) automatically fill the grid.</p>
         </div>
         <div class="npd-race-controls">
-          <button type="button" class="btn-primary" id="race-join-live-btn">🌐 Join Live Queue (RTDB)</button>
-          <button type="button" class="btn-secondary" id="race-start-bot-btn">🤖 Practice vs Bots Now</button>
-          <button type="button" class="btn-secondary hidden" id="race-leave-btn">✖ Leave Track</button>
+          <button type="button" class="btn-primary" id="race-join-live-btn">${npdIcon('globe')} Join Live Queue (RTDB)</button>
+          <button type="button" class="btn-secondary" id="race-start-bot-btn">${npdIcon('bot')} Practice vs Bots Now</button>
+          <button type="button" class="btn-secondary hidden" id="race-leave-btn">${npdIcon('close')} Leave Track</button>
         </div>
       </div>
 
@@ -15615,7 +15710,7 @@ function renderNpdRaceView() {
         </div>
         <div class="npd-queue-roster" id="npd-queue-roster"></div>
         <div class="npd-queue-actions">
-          <button type="button" class="btn-accent-inline" id="npd-fill-bots-now-btn">⚡ Fill with Bots & Start Now</button>
+          <button type="button" class="btn-accent-inline" id="npd-fill-bots-now-btn">${npdIcon('bolt')} Fill with Bots &amp; Start Now</button>
           <button type="button" class="btn-secondary" id="npd-cancel-queue-btn">Cancel Queue</button>
         </div>
       </div>
@@ -15636,21 +15731,21 @@ function renderNpdRaceView() {
         </div>
         <div class="npd-hud-item">
           <span class="npd-hud-label">VEHICLE</span>
-          <span class="npd-hud-val" id="hud-car">${esc(rs.equippedCar)}</span>
+          <span class="npd-hud-val" id="hud-car">${renderNpdCarSvg(rs.equippedCar, 48)} <small style="font-size:0.9rem;color:var(--text-muted)">${esc(carMeta.name)}</small></span>
         </div>
       </div>
 
       <!-- Race Track Lanes -->
       <div class="npd-track-arena" id="npd-track-arena">
         <div class="npd-lanes-wrap" id="npd-lanes-wrap">
-          <div class="npd-lane">
+          <div class="npd-lane is-me">
             <div class="npd-lane-meta">
               <span class="npd-lane-name">${esc(myProfile.username)} ${roleTag(myProfile)}</span>
               <span class="npd-lane-wpm">0 WPM</span>
             </div>
             <div class="npd-lane-road">
-              <div class="npd-lane-car" style="left:0%">${esc(rs.equippedCar)}</div>
-              <div class="npd-lane-finish">🏁</div>
+              <div class="npd-lane-car" style="left:0%">${renderNpdCarSvg(rs.equippedCar, 42)}</div>
+              <div class="npd-lane-finish">${npdIcon('flag')}</div>
             </div>
           </div>
         </div>
@@ -15672,7 +15767,7 @@ function renderNpdRaceView() {
           spellcheck="false"
           disabled
         >
-        <div class="npd-anticheat-note">🛡️ NPD Anti-Cheat Active: Paste, drop, and macro jumps are blocked. Every character is verified in real time.</div>
+        <div class="npd-anticheat-note">${npdIcon('shield')} NPD Anti-Cheat Active: Paste, drop, and macro jumps are blocked. Every keystroke is verified in real time.</div>
       </div>
 
       <!-- Post-Race Podium & Results -->
@@ -15709,7 +15804,7 @@ function createMyRacerEntry() {
   const rs = getMyRaceStats(myProfile);
   return {
     username: myUid,
-    car: rs.equippedCar || '🏎️',
+    car: rs.equippedCar || 'car-apex',
     isBot: false,
     progress: 0,
     wpm: 0,
@@ -15753,7 +15848,6 @@ async function startLiveMatchmakingQueue() {
   if ($('hud-status')) $('hud-status').textContent = 'IN QUEUE';
   if ($('npd-race-input')) { $('npd-race-input').value = ''; $('npd-race-input').disabled = true; }
 
-  // Try connecting to RTDB lobby first; fallback to Firestore raceLobbies seamlessly
   const rtdb = getRtdbInstance();
   let connectedLobby = false;
 
@@ -15797,7 +15891,6 @@ async function startLiveMatchmakingQueue() {
           racers: { [myUid]: createMyRacerEntry() }
         });
       }
-      // Subscribe to RTDB lobby changes
       const lobbyRef = rtdb.ref(`races/lobbies/${npdRaceState.lobbyId}`);
       const onVal = snapshot => {
         const data = snapshot.val();
@@ -15813,7 +15906,6 @@ async function startLiveMatchmakingQueue() {
   }
 
   if (!connectedLobby) {
-    // Firestore fallback so live racing works even if RTDB rules or service are disabled
     try {
       const snap = await db.collection('raceLobbies').where('status', '==', 'waiting').limit(10).get();
       let foundDoc = null;
@@ -15850,16 +15942,13 @@ async function startLiveMatchmakingQueue() {
       npdRaceState.syncUnsub = db.collection('raceLobbies').doc(npdRaceState.lobbyId).onSnapshot(doc => {
         if (doc.exists) handleLobbySnapshotUpdate(doc.data());
       });
-    } catch (_) {
-      // Local live queue fallback
-    }
+    } catch (_) {}
   }
 
   renderNpdQueueRoster();
   renderNpdTrackLanes();
   renderNpdQuoteBox();
 
-  // Start the 5-minute (300s) queue timer
   npdRaceState.queueInterval = setInterval(() => {
     if (npdRaceState.phase !== 'queue') return;
     const elapsedSec = Math.floor((Date.now() - npdRaceState.queueStartedAt) / 1000);
@@ -15869,10 +15958,8 @@ async function startLiveMatchmakingQueue() {
     }
     const humanCount = Object.values(npdRaceState.racers).filter(r => !r.isBot).length;
     if (humanCount >= 2 && elapsedSec >= 10 && npdRaceState.isHost) {
-      // At least 2 human players joined and 10s elapsed -> start the race!
       triggerLobbyRaceStart(false);
     } else if (elapsedSec >= MAX_QUEUE_SECONDS) {
-      // Max queue time of 5 minutes reached and nobody else joined -> add the 6 official NPD bots!
       toast('Max 5:00 queue reached — adding official NPD Bots to your race!');
       fillLobbyWithBotsAndStart();
     }
@@ -15883,7 +15970,6 @@ function handleLobbySnapshotUpdate(data) {
   if (!data) return;
   if (data.quote) npdRaceState.quote = data.quote;
   if (data.racers) {
-    // Merge remote racers while preserving our local smoother progress during active racing
     const merged = { ...data.racers };
     if (npdRaceState.phase === 'racing' && npdRaceState.racers[myUid]) {
       merged[myUid] = npdRaceState.racers[myUid];
@@ -15906,7 +15992,7 @@ function renderNpdQueueRoster() {
   const list = Object.values(npdRaceState.racers || {});
   box.innerHTML = list.map(r => `
     <div class="npd-queue-player">
-      <span class="npd-qp-car">${esc(r.car || '🏎️')}</span>
+      <span class="npd-qp-car">${renderNpdCarSvg(r.car, 34)}</span>
       <span class="npd-qp-name">${esc(r.username)}</span>
       ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : '<span class="npd-qp-human">PLAYER</span>'}
     </div>
@@ -15915,7 +16001,6 @@ function renderNpdQueueRoster() {
 
 async function fillLobbyWithBotsAndStart() {
   if (npdRaceState.phase !== 'queue') return;
-  // Add bots from NPD_RACE_BOTS (ytggobs, Marco, TheFinnyShow, Default, Doodlehoney2021, Perridise6099)
   const currentNames = new Set(Object.keys(npdRaceState.racers));
   const needed = Math.max(1, Math.min(5, 6 - currentNames.size));
   const chosenBots = pickRandomBots(needed);
@@ -15967,7 +16052,6 @@ function startInstantBotRace() {
   cleanupNpdRaceTimers();
   const quote = NPD_QUOTES[Math.floor(Math.random() * NPD_QUOTES.length)];
   const racers = { [myUid]: createMyRacerEntry() };
-  // Add all 5 rival bots from NPD_RACE_BOTS so the user races a full 6-car grid
   pickRandomBots(5).forEach(b => {
     racers[b.username] = {
       username: b.username,
@@ -16048,7 +16132,7 @@ function beginActiveRaceNow() {
   npdRaceState.errors = 0;
   npdRaceState.totalKeystrokes = 0;
 
-  if ($('hud-status')) $('hud-status').textContent = '🟢 GO! TYPE NOW!';
+  if ($('hud-status')) $('hud-status').textContent = 'GREEN FLAG — GO!';
   const input = $('npd-race-input');
   if (input) {
     input.disabled = false;
@@ -16065,7 +16149,6 @@ function beginActiveRaceNow() {
     const elapsedMin = Math.max(0.01, (Date.now() - npdRaceState.startTime) / 60000);
     const quoteLen = Math.max(1, npdRaceState.quote.length);
 
-    // Update our own live WPM
     const me = npdRaceState.racers[myUid];
     if (me && !me.finishedAt) {
       const words = npdRaceState.typed.length / 5;
@@ -16074,7 +16157,6 @@ function beginActiveRaceNow() {
       if ($('hud-wpm')) $('hud-wpm').textContent = `${me.wpm} WPM`;
     }
 
-    // Advance NPD Bots (ytggobs, Marco, TheFinnyShow, Default, Doodlehoney2021, Perridise6099)
     Object.values(npdRaceState.racers).forEach(r => {
       if (!r.isBot || r.finishedAt) return;
       const base = r.wpmBase || 80;
@@ -16093,7 +16175,6 @@ function beginActiveRaceNow() {
 
     renderNpdTrackLanes();
 
-    // Sync to RTDB / Firestore every 2 ticks (500ms)
     syncTick++;
     if (syncTick % 2 === 0 && npdRaceState.lobbyId) {
       syncMyProgressToLobby();
@@ -16132,7 +16213,6 @@ function bindNpdTypingInput() {
   const input = $('npd-race-input');
   if (!input) return;
 
-  // Anti-cheat: block paste, drop, and context menu
   ['paste', 'drop', 'contextmenu'].forEach(evt => {
     input.addEventListener(evt, e => {
       e.preventDefault();
@@ -16145,7 +16225,6 @@ function bindNpdTypingInput() {
     const val = input.value;
     const prev = npdRaceState.typed;
 
-    // Anti-cheat: prevent multi-character injection (> 2 chars jump in single event)
     if (val.length - prev.length > 2) {
       input.value = prev;
       toast('Anti-Cheat: Sudden multi-character input rejected.', 'error');
@@ -16155,13 +16234,12 @@ function bindNpdTypingInput() {
     npdRaceState.totalKeystrokes++;
     const quote = npdRaceState.quote;
 
-    if ( quote.startsWith(val) ) {
+    if (quote.startsWith(val)) {
       npdRaceState.typed = val;
       input.classList.remove('input-err');
     } else {
       npdRaceState.errors++;
       input.classList.add('input-err');
-      // Find longest valid prefix
       let validLen = 0;
       while (validLen < val.length && val[validLen] === quote[validLen]) validLen++;
       npdRaceState.typed = val.slice(0, validLen);
@@ -16211,7 +16289,6 @@ function renderNpdTrackLanes() {
   const wrap = $('npd-lanes-wrap');
   if (!wrap) return;
   const list = Object.values(npdRaceState.racers || {});
-  // Sort so player is on top or sorted by progress
   list.sort((a, b) => {
     if (a.username === myUid) return -1;
     if (b.username === myUid) return 1;
@@ -16223,9 +16300,7 @@ function renderNpdTrackLanes() {
     const badge = r.isBot
       ? '<span class="bot-tag-red">BOT</span>'
       : (r.username === myUid ? roleTag(myProfile) : roleTag(profileCache[r.username]));
-    const placeTag = r.place
-      ? `<span class="npd-place-pill p-${r.place}">${r.place === 1 ? '🥇 1st' : r.place === 2 ? '🥈 2nd' : r.place === 3 ? '🥉 3rd' : r.place + 'th'}</span>`
-      : '';
+    const placeTag = r.place ? npdPlaceBadge(r.place) : '';
     return `
       <div class="npd-lane ${r.username === myUid ? 'is-me' : ''}">
         <div class="npd-lane-meta">
@@ -16234,8 +16309,8 @@ function renderNpdTrackLanes() {
         </div>
         <div class="npd-lane-road">
           <div class="npd-lane-fill" style="width:${pct}%"></div>
-          <div class="npd-lane-car" style="left:calc(${pct}% - 18px)">${esc(r.car || '🏎️')}</div>
-          <div class="npd-lane-finish">🏁</div>
+          <div class="npd-lane-car" style="left:calc(${pct}% - 22px)">${renderNpdCarSvg(r.car, 42)}</div>
+          <div class="npd-lane-finish">${npdIcon('flag')}</div>
         </div>
       </div>
     `;
@@ -16266,7 +16341,6 @@ async function completeMyNpdRace() {
     assignFinishPlace(me);
   }
 
-  // Let any remaining bots finish with projected WPM so the podium table is complete
   Object.values(npdRaceState.racers).forEach(r => {
     if (!r.finishedAt) {
       r.wpm = r.wpm || r.wpmBase || 72;
@@ -16281,16 +16355,15 @@ async function completeMyNpdRace() {
   syncMyProgressToLobby();
 
   const myPlace = (me && me.place) || 1;
-  const baseOrbs = myPlace === 1 ? 120 : myPlace === 2 ? 85 : myPlace === 3 ? 60 : 40;
+  const baseCaps = myPlace === 1 ? 120 : myPlace === 2 ? 85 : myPlace === 3 ? 60 : 40;
   const mult = isPremium(myProfile) ? 1.5 : 1;
-  const orbsEarned = Math.round(baseOrbs * mult);
+  const capsEarned = Math.round(baseCaps * mult);
 
-  if ($('hud-status')) $('hud-status').textContent = `🏁 FINISHED #${myPlace}!`;
+  if ($('hud-status')) $('hud-status').textContent = `FINISHED #${myPlace}!`;
   if ($('hud-wpm')) $('hud-wpm').textContent = `${finalWpm} WPM`;
 
-  // Save stats to Firestore user profile & award Orbs
   try {
-    queueEarn(orbsEarned);
+    queueEarn(capsEarned);
     const cur = getMyRaceStats(myProfile);
     const newRaces = cur.races + 1;
     const newWins = cur.wins + (myPlace === 1 ? 1 : 0);
@@ -16302,7 +16375,7 @@ async function completeMyNpdRace() {
       wpm: finalWpm,
       acc: finalAcc,
       place: myPlace,
-      orbs: orbsEarned,
+      orbs: capsEarned,
       mode: npdRaceState.mode
     };
     const newHistory = [histEntry, ...(cur.history || [])].slice(0, 20);
@@ -16323,26 +16396,25 @@ async function completeMyNpdRace() {
     });
   } catch (_) {}
 
-  // Render Results Podium
   const resBox = $('npd-race-results');
   if (resBox) {
     resBox.classList.remove('hidden');
     resBox.innerHTML = `
       <div class="npd-results-head">
         <div>
-          <h3>🏆 Race Complete — You placed #${myPlace}!</h3>
-          <p>Speed: <strong>${finalWpm} WPM</strong> · Accuracy: <strong>${finalAcc}%</strong> · Reward: <strong>+${orbsEarned} Orbs</strong>${isPremium(myProfile) ? ' (1.5x NPD Premium Boost)' : ''}</p>
+          <h3>${npdIcon('trophy')} Race Complete — You Placed #${myPlace}</h3>
+          <p>Speed: <strong>${finalWpm} WPM</strong> · Accuracy: <strong>${finalAcc}%</strong> · Reward: <strong>+${capsEarned} Bottlecaps</strong>${isPremium(myProfile) ? ' (1.5x NPD Premium Boost)' : ''}</p>
         </div>
         <div class="npd-results-btns">
-          <button type="button" class="btn-primary" id="res-race-again-live">🌐 Queue Live Race</button>
-          <button type="button" class="btn-secondary" id="res-race-again-bots">🤖 Race Bots Again</button>
+          <button type="button" class="btn-primary" id="res-race-again-live">${npdIcon('globe')} Queue Live Race</button>
+          <button type="button" class="btn-secondary" id="res-race-again-bots">${npdIcon('bot')} Race Bots Again</button>
         </div>
       </div>
       <div class="npd-results-table">
         ${ordered.map(r => `
           <div class="npd-res-row ${r.username === myUid ? 'is-me' : ''}">
-            <span class="npd-res-place">${r.place === 1 ? '🥇 1st' : r.place === 2 ? '🥈 2nd' : r.place === 3 ? '🥉 3rd' : '#' + r.place}</span>
-            <span class="npd-res-car">${esc(r.car || '🏎️')}</span>
+            ${npdPlaceBadge(r.place)}
+            <span class="npd-res-car">${renderNpdCarSvg(r.car, 38)}</span>
             <span class="npd-res-name">${esc(r.username)} ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : ''}</span>
             <span class="npd-res-wpm"><strong>${r.wpm}</strong> WPM</span>
             <span class="npd-res-acc">${(r.acc || 97).toFixed ? (r.acc || 97).toFixed(1) : r.acc}% ACC</span>
@@ -16362,37 +16434,24 @@ function leaveNpdRace() {
 }
 
 // ============================================================
-// 3. NPD LEADERBOARD
+// 3. NPD LEADERBOARD (REAL PLAYERS ONLY — NO BOTS)
 // ============================================================
 let currentLbSort = 'wpm'; // 'wpm' | 'wins' | 'races' | 'orbs'
 
 async function fetchCombinedRacers() {
   const map = new Map();
-  // Seed the 6 official NPD bots first with their red BOT tag
-  NPD_RACE_BOTS.forEach(b => {
-    map.set(b.username, {
-      username: b.username,
-      isBot: true,
-      car: b.car,
-      bestWpm: b.wpmBase + 16,
-      avgWpm: b.wpmBase,
-      wins: 140 + (b.wpmBase % 30),
-      races: 380 + (b.wpmBase % 50),
-      orbs: b.wpmBase * 120,
-      raw: profileCache[b.username]
-    });
-  });
-
+  const botNames = new Set(NPD_RACE_BOTS.map(b => b.username.toLowerCase()));
   try {
-    const snap = await db.collection('users').limit(150).get();
+    const snap = await db.collection('users').limit(200).get();
     snap.forEach(doc => {
       const u = doc.data();
-      if (!u || !u.username) return;
+      if (!u || !u.username || u.bot || u.raceBot) return;
+      if (botNames.has(String(u.username).toLowerCase()) && u.raceBot) return;
       const rs = getMyRaceStats(u);
       map.set(u.username, {
         username: u.username,
         isBot: false,
-        car: rs.equippedCar || '🏎️',
+        car: rs.equippedCar || 'car-apex',
         bestWpm: rs.bestWpm || 0,
         avgWpm: rs.avgWpm || 0,
         wins: rs.wins || 0,
@@ -16402,6 +16461,22 @@ async function fetchCombinedRacers() {
       });
     });
   } catch (_) {}
+
+  // Ensure current logged-in user is always included
+  if (myProfile && myUid && !map.has(myUid)) {
+    const rs = getMyRaceStats(myProfile);
+    map.set(myUid, {
+      username: myUid,
+      isBot: false,
+      car: rs.equippedCar || 'car-apex',
+      bestWpm: rs.bestWpm || 0,
+      avgWpm: rs.avgWpm || 0,
+      wins: rs.wins || 0,
+      races: rs.races || 0,
+      orbs: Number(myProfile.orbs) || 0,
+      raw: myProfile
+    });
+  }
 
   return Array.from(map.values());
 }
@@ -16414,18 +16489,18 @@ async function renderNpdLeaderboard() {
     <div class="npd-page-wrap">
       <div class="npd-section-head-row">
         <div>
-          <h2 class="npd-section-title">🏆 NPD Global Leaderboard</h2>
-          <p class="npd-section-sub">Rankings across all registered NPD racers and official grid bots (<span class="bot-tag-red">BOT</span>).</p>
+          <h2 class="npd-section-title">${npdIcon('trophy')} NPD Global Leaderboard</h2>
+          <p class="npd-section-sub">Verified rankings across real NPD players.</p>
         </div>
         <div class="npd-lb-tabs">
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'wpm' ? 'active' : ''}" data-lbsort="wpm">⚡ Top WPM</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'wins' ? 'active' : ''}" data-lbsort="wins">🏁 Most Wins</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'races' ? 'active' : ''}" data-lbsort="races">🏎️ Total Races</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'orbs' ? 'active' : ''}" data-lbsort="orbs">💎 Most Orbs</button>
+          <button type="button" class="npd-pill-tab ${currentLbSort === 'wpm' ? 'active' : ''}" data-lbsort="wpm">${npdIcon('bolt')} Top WPM</button>
+          <button type="button" class="npd-pill-tab ${currentLbSort === 'wins' ? 'active' : ''}" data-lbsort="wins">${npdIcon('trophy')} Most Wins</button>
+          <button type="button" class="npd-pill-tab ${currentLbSort === 'races' ? 'active' : ''}" data-lbsort="races">${npdIcon('flag')} Total Races</button>
+          <button type="button" class="npd-pill-tab ${currentLbSort === 'orbs' ? 'active' : ''}" data-lbsort="orbs">${npdIcon('cap')} Most Bottlecaps</button>
         </div>
       </div>
       <div id="npd-lb-table" class="npd-lb-table">
-        <div class="empty">Loading global standings...</div>
+        <div class="empty">Loading global player standings...</div>
       </div>
     </div>
   `;
@@ -16445,18 +16520,22 @@ async function renderNpdLeaderboard() {
 
   const tbl = $('npd-lb-table');
   if (!tbl) return;
+  if (!racers.length) {
+    tbl.innerHTML = '<div class="empty">No players found yet.</div>';
+    return;
+  }
   tbl.innerHTML = racers.slice(0, 50).map((r, i) => `
     <div class="npd-lb-row ${r.username === myUid ? 'is-me' : ''}" data-lbuser="${esc(r.username)}">
-      <span class="npd-lb-rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</span>
-      <span class="npd-lb-car">${esc(r.car || '🏎️')}</span>
+      ${npdPlaceBadge(i + 1)}
+      <span class="npd-lb-car">${renderNpdCarSvg(r.car, 42)}</span>
       <span class="npd-lb-name">
         ${esc(r.username)}
-        ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : (r.raw ? premiumStar(r.raw) + roleTag(r.raw) : '')}
+        ${r.raw ? premiumStar(r.raw) + roleTag(r.raw) : ''}
       </span>
       <span class="npd-lb-metric">${r.bestWpm} <small>Best WPM</small></span>
       <span class="npd-lb-metric">${r.wins} <small>Wins</small></span>
       <span class="npd-lb-metric">${r.races} <small>Races</small></span>
-      <span class="npd-lb-metric">${fmtOrbs(r.orbs)} <small>Orbs</small></span>
+      <span class="npd-lb-metric">${fmtOrbs(r.orbs)} <small>Bottlecaps</small></span>
     </div>
   `).join('');
 
@@ -16478,10 +16557,10 @@ function renderNpdStats() {
     <div class="npd-page-wrap">
       <div class="npd-section-head-row">
         <div>
-          <h2 class="npd-section-title">📊 Career Telemetry & Stats</h2>
+          <h2 class="npd-section-title">${npdIcon('chart')} Career Telemetry &amp; Stats</h2>
           <p class="npd-section-sub">Your verified typing performance and recent race history on NPD.</p>
         </div>
-        <button type="button" class="btn-primary" id="stats-go-race-btn">🏁 Race Now</button>
+        <button type="button" class="btn-primary" id="stats-go-race-btn">${npdIcon('flag')} Race Now</button>
       </div>
 
       <div class="npd-stats-grid">
@@ -16509,18 +16588,18 @@ function renderNpdStats() {
 
       <div class="npd-dash-panel" style="margin-top:20px">
         <div class="npd-panel-head">
-          <h3>🕒 Recent Race Log</h3>
+          <h3>${npdIcon('clock')} Recent Race Log</h3>
           <span class="npd-panel-sub">Last ${rs.history.length} completed races</span>
         </div>
         ${rs.history.length ? `
           <div class="npd-results-table">
             ${rs.history.map(h => `
               <div class="npd-res-row">
-                <span class="npd-res-place">${h.place === 1 ? '🥇 1st' : h.place === 2 ? '🥈 2nd' : h.place === 3 ? '🥉 3rd' : '#' + h.place}</span>
-                <span class="npd-res-name">${h.mode === 'live' ? '🌐 Live Circuit' : '🤖 Bot Circuit'}</span>
+                ${npdPlaceBadge(h.place)}
+                <span class="npd-res-name">${h.mode === 'live' ? 'Live Circuit' : 'Bot Circuit'}</span>
                 <span class="npd-res-wpm"><strong>${h.wpm}</strong> WPM</span>
                 <span class="npd-res-acc">${h.acc}% ACC</span>
-                <span class="npd-res-orbs">+${h.orbs || 0} Orbs</span>
+                <span class="npd-res-orbs">+${h.orbs || 0} Bottlecaps</span>
               </div>
             `).join('')}
           </div>
@@ -16539,19 +16618,19 @@ function renderNpdLocker() {
   const el = $('locker-view');
   if (!el || !myProfile) return;
   const rs = getMyRaceStats(myProfile);
-  const orbs = (myProfile.orbs || 0) + pendingOrbs();
+  const caps = (myProfile.orbs || 0) + pendingOrbs();
 
   el.innerHTML = `
     <div class="npd-page-wrap">
       <div class="npd-section-head-row">
         <div>
-          <h2 class="npd-section-title">🏎️ NPD Garage & Locker</h2>
+          <h2 class="npd-section-title">${npdIcon('garage')} NPD Garage &amp; Locker</h2>
           <p class="npd-section-sub">Unlock and equip vehicles for the race track, upload your custom PFP, or equip your owned cosmetics.</p>
         </div>
         <div class="npd-locker-head-right" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span class="npd-hero-orbs">${icon('orb', 'orb-inline')} ${fmtOrbs(orbs)} Orbs</span>
-          <button type="button" class="btn-primary slim" id="locker-edit-pfp-btn">🖼️ Upload Custom PFP</button>
-          <button type="button" class="btn-secondary slim" id="locker-open-shop-btn">🛒 Open Item Shop</button>
+          <span class="npd-hero-orbs">${icon('orb', 'orb-inline')} ${fmtOrbs(caps)} Bottlecaps</span>
+          <button type="button" class="btn-primary slim" id="locker-edit-pfp-btn">${npdIcon('image')} Upload Custom PFP</button>
+          <button type="button" class="btn-secondary slim" id="locker-open-shop-btn">${npdIcon('cart')} Open Item Shop</button>
         </div>
       </div>
 
@@ -16560,7 +16639,7 @@ function renderNpdLocker() {
           ${avatarHTML(54, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask)}
           <div>
             <div class="lpb-title">Custom Profile Picture &amp; Identity</div>
-            <div class="lpb-sub">No PFP shop needed — everyone gets the classic default avatar and can upload their own custom PFP or GIF anytime.</div>
+            <div class="lpb-sub">Everyone starts with the default avatar and can upload their own custom PFP or GIF anytime — no PFP shop required.</div>
           </div>
         </div>
         <div class="lpb-actions">
@@ -16572,20 +16651,20 @@ function renderNpdLocker() {
       <div class="npd-garage-grid">
         ${NPD_CARS.map(c => {
           const owned = c.price === 0 || rs.ownedCars.includes(c.id) || (c.premiumOnly && (isPremium(myProfile) || isAdmin || isOwner));
-          const equipped = rs.equippedCar === c.emoji;
+          const equipped = rs.equippedCar === c.id;
           return `
             <div class="npd-car-card ${equipped ? 'equipped' : ''}">
-              <div class="npd-car-preview">${c.emoji}</div>
+              <div class="npd-car-preview">${renderNpdCarSvg(c.id, 88)}</div>
               <div class="npd-car-title">${esc(c.name)}</div>
               <div class="npd-car-desc">${esc(c.desc)}</div>
               <div class="npd-car-foot">
                 ${equipped
-                  ? `<button type="button" class="btn-secondary slim" disabled>✓ Equipped</button>`
+                  ? `<button type="button" class="btn-secondary slim" disabled>${npdIcon('check')} Equipped</button>`
                   : owned
-                    ? `<button type="button" class="btn-primary slim" data-equip-car="${esc(c.emoji)}">Equip Ride</button>`
+                    ? `<button type="button" class="btn-primary slim" data-equip-car="${esc(c.id)}">Equip Ride</button>`
                     : c.premiumOnly
                       ? `<button type="button" class="btn-secondary slim" disabled>NPD Premium Only</button>`
-                      : `<button type="button" class="btn-accent-inline slim" data-buy-car="${esc(c.id)}">Buy (${fmtOrbs(c.price)} Orbs)</button>`
+                      : `<button type="button" class="btn-accent-inline slim" data-buy-car="${esc(c.id)}">Buy (${fmtOrbs(c.price)} Bottlecaps)</button>`
                 }
               </div>
             </div>
@@ -16606,13 +16685,14 @@ function renderNpdLocker() {
 
   el.querySelectorAll('[data-equip-car]').forEach(btn => {
     btn.onclick = async () => {
-      const emoji = btn.dataset.equipCar;
+      const carId = btn.dataset.equipCar;
+      const car = getCarMeta(carId);
       try {
         const cur = getMyRaceStats(myProfile);
-        const updated = { ...cur, equippedCar: emoji };
+        const updated = { ...cur, equippedCar: car.id };
         myProfile.raceStats = updated;
         await db.collection('users').doc(myUid).update({ raceStats: updated });
-        toast(`Equipped ${emoji}!`);
+        toast(`Equipped ${car.name}!`);
         renderNpdLocker();
       } catch (e) { toast('Could not equip vehicle.', 'error'); }
     };
@@ -16623,19 +16703,19 @@ function renderNpdLocker() {
       const car = NPD_CARS.find(x => x.id === btn.dataset.buyCar);
       if (!car) return;
       if ((myProfile.orbs || 0) < car.price) {
-        toast('Not enough Orbs! Race more or redeem a code.', 'error');
+        toast('Not enough Bottlecaps! Race more or redeem a code.', 'error');
         return;
       }
       try {
         const cur = getMyRaceStats(myProfile);
         const ownedCars = Array.from(new Set([...cur.ownedCars, car.id]));
-        const updated = { ...cur, ownedCars, equippedCar: car.emoji };
+        const updated = { ...cur, ownedCars, equippedCar: car.id };
         myProfile.raceStats = updated;
         await db.collection('users').doc(myUid).update({
           orbs: FieldValue.increment(-car.price),
           raceStats: updated
         });
-        toast(`Purchased and equipped ${car.name} ${car.emoji}!`);
+        toast(`Purchased and equipped ${car.name}!`);
         renderNpdLocker();
       } catch (e) { toast('Could not complete purchase.', 'error'); }
     };
@@ -16662,10 +16742,10 @@ function renderNpdQuests() {
     <div class="npd-page-wrap">
       <div class="npd-section-head-row">
         <div>
-          <h2 class="npd-section-title">🎯 NPD Daily Quests</h2>
-          <p class="npd-section-sub">Complete racing and community challenges to earn bonus Orbs.</p>
+          <h2 class="npd-section-title">${npdIcon('target')} NPD Daily Quests</h2>
+          <p class="npd-section-sub">Complete racing and community challenges to earn bonus Bottlecaps.</p>
         </div>
-        <button type="button" class="btn-primary" id="quests-go-race-btn">🏁 Go to Race Track</button>
+        <button type="button" class="btn-primary" id="quests-go-race-btn">${npdIcon('flag')} Go to Race Track</button>
       </div>
 
       <div class="npd-quests-list">
@@ -16677,16 +16757,16 @@ function renderNpdQuests() {
           return `
             <div class="npd-quest-card ${done ? 'done' : ''}">
               <div class="npd-quest-info">
-                <div class="npd-quest-title">${esc(q.title)} <span class="npd-quest-reward">+${q.reward} Orbs</span></div>
+                <div class="npd-quest-title">${esc(q.title)} <span class="npd-quest-reward">+${q.reward} Bottlecaps</span></div>
                 <div class="npd-quest-desc">${esc(q.desc)}</div>
                 <div class="npd-quest-bar"><div class="npd-quest-fill" style="width:${pct}%"></div></div>
                 <div class="npd-quest-prog">${prog} / ${q.target}</div>
               </div>
               <div class="npd-quest-action">
                 ${isClaimed
-                  ? `<button type="button" class="btn-secondary slim" disabled>✓ Claimed</button>`
+                  ? `<button type="button" class="btn-secondary slim" disabled>${npdIcon('check')} Claimed</button>`
                   : done
-                    ? `<button type="button" class="btn-primary slim" data-claim-quest="${esc(q.id)}">Claim +${q.reward} Orbs</button>`
+                    ? `<button type="button" class="btn-primary slim" data-claim-quest="${esc(q.id)}">Claim +${q.reward} Bottlecaps</button>`
                     : `<button type="button" class="btn-secondary slim" disabled>In Progress</button>`
                 }
               </div>
@@ -16709,7 +16789,7 @@ function renderNpdQuests() {
         await db.collection('users').doc(myUid).update({
           'dailyStats.claimedQuests': FieldValue.arrayUnion(q.id)
         });
-        toast(`Claimed +${q.reward} Orbs from "${q.title}"!`);
+        toast(`Claimed +${q.reward} Bottlecaps from "${q.title}"!`);
         renderNpdQuests();
       } catch (e) {
         btn.disabled = false;
@@ -16718,4 +16798,3 @@ function renderNpdQuests() {
     };
   });
 }
-
