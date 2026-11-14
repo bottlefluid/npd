@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<title>NPD — NewBGI</title>
+<!-- On the home screen (iPhone: Share, Add to Home Screen; Android: Install app) NPD opens full screen like an app -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NPD">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#1e1f22">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%235865f2'/%3E%3Cpath d='M13 3L5 14h6l-1 7 9-11h-6z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- The font loads in the background (the page paints with a system font first), so it never holds up the first screen. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="style.css?v=108">
+</head>
+<body>
+
+<!-- ============ BOOT SPLASH (shown until we know login state) ============ -->
+<div id="boot-screen">
+  <div class="boot-mark">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M13 3L5 14h6l-1 7 9-11h-6z" fill="#fff"/></svg>
+  </div>
+  <div class="spinner"></div>
+</div>
+
+<!-- ============ TITLE BAR (desktop-app style) ============ -->
+<div id="title-bar">
+  <div class="tb-left">
+    <span class="tb-brand-mark">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 3L5 14h6l-1 7 9-11h-6z" fill="#fff"/></svg>
+    </span>
+    <span class="tb-brand-word">NPD <span class="npd-sub-badge">NewBGI</span></span>
+  </div>
+  <div class="tb-drag"></div>
+  <div class="tb-right">
+    <button class="tb-icon-btn" id="tb-inbox-btn" title="Inbox">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3-5h12l3 5"/><path d="M3 8.5v9A1.5 1.5 0 0 0 4.5 19h15a1.5 1.5 0 0 0 1.5-1.5v-9"/><path d="M3 8.5h5.2a.8.8 0 0 1 .7.4l.9 1.6a.8.8 0 0 0 .7.4h3a.8.8 0 0 0 .7-.4l.9-1.6a.8.8 0 0 1 .7-.4H21"/></svg>
+    </button>
+    <button class="tb-icon-btn" id="tb-help-btn" title="Help">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.3 1.8-2.3 3.3" stroke-linecap="round"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <span class="tb-sep"></span>
+    <button class="tb-win-btn" id="tb-min-btn" title="Minimize">
+      <svg viewBox="0 0 10 10" width="10" height="10"><path d="M1 5h8" stroke="currentColor" stroke-width="1.1"/></svg>
+    </button>
+    <button class="tb-win-btn" id="tb-max-btn" title="Maximize">
+      <svg viewBox="0 0 10 10" width="10" height="10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+    </button>
+    <button class="tb-win-btn tb-close" id="tb-close-btn" title="Close">
+      <svg viewBox="0 0 10 10" width="10" height="10"><path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" stroke-width="1.1"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- inbox popover -->
+<div id="inbox-popover" class="hidden">
+  <div class="ip-head">Inbox</div>
+  <div class="ip-empty">
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9.5"/><path d="M7.5 12.5l2.7 2.7 6-6.4"/></svg>
+    <div class="ip-empty-t">You're all caught up.</div>
+    <div class="ip-empty-d">Mentions and unread activity will show up here.</div>
+  </div>
+</div>
+
+<!-- help popover -->
+<div id="help-popover" class="hidden">
+  <div class="ip-head">NPD Help</div>
+  <div class="help-rows">
+    <div class="help-row"><kbd>Enter</kbd><span>Send a message</span></div>
+    <div class="help-row"><kbd>Shift</kbd> + <kbd>Enter</kbd><span>New line</span></div>
+    <div class="help-row"><kbd>:name:</kbd><span>Insert an emoji</span></div>
+    <div class="help-row"><kbd>↑</kbd><span>Edit your last message (empty box)</span></div>
+    <div class="help-row"><kbd>Esc</kbd><span>Cancel reply / edit</span></div>
+    <div class="help-row"><kbd>Double-click</kbd><span>Your message: edit · Others: reply</span></div>
+    <div class="help-row"><kbd>Backspace</kbd> + <kbd>Click</kbd><span>Delete a message</span></div>
+    <div class="help-row"><kbd>/tts text</kbd><span>Send a text-to-speech message</span></div>
+    <div class="help-row"><kbd>/poll</kbd><span>Create a poll</span></div>
+    <div class="help-row"><kbd>/wordle</kbd><span>Play Wordle in chat</span></div>
+    <div class="help-row"><kbd>/purge</kbd><span>Clear messages (Sapphire Bot)</span></div>
+    <div class="help-row ov-help-row"><span class="help-kbds" id="help-overlay-kbd"></span><span>Open the overlay (friends, DMs, servers)</span></div>
+  </div>
+  <div class="help-foot">NPD (NewBGI) — see what's new in Settings → Update Log.</div>
+</div>
+
+<div id="page-body">
+
+<!-- ============ AUTH ============ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 3L5 14h6l-1 7 9-11h-6z" fill="#fff"/></svg>
+      </span>
+      <span class="brand-word">NPD <span class="npd-sub-badge">NewBGI</span></span>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-view">
+      <h1>Welcome back!</h1>
+      <p class="sub" id="login-sub">Log in with your username and password.</p>
+      <div class="auth-error" id="login-error"></div>
+      <div class="field"><label>Username</label><input type="text" id="login-username" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="login-password" autocomplete="current-password"></div>
+      <button class="btn-primary" id="login-btn">Log In</button>
+      <div class="auth-google"><div class="auth-or"><span>or</span></div><button type="button" class="btn-google" id="login-google"></button></div>
+      <div class="auth-switch">Need an account? <a id="show-register">Register</a></div>
+      <div class="auth-switch"><a id="show-forgot">Forgot password?</a></div>
+    </div>
+
+    <!-- FORGOT PASSWORD: the Owner makes one-time passwords (Owner panel > the user > Password) -->
+    <div id="forgot-view" class="hidden">
+      <h1>Forgot your password?</h1>
+      <p class="sub">Ask the Owner for a one-time password, then type it in the password box. It logs you in once. After that you can set a new password in Settings, My Account.</p>
+      <button class="btn-primary" id="forgot-back">Back to Log In</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-view" class="hidden">
+      <h1>Create an account</h1>
+      <p class="sub">Pick a username and password. No email needed.</p>
+      <div class="auth-error" id="register-error"></div>
+      <div class="field"><label>Username</label><input type="text" id="reg-username" maxlength="24" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="reg-password" autocomplete="new-password"></div>
+      <button class="btn-primary" id="register-btn">Continue</button>
+      <div class="auth-google"><div class="auth-or"><span>or</span></div><button type="button" class="btn-google" id="register-google"></button></div>
+      <div class="auth-switch">Already have an account? <a id="show-login">Log In</a></div>
+    </div>
+
+    <!-- AFTER "CONTINUE WITH GOOGLE", FOR SOMEONE NEW -->
+    <div id="pick-view" class="hidden">
+      <h1>Pick a username</h1>
+      <p class="sub">This is your name on NPD. It can't be changed later.</p>
+      <div class="auth-error" id="pick-error"></div>
+      <div class="field"><label>Username</label><input type="text" id="pick-username" maxlength="24" autocomplete="username"></div>
+      <div class="field"><label>Password (for NPD apps)</label><input type="password" id="pick-password" autocomplete="new-password"></div>
+      <p class="auth-hint">The computer and Android apps can't use Google sign-in, so a password lets you log in there with your username. You can leave it empty and set one later in Settings, My Account.</p>
+      <button class="btn-primary" id="pick-btn">Continue</button>
+      <div class="auth-switch">Already have an NPD account? <a id="pick-cancel">Log in to it</a>, then connect Google in Settings, My Account.</div>
+    </div>
+    <p class="recaptcha-note">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Terms of Service</a> apply.</p>
+  </div>
+</div>
+
+
+<!-- ============ MAIN APP ============ -->
+<div id="app" class="hidden">
+
+  <!-- Phone only, like Discord's app: a floating bar with your profile (opens You) and a bell (opens Notifications). -->
+  <div id="mobile-notif-page" class="mpage hidden" aria-label="Notifications"></div>
+  <div id="mobile-you-page" class="mpage hidden" aria-label="You"></div>
+  <div id="mobile-user-pill">
+    <div class="mup-plate" id="mup-plate" aria-hidden="true"></div>
+    <button type="button" class="mup-me" id="mup-me" aria-label="You: your profile and settings">
+      <span class="mup-avatar" id="mup-avatar"></span>
+      <span class="mup-who">
+        <span class="mup-name"><span class="mup-name-text" id="mup-name"></span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+        <span class="mup-status" id="mup-status"></span>
+      </span>
+    </button>
+    <button type="button" class="mup-bell" id="mup-bell" aria-label="Notifications"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 22a2.500 2.500 0 0 0 2.400-1.800H9.600A2.500 2.500 0 0 0 12 22Zm7-5.500V11a7 7 0 0 0-5.200-6.800V3.500a1.800 1.800 0 0 0-3.600 0v.700A7 7 0 0 0 5 11v5.500l-1.700 1.700V19h17.400v-.800L19 16.500Z"/></svg><span class="mup-badge hidden" id="mup-badge">0</span></button>
+  </div>
+
+  <!-- server rail -->
+  <div id="server-rail">
+    <div class="rail-item dm-item active" id="rail-home" title="NPD Hub & Direct Messages">
+      <svg class="rail-home-desk" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3L5 14h6l-1 7 9-11h-6z"/></svg>
+      <svg class="rail-home-phone" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 9-11h-6z"/></svg>
+    </div>
+    <div class="rail-divider"></div>
+    <div id="server-rail-list"></div>
+    <div class="rail-item action" id="rail-add-server" title="Add a Server">+</div>
+    <div class="rail-item explore-btn" id="rail-explore" title="Explore Servers">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
+    </div>
+  </div>
+
+  <!-- second column (Enhanced LiquidType + Frixion Sidebar) -->
+  <div id="side-panel">
+    <div id="side-header" aria-haspopup="menu" aria-expanded="false">
+      <span id="side-header-title">NPD — NewBGI</span>
+      <svg id="side-header-chevron" class="hidden" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+
+    <!-- DM list & NPD Navigation (home view) -->
+    <div id="dm-list">
+      <!-- Phone only (hidden on desktop): the top part of the home screen, above the DMs. -->
+      <div id="mobile-home-top">
+        <h1 class="mht-title">NPD Hub</h1>
+        <div class="mht-actions">
+          <button type="button" class="mht-round" id="mht-search" aria-label="Search messages"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+          <button type="button" class="mht-pill" id="mht-add-friends"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.4 2.9-6 6.5-6s6.5 2.6 6.5 6"/><path d="M19 8v6M16 11h6"/></svg><span>Add Friends</span></button>
+          <button type="button" class="mht-round accent" id="mht-new" aria-label="New message" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <div class="mht-search-row" id="mht-search-row" hidden>
+          <input type="text" id="mht-search-input" placeholder="Search your messages" autocomplete="off" maxlength="60" aria-label="Search your messages">
+          <button type="button" id="mht-search-clear" aria-label="Close search">Cancel</button>
+        </div>
+        <div class="mht-menu" id="mht-menu" role="menu" hidden>
+          <button type="button" role="menuitem" id="mht-new-dm">New Message</button>
+          <button type="button" role="menuitem" id="mht-new-group">New Group DM</button>
+        </div>
+      </div>
+
+      <!-- NPD Sidebar Wallet Summary -->
+      <div class="npd-sidebar-wallet" id="sidebar-wallet-card">
+        <div class="nsw-left">
+          <span class="orb-chip nsw-orb-chip">
+            <svg viewBox="0 0 24 24" width="15" height="15"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg>
+            <span id="sidebar-orb-amt">0</span> Orbs
+          </span>
+        </div>
+        <span class="nsw-wpm-pill" id="sidebar-wpm-pill">0 WPM</span>
+      </div>
+
+      <div id="home-activity" class="home-activity hidden" aria-label="What your friends are doing"></div>
+
+      <div id="home-nav">
+        <div class="npd-nav-cat">Racing &amp; Hub</div>
+        <div class="home-nav-item active" data-home-view="dashboard">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+          <span>Dashboard</span>
+        </div>
+        <div class="home-nav-item" data-home-view="race">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 14h6l-1 7 9-11h-6z"/></svg></span>
+          <span>Race Track</span>
+          <span class="npd-live-pill">LIVE</span>
+        </div>
+        <div class="home-nav-item" data-home-view="leaderboard">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>
+          <span>Leaderboard</span>
+        </div>
+        <div class="home-nav-item" data-home-view="stats">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+          <span>My Stats</span>
+        </div>
+
+        <div class="npd-nav-cat">Economy &amp; Locker</div>
+        <div class="home-nav-item" data-home-view="shop">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
+          <span>Shop</span>
+        </div>
+        <div class="home-nav-item" data-home-view="locker">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg></span>
+          <span>Locker</span>
+        </div>
+        <div class="home-nav-item" data-home-view="quests">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <span>Quests</span>
+        </div>
+        <div class="home-nav-item" data-home-view="codes">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l-4 3 4 3"/><path d="M16 9l4 3-4 3"/><path d="M13 6l-2 12"/></svg></span>
+          <span>Codes</span>
+        </div>
+
+        <div class="npd-nav-cat">Social</div>
+        <div class="home-nav-item" data-home-view="friends">
+          <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15 14.2c2.6.3 4.5 2.4 4.5 5.3"/></svg></span>
+          <span>Friends</span>
+          <span class="hn-badge hidden" id="friend-req-badge">0</span>
+        </div>
+
+        <!-- Role-based Staff Panels (No Passwords! Uses admin/op, coowner, owner flags) -->
+        <div id="sidebar-staff-section" class="hidden">
+          <div class="npd-nav-cat">Staff Panels</div>
+          <div class="home-nav-item staff-panel-btn hidden" id="sidebar-admin-btn">
+            <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <span>Admin Panel</span>
+            <span class="staff-role-chip admin">ADMIN</span>
+          </div>
+          <div class="home-nav-item staff-panel-btn hidden" id="sidebar-coowner-btn">
+            <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
+            <span>Co-Owner Panel</span>
+            <span class="staff-role-chip coowner">CO-OWNER</span>
+          </div>
+          <div class="home-nav-item staff-panel-btn hidden" id="sidebar-owner-btn">
+            <span class="hn-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg></span>
+            <span>Owner Panel</span>
+            <span class="staff-role-chip owner">OWNER</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-section-label">
+        <span>Direct Messages</span>
+        <span style="display:flex;gap:6px;">
+          <span id="new-group-dm-btn" title="Create Group DM" style="cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 7-6s7 2.7 7 6"/><path d="M17 8h5M19.5 5.5v5"/></svg></span>
+          <span id="dm-add-btn" title="Add friend / DM" style="cursor:pointer;">+</span>
+        </span>
+      </div>
+      <div id="dm-rows"></div>
+    </div>
+
+    <!-- channel list (server view) -->
+    <div id="server-menu" class="server-menu hidden" role="menu" aria-label="Server options"></div>
+    <div id="channel-list" class="hidden">
+      <div class="side-section-label">
+        <span>Channels</span>
+        <span style="display:flex;gap:6px;">
+          <span id="category-add-btn" title="Create category" style="cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v4M10 13h4"/></svg></span>
+          <span id="channel-add-btn" title="Create channel" style="cursor:pointer;">+</span>
+        </span>
+      </div>
+      <div id="channel-rows"></div>
+    </div>
+
+    <div id="user-panel">
+      <div class="avatar" id="self-avatar" style="width:32px;height:32px;font-size:13px;"></div>
+      <div class="who" id="open-my-settings">
+        <div class="uname" id="self-username"></div>
+        <div class="utag" id="self-status-label">Online</div>
+      </div>
+      <div class="icon-btn" id="open-settings-gear" title="User Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"/></svg></div>
+    </div>
+  </div>
+
+  <!-- main chat / hub column -->
+  <div id="main-col">
+    <div id="chat-header">
+      <span class="mobile-back-btn" id="back-to-list-btn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+      <span class="chat-header-avatar" id="chat-header-avatar" aria-hidden="true"></span>
+      <span class="hash" id="chat-header-hash">#</span>
+      <span class="title" id="chat-header-title">Select a conversation</span>
+      <span class="chat-discord-pill hidden" id="chat-header-discord">DISCORD</span>
+      <svg class="chat-header-chev" id="chat-header-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      <span class="chat-topic hidden" id="chat-header-topic"></span>
+      <div class="chat-header-actions">
+        <span class="hdr-icon-btn hidden" id="mute-toggle" title="Mute Channel">
+          <svg class="i-unmuted" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18 6.5a8 8 0 0 1 0 11"/></svg>
+          <svg class="i-muted hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+        </span>
+        <span class="hdr-icon-btn hidden" id="pins-toggle" title="Pinned Messages">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 2-5 5-4 1 7 7 1-4 5-5 2 2"/><path d="M9 15l-5 5"/></svg>
+        </span>
+        <span class="hdr-icon-btn hidden" id="add-member-toggle" title="Add Friend to Group">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 7-6s7 2.7 7 6"/><path d="M17 8h5M19.5 5.5v5"/></svg>
+        </span>
+        <span class="hdr-icon-btn hidden" id="leave-group-toggle" title="Leave Group">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5v16h4M15 8l4 4-4 4M19 12H9"/></svg>
+        </span>
+        <span class="hdr-icon-btn hidden" id="search-toggle" title="Search">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+        <span class="members-toggle hidden" id="members-toggle" title="Toggle Member List"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15 14.2c2.6.3 4.5 2.4 4.5 5.3"/></svg></span>
+      </div>
+    </div>
+
+    <div id="search-bar" class="hidden">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="search-input" placeholder="Search messages">
+      <span id="search-count"></span>
+      <span class="hdr-icon-btn" id="search-close" title="Close">✕</span>
+    </div>
+
+    <div id="welcome-view">
+      <span class="welcome-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M13 3L5 14h6l-1 7 9-11h-6z" fill="currentColor"/></svg>
+      </span>
+      <h2>Welcome to NPD (NewBGI)</h2>
+      <p>Jump into the Race Track, customize your Locker, or pick a server or DM on the left.</p>
+    </div>
+
+    <div id="loading-view" class="hidden">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- ============ NPD DASHBOARD VIEW ============ -->
+    <div id="dashboard-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>NPD Dashboard</span>
+        <div class="npd-hdr-right">
+          <button type="button" class="btn-accent-inline slim" id="dash-quick-live-btn">⚡ Live Race</button>
+          <button type="button" class="btn-secondary slim" id="dash-quick-solo-btn">🤖 Practice vs Bots</button>
+        </div>
+      </div>
+      <div class="mp-body npd-page-scroll">
+        <div class="npd-hero-card">
+          <div class="npd-hero-content">
+            <div class="npd-hero-kicker">NPD • NEWBGI SEQUEL</div>
+            <h1 id="dash-welcome-title">Ready to hit the track?</h1>
+            <p id="dash-welcome-sub">Compete in live RTDB multiplayer typing races, earn Orbs, unlock custom themes, banners, decorations, and climb the global leaderboard.</p>
+            <div class="npd-hero-actions">
+              <button type="button" class="btn-accent-inline" id="dash-hero-race-btn">Enter Live Matchmaking</button>
+              <button type="button" class="btn-secondary" id="dash-hero-shop-btn">Browse Shop</button>
+              <button type="button" class="btn-secondary" id="dash-hero-locker-btn">Open Locker</button>
+            </div>
+          </div>
+          <div class="npd-hero-badge-box">
+            <div class="npd-league-label">CURRENT LEAGUE</div>
+            <div class="npd-league-val" id="dash-league-name">Rookie Racer</div>
+            <div class="npd-league-sub" id="dash-league-sub">0 Races Completed</div>
+          </div>
+        </div>
+
+        <div class="npd-stats-grid">
+          <div class="npd-stat-card">
+            <div class="nsc-label">Average Speed</div>
+            <div class="nsc-val" id="dash-stat-avg-wpm">0 WPM</div>
+            <div class="nsc-sub">Career average</div>
+          </div>
+          <div class="npd-stat-card">
+            <div class="nsc-label">Top Speed</div>
+            <div class="nsc-val accent" id="dash-stat-best-wpm">0 WPM</div>
+            <div class="nsc-sub">Personal record</div>
+          </div>
+          <div class="npd-stat-card">
+            <div class="nsc-label">Races Won</div>
+            <div class="nsc-val green" id="dash-stat-wins">0</div>
+            <div class="nsc-sub" id="dash-stat-races">0 total races</div>
+          </div>
+          <div class="npd-stat-card">
+            <div class="nsc-label">Wallet Balance</div>
+            <div class="nsc-val gold" id="dash-stat-orbs">0 Orbs</div>
+            <div class="nsc-sub" id="dash-stat-acc">100% accuracy</div>
+          </div>
+        </div>
+
+        <div class="npd-dash-cols">
+          <div class="npd-dash-panel">
+            <div class="ndp-head">
+              <h3>Daily Racing Quests</h3>
+              <button type="button" class="btn-secondary slim" id="dash-view-all-quests">View All</button>
+            </div>
+            <div id="dash-quests-preview" class="npd-quest-list"></div>
+          </div>
+          <div class="npd-dash-panel">
+            <div class="ndp-head">
+              <h3>Top Racers</h3>
+              <button type="button" class="btn-secondary slim" id="dash-view-leaderboard">Full Board</button>
+            </div>
+            <div id="dash-leaderboard-preview" class="npd-mini-lb"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ NPD LIVE & SOLO RACE VIEW ============ -->
+    <div id="race-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>Race Track</span>
+        <div class="friends-tabs" id="race-mode-tabs">
+          <button type="button" class="friends-tab on" data-race-mode="live">Live Multiplayer</button>
+          <button type="button" class="friends-tab" data-race-mode="solo">Solo vs Bots</button>
+        </div>
+        <div class="npd-hdr-right">
+          <span class="orb-chip"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg><span id="race-orb-amt">0</span></span>
+        </div>
+      </div>
+      <div class="mp-body npd-page-scroll">
+        <!-- Matchmaking / Lobby Card -->
+        <div id="race-lobby-card" class="npd-race-card">
+          <div class="nrc-top">
+            <div>
+              <div class="nrc-kicker" id="race-lobby-kicker">REALTIME DATABASE MATCHMAKING</div>
+              <h2 id="race-lobby-title">Live Multiplayer Queue</h2>
+              <p class="desc" id="race-lobby-desc">Queue up against real players in real time. Max queue time is 5:00 — if nobody else joins when the timer finishes, bots (ytggobs, Marco, TheFinnyShow, Default, Doodlehoney2021, Perridise6099) with a red BOT tag will automatically join so you always get a full race!</p>
+            </div>
+            <div class="nrc-timer-box" id="race-queue-timer-box">
+              <div class="nrc-timer-label" id="race-queue-timer-label">MAX QUEUE TIME</div>
+              <div class="nrc-timer-val" id="race-queue-timer">05:00</div>
+            </div>
+          </div>
+
+          <div class="nrc-queue-bar-wrap hidden" id="race-queue-bar-wrap">
+            <div class="nrc-queue-bar" id="race-queue-bar" style="width:100%"></div>
+          </div>
+
+          <div class="nrc-roster-section">
+            <div class="nrc-roster-head">
+              <span id="race-roster-title">Lobby Racers (1 / 5)</span>
+              <span id="race-lobby-status-pill" class="nrc-status-pill">Ready to Queue</span>
+            </div>
+            <div id="race-lobby-roster" class="nrc-roster-grid"></div>
+          </div>
+
+          <div class="nrc-actions">
+            <button type="button" class="btn-accent-inline" id="race-join-queue-btn">⚡ Find Live Match</button>
+            <button type="button" class="btn-secondary hidden" id="race-fill-bots-btn">🤖 Fill with Bots &amp; Start Now</button>
+            <button type="button" class="btn-danger hidden" id="race-leave-queue-btn">Leave Queue</button>
+            <button type="button" class="btn-secondary" id="race-instant-solo-btn">Practice Solo vs Bots</button>
+          </div>
+        </div>
+
+        <!-- Active Race Track Card -->
+        <div id="race-arena-card" class="npd-race-card hidden">
+          <div class="race-arena-top">
+            <div class="traffic-lights" id="race-traffic-lights">
+              <span class="tl-bulb" id="tl-red"></span>
+              <span class="tl-bulb" id="tl-yellow"></span>
+              <span class="tl-bulb" id="tl-green"></span>
+              <span class="tl-status" id="race-arena-status">Get Ready...</span>
+            </div>
+            <div class="race-live-hud">
+              <div class="rlh-item"><span class="rlh-lbl">SPEED</span><span class="rlh-val" id="hud-wpm">0 WPM</span></div>
+              <div class="rlh-item"><span class="rlh-lbl">ACCURACY</span><span class="rlh-val" id="hud-acc">100%</span></div>
+              <div class="rlh-item"><span class="rlh-lbl">PLACE</span><span class="rlh-val" id="hud-place">1st</span></div>
+              <div class="rlh-item"><span class="rlh-lbl">TIME</span><span class="rlh-val" id="hud-time">0.0s</span></div>
+            </div>
+          </div>
+
+          <!-- Multi-Lane Track -->
+          <div id="race-lanes-wrap" class="race-lanes-wrap"></div>
+
+          <!-- Typing Prompt & Anti-Cheat Input -->
+          <div class="race-typing-zone">
+            <div id="race-prompt-box" class="race-prompt-box" aria-live="polite"></div>
+            <div class="race-input-row">
+              <input type="text" id="race-input" class="race-input" placeholder="Wait for the green light to start typing..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" disabled>
+              <button type="button" class="btn-secondary slim" id="race-leave-active-btn">Leave Race</button>
+            </div>
+            <div class="race-input-hint" id="race-input-hint">Type the highlighted text above character by character. Copy/paste is blocked by anti-cheat.</div>
+          </div>
+        </div>
+
+        <!-- Post-Race Results Card -->
+        <div id="race-results-card" class="npd-race-card hidden">
+          <div class="rrc-header">
+            <div>
+              <div class="nrc-kicker">RACE FINISHED</div>
+              <h2 id="race-results-title">1st Place Victory!</h2>
+            </div>
+            <div class="rrc-reward-pill" id="race-results-reward">+150 Orbs</div>
+          </div>
+          <div class="npd-stats-grid" style="margin:14px 0;">
+            <div class="npd-stat-card"><div class="nsc-label">Final Speed</div><div class="nsc-val accent" id="res-wpm">0 WPM</div></div>
+            <div class="npd-stat-card"><div class="nsc-label">Accuracy</div><div class="nsc-val green" id="res-acc">100%</div></div>
+            <div class="npd-stat-card"><div class="nsc-label">Finish Place</div><div class="nsc-val gold" id="res-place">1st</div></div>
+            <div class="npd-stat-card"><div class="nsc-label">Race Time</div><div class="nsc-val" id="res-time">0.0s</div></div>
+          </div>
+          <div class="ab-title" style="margin-top:8px;">Final Standings</div>
+          <div id="race-results-standings" class="rrc-standings"></div>
+          <div class="nrc-actions" style="margin-top:16px;">
+            <button type="button" class="btn-accent-inline" id="race-play-again-btn">⚡ Queue Next Race</button>
+            <button type="button" class="btn-secondary" id="race-solo-again-btn">🤖 Solo Bot Race</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ NPD LEADERBOARD VIEW ============ -->
+    <div id="leaderboard-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>Leaderboard</span>
+        <div class="friends-tabs" id="leaderboard-tabs">
+          <button type="button" class="friends-tab on" data-lb-tab="bestWpm">Top Speed</button>
+          <button type="button" class="friends-tab" data-lb-tab="avgWpm">Avg WPM</button>
+          <button type="button" class="friends-tab" data-lb-tab="wins">Wins</button>
+          <button type="button" class="friends-tab" data-lb-tab="races">Races</button>
+          <button type="button" class="friends-tab" data-lb-tab="orbs">Orbs</button>
+        </div>
+      </div>
+      <div class="mp-body npd-page-scroll">
+        <div id="leaderboard-content" class="npd-lb-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ============ NPD MY STATS VIEW ============ -->
+    <div id="stats-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>My Racing Stats</span>
+      </div>
+      <div class="mp-body npd-page-scroll" id="stats-content"></div>
+    </div>
+
+    <!-- ============ NPD LOCKER VIEW ============ -->
+    <div id="locker-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>My Locker</span>
+        <div class="friends-tabs" id="locker-tabs">
+          <button type="button" class="friends-tab on" data-locker-tab="all">All Owned</button>
+          <button type="button" class="friends-tab" data-locker-tab="decorations">Decorations</button>
+          <button type="button" class="friends-tab" data-locker-tab="masks">Masks</button>
+          <button type="button" class="friends-tab" data-locker-tab="themes">Themes</button>
+          <button type="button" class="friends-tab" data-locker-tab="banners">Banners</button>
+          <button type="button" class="friends-tab" data-locker-tab="nameplates">Nameplates</button>
+          <button type="button" class="friends-tab" data-locker-tab="effects">Effects</button>
+          <button type="button" class="friends-tab" data-locker-tab="frames">Frames</button>
+          <button type="button" class="friends-tab" data-locker-tab="music">Music</button>
+        </div>
+      </div>
+      <div class="mp-body npd-page-scroll">
+        <div class="locker-pfp-banner">
+          <div class="lpb-left">
+            <div class="avatar" id="locker-self-avatar" style="width:52px;height:52px;"></div>
+            <div>
+              <div class="lpb-title">Custom Profile Picture &amp; Cosmetics</div>
+              <div class="lpb-sub">Everyone starts with the classic default avatar and can upload their own custom PFP anytime — no PFP shop required.</div>
+            </div>
+          </div>
+          <div class="lpb-actions">
+            <button type="button" class="btn-accent-inline slim" id="locker-edit-profile-btn">Upload Custom PFP / Edit Profile</button>
+            <button type="button" class="btn-secondary slim" id="locker-go-shop-btn">Visit Shop</button>
+          </div>
+        </div>
+        <div id="locker-items-mount" class="locker-items-mount"></div>
+      </div>
+    </div>
+
+    <!-- Friends / Quests / Codes main-content views -->
+    <div id="friends-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>Friends</span>
+        <div class="friends-tabs">
+          <button class="friends-tab on" data-friends-tab="all">All</button>
+          <button class="friends-tab" data-friends-tab="pending">Pending<span class="hn-badge hidden" id="pending-tab-badge">0</span></button>
+          <button class="friends-tab" data-friends-tab="blocked">Blocked</button>
+          <button class="friends-tab" data-friends-tab="add">Add Friend</button>
+        </div>
+      </div>
+      <div class="mp-body">
+        <div id="friends-add-pane" class="hidden">
+          <div class="field"><label>Add Friend</label><input type="text" id="add-friend-username" placeholder="Enter a username" maxlength="24"></div>
+          <button class="btn-accent-inline" id="send-friend-req-btn">Send Friend Request</button>
+          <div class="auth-error" id="add-friend-error"></div>
+        </div>
+        <div id="friends-list-pane"></div>
+      </div>
+    </div>
+
+    <div id="quests-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>Racing Quests</span>
+      </div>
+      <div class="mp-body npd-page-scroll">
+        <p class="desc">Complete typing races and speed milestones to earn Orbs for the NPD Shop and NPD Premium.</p>
+        <div class="fg-mount" id="npd-quests-mount"></div>
+      </div>
+    </div>
+
+    <div id="codes-view" class="hidden main-page-view">
+      <div class="mp-header">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span>Redeem Codes</span>
+      </div>
+      <div class="mp-body codes-page">
+        <section class="codes-card">
+          <div class="codes-kicker">NPD wallet</div>
+          <h2>Redeem a code</h2>
+          <p class="desc">Enter a code for Orbs or NPD Premium.</p>
+          <div class="field"><label>Code</label><input type="text" id="redeem-code-input" placeholder="NPD-XXXX-XXXX" style="text-transform:uppercase;"></div>
+          <button class="btn-accent-inline" id="redeem-code-btn">Redeem code</button>
+          <div class="auth-error" id="redeem-code-error"></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="shop-view" class="hidden main-page-view">
+      <div class="shop-topbar">
+        <span class="mp-mobile-back" data-npd-back="1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="shop-home-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
+        <div class="shop-tabs">
+          <button class="shop-tab on" data-shop-tab="featured">Featured</button>
+          <button class="shop-tab" data-shop-tab="themes">Themes</button>
+          <button class="shop-tab" data-shop-tab="music">Music</button>
+          <div class="shop-browse-wrap">
+            <button class="shop-tab" id="shop-browse-toggle">Browse <span class="caret">▾</span></button>
+            <div class="shop-browse-menu hidden" id="shop-browse-menu">
+              <div class="shop-browse-opt" data-shop-tab="banners">Banners</div>
+              <div class="shop-browse-opt" data-shop-tab="decorations">Avatar Decorations</div>
+              <div class="shop-browse-opt" data-shop-tab="masks">Avatar Masks</div>
+              <div class="shop-browse-opt" data-shop-tab="nameplates">Nameplates</div>
+              <div class="shop-browse-opt" data-shop-tab="profile_effects">Profile Effects</div>
+              <div class="shop-browse-opt" data-shop-tab="profile_frames">Profile Frames</div>
+            </div>
+          </div>
+        </div>
+        <div class="shop-topbar-right">
+          <input type="text" id="shop-search" class="shop-search" placeholder="Search the Shop" autocomplete="off">
+          <span class="shop-icon-btn" id="shop-wishlist-btn" title="Wishlist"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-9.5-8.5C.7 9 2 5 5.5 4.2 8 3.6 10 5 12 7c2-2 4-3.4 6.5-2.8C22 5 23.3 9 21.5 12.5 19 16.65 12 21 12 21z"/></svg></span>
+          <span class="orb-chip shop-orb-chip"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg><span id="shop-orb-amt">0</span></span>
+        </div>
+      </div>
+      <div class="shop-body">
+        <div class="shop-pane" id="shop-pane-featured"></div>
+        <div class="shop-pane hidden" id="shop-pane-themes"></div>
+        <div class="shop-pane hidden" id="shop-pane-music"></div>
+        <div class="shop-pane hidden" id="shop-pane-banners"></div>
+        <div class="shop-pane hidden" id="shop-pane-decorations"></div>
+        <div class="shop-pane hidden" id="shop-pane-masks"></div>
+        <div class="shop-pane hidden" id="shop-pane-nameplates"></div>
+        <div class="shop-pane hidden" id="shop-pane-profile_effects"></div>
+        <div class="shop-pane hidden" id="shop-pane-profile_frames"></div>
+      </div>
+    </div>
+
+    <div id="chat-view" class="hidden" style="display:contents;">
+      <div id="messages"></div>
+      <div id="typing-indicator" class="typing-indicator"></div>
+      <div id="slowmode-indicator" class="slowmode-indicator hidden" role="status" aria-live="polite"></div>
+      <div id="composer-wrap">
+        <div id="reply-bar" class="hidden">
+          <div class="rb-text">Replying to <b id="reply-bar-username"></b></div>
+          <span class="rb-close" id="reply-bar-close">✕</span>
+        </div>
+        <div id="composer-action-menu" class="composer-action-menu hidden">
+          <button type="button" id="attach-file-menu"><span>↥</span>Upload a file</button>
+          <button type="button" id="create-poll-menu"><span>☷</span>Create poll</button>
+          <button type="button" id="use-apps-menu"><span>✦</span>Use apps</button>
+        </div>
+        <div id="apps-panel" class="apps-panel hidden"></div>
+        <div id="emoji-picker-panel" class="hidden">
+          <div class="ep-search"><input type="text" id="emoji-search" placeholder="Search emoji"></div>
+          <div id="ep-poll-clear" class="ep-poll-clear hidden"><button type="button" id="ep-poll-clear-btn">Remove emoji from this answer</button></div>
+          <div class="ep-cats" id="ep-cats"></div>
+          <div class="ep-scroll" id="ep-scroll">
+            <div class="ep-section-label">Custom</div>
+            <div class="ep-grid" id="ep-custom-grid"></div>
+            <div id="ep-standard-sections"></div>
+          </div>
+        </div>
+        <div id="sticker-picker-panel" class="hidden">
+          <div class="ep-section-label">Stickers</div>
+          <div class="ep-grid sticker-grid" id="sticker-grid"></div>
+        </div>
+        <div id="gif-picker-panel" class="hidden">
+          <div class="ep-search"><input type="text" id="gif-search" placeholder="Search KLIPY"></div>
+          <div class="gif-attribution">Powered by KLIPY</div>
+          <div class="gif-grid" id="gif-grid"></div>
+        </div>
+        <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt,.csv,.json,.zip,.rar,.7z,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.webm,.mp3,.wav,.ogg,.m4a" multiple>
+        <div id="attachment-draft" class="attachment-draft hidden"></div>
+        <div id="mention-popup" class="hidden"></div>
+        <div id="slash-popup" class="hidden" role="listbox" aria-label="Commands"></div>
+        <div id="cmd-bar" class="hidden"></div>
+        <div id="composer">
+          <button class="composer-icon-btn" id="attach-btn" title="Add attachment or more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+          <button class="composer-icon-btn" id="gift-btn" title="Gift NPD Premium"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4"/><rect x="5" y="12" width="14" height="9"/><path d="M12 8v13"/><path d="M12 8c-1.2-2.5-3-3.5-4.2-3-1.2.5-1.3 2 .2 3zM12 8c1.2-2.5 3-3.5 4.2-3 1.2.5 1.3 2-.2 3z"/></svg></button>
+          <div class="composer-field">
+            <textarea id="composer-input" rows="1" placeholder="Message" autocomplete="off" autocapitalize="sentences" inputmode="text"></textarea>
+            <span id="composer-char-count" class="composer-char-count hidden">0</span>
+            <div class="composer-right-icons">
+              <button class="composer-icon-btn" id="gif-btn" title="GIF">GIF</button>
+              <button class="composer-icon-btn" id="sticker-btn" title="Sticker"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h9a3 3 0 0 1 3 3v9l-6 6H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/><path d="M20 15h-4a2 2 0 0 0-2 2v4"/></svg></button>
+              <button class="composer-icon-btn" id="emoji-picker-btn" title="Emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c.8 1.2 2 2 3.5 2s2.7-.8 3.5-2" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/></svg></button>
+            </div>
+          </div>
+          <button type="button" class="composer-send-btn" id="composer-send-btn" title="Send" aria-label="Send message"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.2 12.8a.9.9 0 0 0 0-1.6L3.4 3.6a.7.7 0 0 0-1 .8L4.5 11l9 1-9 1-2.1 6.6a.7.7 0 0 0 1 .8Z"/></svg></button>
+        </div>
+        <div id="upload-progress" class="hidden"></div>
+        <div id="custom-keyboard" class="hidden"></div>
+        <div id="ck-cursor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- member panel -->
+  <div id="member-panel">
+    <div class="mp-phone-head"><button type="button" class="mpage-back" id="member-panel-back" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span>Members</span></div>
+    <div id="member-panel-body"></div>
+  </div>
+</div>
+
+
+<!-- ============ MODAL: start a thread from a message ============ -->
+<div class="modal-overlay hidden" id="thread-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Create Thread</h2><span class="x" data-close="thread-modal">✕</span></div>
+    <p class="desc" id="thread-modal-from"></p>
+    <div class="field"><label for="thread-name">Thread name</label><input type="text" id="thread-name" maxlength="80" placeholder="New thread" autocomplete="off"></div>
+    <div class="auth-error" id="thread-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="thread-modal">Cancel</button>
+      <button class="btn-accent-inline" id="thread-create-btn">Create Thread</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: create/join server chooser ============ -->
+<div class="modal-overlay hidden" id="server-choice-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Add a Server</h2><span class="x" data-close="server-choice-modal">✕</span></div>
+    <p class="desc">Your server is where you and your friends hang out. Make yours and start talking.</p>
+    <div class="big-choice-row">
+      <div class="big-choice" id="choice-create"><span class="em"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><div><div class="t">Create My Own</div><div class="d">Start a brand new server</div></div></div>
+      <div class="big-choice" id="choice-join"><span class="em"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5l5-5"/><path d="M11 5.5l.8-.8a3.6 3.6 0 0 1 5.1 5.1l-.9.9"/><path d="M13 18.5l-.8.8a3.6 3.6 0 0 1-5.1-5.1l.9-.9"/></svg></span><div><div class="t">Join a Server</div><div class="d">Enter an invite code</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: create server ============ -->
+<div class="modal-overlay hidden" id="create-server-modal">
+  <div class="modal-box">
+    <span class="back-link" data-back="server-choice-modal">← Back</span>
+    <div class="modal-header-row"><h2>Customize your server</h2><span class="x" data-close="create-server-modal">✕</span></div>
+    <p class="desc">Give your new server a personality with a name. You can change this later.</p>
+    <div class="auth-error" id="create-server-error"></div>
+    <div class="field"><label>Server Name</label><input type="text" id="new-server-name" maxlength="40" placeholder="My Awesome Server"></div>
+    <div class="field"><label>Invite Code</label><input type="text" id="new-server-code" maxlength="6" placeholder="4 to 6 letters or numbers" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="hint" style="margin-top:6px">Your invite link will be <b id="new-server-code-preview">npd/·····</b>. <b>You can't change this code later</b>, so choose carefully.</p></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="create-server-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-create-server">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: join server ============ -->
+<div class="modal-overlay hidden" id="join-server-modal">
+  <div class="modal-box">
+    <span class="back-link" data-back="server-choice-modal">← Back</span>
+    <div class="modal-header-row"><h2>Join a Server</h2><span class="x" data-close="join-server-modal">✕</span></div>
+    <p class="desc">Enter an invite code below to join an existing server.</p>
+    <div class="auth-error" id="join-server-error"></div>
+    <div class="field"><label>Invite Code</label><input type="text" id="join-server-code" placeholder="e.g. 8f3ka1 or an invite link"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="join-server-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-join-server">Join Server</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: confirm (Discord-style destructive-action dialog) ============ -->
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2 id="confirm-modal-title">Are you sure?</h2><span class="x" data-close="confirm-modal">✕</span></div>
+    <p class="desc" id="confirm-modal-body"></p>
+    <input type="text" id="confirm-modal-input" class="fld-input hidden" style="margin:-4px 0 16px;width:100%" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="confirm-modal">Cancel</button>
+      <button class="btn-danger" id="confirm-modal-confirm-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: server settings (owner) ============ -->
+<div class="modal-overlay hidden ds-settings-layer" id="server-settings-modal" role="dialog" aria-modal="true" aria-labelledby="server-settings-title">
+  <div class="ds-settings">
+    <nav class="ds-sidebar" aria-label="Server settings">
+      <div class="ds-sidebar-inner">
+        <div class="ds-nav-label" id="server-settings-title">Server</div>
+        <button type="button" class="ss-tab ds-nav-item on" data-ss-tab="overview">Overview</button>
+        <button type="button" class="ss-tab ds-nav-item" data-ss-tab="roles">Roles</button>
+        <div class="ds-nav-label ss-nav-mod">User Management</div>
+        <button type="button" class="ss-tab ds-nav-item" data-ss-tab="invites">Invites</button>
+        <button type="button" class="ss-tab ds-nav-item" data-ss-tab="bans">Bans</button>
+        <div class="ds-nav-sep"></div>
+        <button type="button" class="ds-nav-item ds-nav-danger" id="delete-server-btn">
+          <span>Delete Server</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+        </button>
+      </div>
+    </nav>
+    <main class="ds-content">
+      <div class="ds-content-inner">
+        <section class="ss-pane" id="ss-pane-overview">
+          <h2 class="ss-h2">Server Overview</h2>
+          <div class="ss-overview-top">
+            <div class="ss-icon-col">
+              <div class="ss-icon-preview" id="ss-icon-preview" aria-hidden="true">S</div>
+              <div class="ss-icon-btns" id="ss-icon-btns">
+                <button type="button" class="ds-btn ds-btn-brand ss-icon-btn" id="ss-icon-upload">Upload Image</button>
+                <button type="button" class="ss-icon-remove hidden" id="ss-icon-remove">Remove</button>
+              </div>
+              <input type="file" id="ss-icon-file" class="hidden" accept="image/png,image/jpeg,image/gif,image/webp">
+            </div>
+            <div class="field ss-grow">
+              <label for="edit-server-name">Server Name</label>
+              <input type="text" id="edit-server-name" maxlength="40">
+            </div>
+          </div>
+          <div class="ss-divider"></div>
+          <div class="field">
+            <label for="edit-server-desc">Server Description</label>
+            <textarea id="edit-server-desc" class="ss-textarea" maxlength="300" rows="3" placeholder="Tell people what your server is about. Shown on invites."></textarea>
+          </div>
+          <div class="ss-divider"></div>
+          <div class="ss-footer-actions">
+            <button type="button" class="ds-btn ds-btn-green" id="save-server-btn">Save Changes</button>
+          </div>
+        </section>
+        <section class="ss-pane hidden" id="ss-pane-invites">
+          <h2 class="ss-h2">Invites</h2>
+          <div class="field">
+            <label for="server-invite-display">Invite Link</label>
+            <div class="ss-invite-row">
+              <input type="text" id="server-invite-display" readonly>
+              <button type="button" class="ds-btn ds-btn-brand" id="copy-invite-btn">Copy</button>
+            </div>
+            <p class="ss-hint">Anyone with this link can join. Invite code: <strong id="server-invite-code"></strong></p>
+          </div>
+          <p class="ss-hint">Invite codes are permanent. They are chosen when a server is created and can't be changed or reset.</p>
+        </section>
+        <section class="ss-pane hidden" id="ss-pane-bans">
+          <div class="bans-head">
+            <div><h2 class="ss-h2">Server Ban List</h2>
+            <p class="ss-hint">Banned members can&apos;t rejoin, even with an invite link.</p></div>
+            <span class="bans-count none" id="bans-count">0 banned</span>
+          </div>
+          <label class="bans-search-wrap">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="bans-search" class="bans-search" placeholder="Search bans by username" aria-label="Search bans" autocomplete="off">
+          </label>
+          <div id="bans-list" class="bans-list"></div>
+        </section>
+        <section class="ss-pane hidden" id="ss-pane-roles">
+          <div id="roles-pane-root"></div>
+        </section>
+      </div>
+      <div class="ds-close-wrap">
+        <button type="button" class="ds-close" data-close="server-settings-modal" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <span class="ds-close-kbd">ESC</span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: manage member (roles / kick / ban) ============ -->
+<div class="modal-overlay hidden" id="manage-member-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2 id="manage-member-title">Manage Member</h2><span class="x" data-close="manage-member-modal">✕</span></div>
+    <div id="manage-member-body"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: channel settings (Discord-style) ============ -->
+<div class="modal-overlay hidden ds-settings-layer" id="channel-settings-modal" role="dialog" aria-modal="true" aria-labelledby="cs-title">
+  <div class="ds-settings">
+    <nav class="ds-sidebar" aria-label="Channel settings">
+      <div class="ds-sidebar-inner">
+        <div class="ds-nav-label" id="cs-title"># channel</div>
+        <button type="button" class="cs-tab ds-nav-item on" data-cs-tab="overview">Overview</button>
+        <button type="button" class="cs-tab ds-nav-item" data-cs-tab="permissions">Permissions</button>
+        <button type="button" class="cs-tab ds-nav-item" data-cs-tab="discord">Discord</button>
+        <div class="ds-nav-sep"></div>
+        <button type="button" class="ds-nav-item ds-nav-danger" id="cs-delete-btn"><span>Delete Channel</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+      </div>
+    </nav>
+    <main class="ds-content">
+      <div class="ds-content-inner">
+        <section class="cs-pane" id="cs-pane-overview">
+          <h2 class="ss-h2">Overview</h2>
+          <div class="field">
+            <label for="cs-name">Channel Name</label>
+            <input type="text" id="cs-name" maxlength="20">
+          </div>
+          <div class="field">
+            <label for="cs-topic">Channel Topic</label>
+            <textarea id="cs-topic" class="ss-textarea" maxlength="1024" rows="3" placeholder="Let everyone know how to use this channel!"></textarea>
+          </div>
+          <div class="ss-divider"></div>
+          <div class="field">
+            <label for="cs-slowmode">Slowmode <span class="cs-slow-val" id="cs-slowmode-val">Off</span></label>
+            <input type="range" id="cs-slowmode" class="cs-range" min="0" max="13" step="1" value="0">
+            <p class="ss-hint">Members will be restricted to sending one message per this interval, unless they have Bypass Slowmode, Manage Channels, or Manage Messages.</p>
+          </div>
+          <div class="ss-divider"></div>
+          <div class="ss-footer-actions"><button type="button" class="ds-btn ds-btn-green" id="cs-save-overview">Save Changes</button></div>
+        </section>
+        <section class="cs-pane hidden" id="cs-pane-permissions">
+          <h2 class="ss-h2">Channel Permissions</h2>
+          <div class="cs-private-row">
+            <div>
+              <div class="cs-private-title">Private Channel</div>
+              <p class="ss-hint">Only selected members and roles will be able to view this channel.</p>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" id="cs-private-toggle"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="ss-divider"></div>
+          <p class="ss-hint">Advanced permissions: pick a role, then set each permission to Deny (red), Inherit from server (grey), or Allow (green).</p>
+          <div class="cs-perm-layout">
+            <div class="cs-target-col">
+              <div class="cs-col-head">Roles</div>
+              <div id="cs-target-list" class="cs-target-list" role="listbox" aria-label="Roles with overrides"></div>
+              <select id="cs-add-target" class="fld-input cs-add-target" aria-label="Add a role override"></select>
+            </div>
+            <div class="cs-perm-col" id="cs-perm-list"></div>
+          </div>
+          <div class="ss-footer-actions"><button type="button" class="ds-btn ds-btn-green" id="cs-save-perms">Save Changes</button></div>
+        </section>
+        <section class="cs-pane hidden" id="cs-pane-discord">
+          <h2 class="ss-h2">Discord</h2>
+          <div id="cs-discord"></div>
+        </section>
+      </div>
+      <div class="ds-close-wrap">
+        <button type="button" class="ds-close" data-close="channel-settings-modal" aria-label="Close channel settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <span class="ds-close-kbd">ESC</span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: invite preview ============ -->
+<div class="modal-overlay hidden" id="invite-preview-modal" role="dialog" aria-modal="true" aria-labelledby="invite-name">
+  <div class="modal-box invite-preview">
+    <div class="invite-icon" id="invite-icon" aria-hidden="true"></div>
+    <p class="invite-sub">You&apos;ve been invited to join</p>
+    <h2 id="invite-name" class="invite-name"></h2>
+    <p id="invite-desc" class="invite-desc"></p>
+    <p id="invite-meta" class="invite-meta"></p>
+    <div class="auth-error" id="invite-error"></div>
+    <div class="modal-actions invite-actions">
+      <button class="btn-secondary" data-close="invite-preview-modal">No Thanks</button>
+      <button class="btn-accent-inline" id="invite-accept-btn">Accept Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: channel permissions ============ -->
+<div class="modal-overlay hidden" id="channel-perms-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2 id="channel-perms-title">Channel Permissions</h2><span class="x" data-close="channel-perms-modal">✕</span></div>
+    <div id="channel-perms-body"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: create channel ============ -->
+<div class="modal-overlay hidden" id="create-channel-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Create Text Channel</h2><span class="x" data-close="create-channel-modal">✕</span></div>
+    <div class="field"><label>Channel Name</label><input type="text" id="new-channel-name" maxlength="20" placeholder="new-channel"></div>
+    <div class="field"><label>Category</label><select id="new-channel-category" class="fld-input"></select></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="create-channel-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-create-channel">Create Channel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: create category ============ -->
+<div class="modal-overlay hidden" id="create-category-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Create Category</h2><span class="x" data-close="create-category-modal">✕</span></div>
+    <div class="field"><label>Category Name</label><input type="text" id="new-category-name" maxlength="24" placeholder="NEW CATEGORY"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="create-category-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-create-category">Create Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: start DM ============ -->
+<div class="modal-overlay hidden" id="new-dm-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Message a Friend</h2><span class="x" data-close="new-dm-modal">✕</span></div>
+    <p class="desc">Enter their exact username to start a conversation.</p>
+    <div class="auth-error" id="new-dm-error"></div>
+    <div class="field"><label>Username</label><input type="text" id="new-dm-username" placeholder="username"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="new-dm-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-new-dm">Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: new group DM ============ -->
+<div class="modal-overlay hidden" id="new-group-dm-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Create Group DM</h2><span class="x" data-close="new-group-dm-modal">✕</span></div>
+    <p class="desc">Pick friends to add to the group.</p>
+    <div id="group-dm-friend-picker" class="friend-picker"></div>
+    <div class="field"><label>Group Name (optional)</label><input type="text" id="new-group-dm-name" maxlength="40" placeholder="e.g. Racing Crew"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="new-group-dm-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-new-group-dm">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: add member to group DM ============ -->
+<div class="modal-overlay hidden" id="add-to-group-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Add Friend to Group</h2><span class="x" data-close="add-to-group-modal">✕</span></div>
+    <div id="add-to-group-friend-picker" class="friend-picker"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="add-to-group-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-add-to-group">Add to Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: gift NPD Premium ============ -->
+<div class="modal-overlay hidden" id="gift-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Gift NPD Premium</h2><span class="x" data-close="gift-modal">✕</span></div>
+    <p class="desc" id="gift-modal-desc">Send NPD Premium to this person.</p>
+    <div class="orb-balance-row"><span class="orb-chip"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg><span id="gift-modal-orb-amt">0</span> Orbs</span></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close="gift-modal">Cancel</button>
+      <button class="btn-accent-inline" id="confirm-gift-premium">Gift — 1400 Orbs</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: code reveal ============ -->
+<div class="modal-overlay hidden" id="code-reveal-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Here's your code</h2><span class="x" data-close="code-reveal-modal">✕</span></div>
+    <p class="desc" id="code-reveal-desc"></p>
+    <div class="code-display" id="code-reveal-text"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="code-reveal-copy">Copy Code</button>
+      <button class="btn-accent-inline" data-close="code-reveal-modal">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: profile view/edit ============ -->
+<div class="modal-overlay hidden" id="profile-modal">
+  <div class="modal-box profile-box" id="profile-modal-box">
+    <div class="profile-effect-overlay" id="profile-effect-overlay"></div>
+    <span class="x profile-close" data-close="profile-modal">✕</span>
+    <div class="profile-banner" id="profile-banner"></div>
+    <div class="profile-main">
+      <div class="profile-avatar-wrap">
+        <div class="avatar profile-avatar" id="profile-avatar" style="width:80px;height:80px;font-size:32px;"></div>
+        <button class="avatar-edit-btn hidden" id="change-avatar-btn" title="Change Avatar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+        <input type="file" id="avatar-file-input" class="hidden" accept="image/*">
+      </div>
+      <div class="profile-body">
+        <div class="profile-name-block" id="profile-name-block">
+          <div class="profile-nameplate-bg" id="profile-nameplate-bg"></div>
+          <div class="profile-name-row">
+            <span class="profile-username" id="profile-username"></span>
+            <span id="profile-tags"></span>
+          </div>
+          <div class="profile-handle hidden" id="profile-handle"></div>
+          <div class="profile-pronouns" id="profile-pronouns"></div>
+        </div>
+        <div class="profile-section hidden" id="profile-activity"></div>
+        <div class="profile-section" id="profile-bio-view"></div>
+        <div class="profile-section-label">Member Since</div>
+        <div class="profile-section" id="profile-member-since"></div>
+        <div id="profile-mutual" class="profile-section"></div>
+
+        <div id="profile-edit-fields" class="hidden">
+          <span class="remove-avatar-link hidden" id="remove-avatar-link">Remove custom avatar</span>
+          <div class="field"><label>Display Name</label><input type="text" id="edit-display-name" maxlength="32" placeholder="How your name appears to others"></div>
+          <div class="field"><label>Pronouns</label><input type="text" id="edit-pronouns" maxlength="20" placeholder="e.g. they/them"></div>
+          <div class="field"><label>Bio</label><textarea id="edit-bio" maxlength="190" rows="3" placeholder="Tell people about yourself"></textarea></div>
+          <div class="field">
+            <label>Banner Color</label>
+            <div class="color-swatches" id="banner-color-swatches"></div>
+          </div>
+          <div class="field">
+            <label id="banner-gradient-label">Gradient Banners</label>
+            <div class="color-swatches" id="banner-gradient-swatches"></div>
+            <div class="grad-mix hidden" id="banner-mix"><input type="color" id="banner-mix-1" value="#5865f2" aria-label="First banner color"><input type="color" id="banner-mix-2" value="#eb459e" aria-label="Second banner color"><span class="grad-mix-note">Mix your own</span></div>
+          </div>
+          <div class="field">
+            <label id="name-grad-label">Name Gradient</label>
+            <div class="grad-mix" id="name-grad-row"><input type="color" id="name-grad-1" value="#5865f2" aria-label="First name color"><input type="color" id="name-grad-2" value="#eb459e" aria-label="Second name color"><span class="grad-name-preview" id="name-grad-preview">Your Name</span><button type="button" class="btn-secondary slim" id="name-grad-toggle">Use It</button></div>
+          </div>
+          <button class="btn-accent-inline" id="save-profile-btn">Save Profile</button>
+        </div>
+
+        <div id="profile-actions"></div>
+
+        <div id="profile-note-wrap" class="hidden">
+          <div class="profile-section-label">Note</div>
+          <textarea id="profile-note-input" class="profile-note-input" maxlength="256" placeholder="Click to add a note (only visible to you)"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: get the desktop app ============ -->
+<div class="modal-overlay hidden" id="app-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="app-prompt-title">
+  <div class="modal-box app-prompt-box">
+    <div class="modal-header-row"><h2 id="app-prompt-title">Get the NPD app</h2><span class="x" data-close="app-prompt-modal">✕</span></div>
+    <p class="desc">NPD works best as an app on your computer.</p>
+    <ul class="app-perks">
+      <li>Your friends see the game you are playing and your Spotify song</li>
+      <li>Stays in your tray so you do not miss messages</li>
+      <li>Can start with your computer</li>
+    </ul>
+    <div id="app-prompt-dl" class="app-dl"></div>
+    <div class="modal-actions app-prompt-actions">
+      <button class="btn-secondary" id="app-prompt-never">Don't remind me again</button>
+      <button class="btn-secondary" id="app-prompt-later">Not now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: user settings ============ -->
+<div class="modal-overlay hidden" id="settings-modal">
+
+  <div class="modal-box">
+    <div id="settings-nav">
+      <div class="nav-label">User Settings</div>
+      <div class="nav-item active" data-pane="pane-account">My Account</div>
+      <div class="nav-item" data-pane="pane-activity">Activity Status</div>
+      <div class="nav-item" data-pane="pane-keyboard">Keyboard</div>
+      <div class="nav-item" data-pane="pane-premium">NPD Premium</div>
+      <div class="nav-item" data-pane="pane-quests">Racing Quests</div>
+      <div class="nav-item" data-pane="pane-themes">Themes</div>
+      <div class="nav-item" data-pane="pane-accessibility">Accessibility</div>
+      <div class="nav-item" data-pane="pane-notifications">Notifications</div>
+      <div class="nav-label">App</div>
+      <div class="nav-item" data-pane="pane-app">NPD App</div>
+      <div class="nav-item" data-pane="pane-updates">Update Log</div>
+      <div class="nav-label">&nbsp;</div>
+      <div class="nav-item hidden" id="open-admin-panel">Admin Panel</div>
+      <div class="nav-item hidden" id="open-coowner-panel">Co-Owner Panel</div>
+      <div class="nav-item hidden" id="open-owner-panel">Owner Panel</div>
+      <div class="nav-item" id="logout-btn" style="color:#f87171;">Log Out</div>
+    </div>
+    <div id="settings-content">
+      <span class="x settings-close" data-close="settings-modal">✕</span>
+
+      <div class="settings-pane" id="pane-account">
+        <h2>My Account</h2>
+        <div class="field"><label>Username</label><input type="text" id="set-username" maxlength="24" disabled title="Usernames can't be changed — set a Display Name from your profile instead.">
+        <div class="account-signin" id="account-signin"></div></div>
+        <div class="field">
+          <label>Avatar Color</label>
+          <div class="color-swatches" id="avatar-color-swatches"></div>
+        </div>
+        <button class="btn-accent-inline" id="save-account-btn">Save Changes</button>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-activity">
+        <h2>Activity Status</h2>
+        <p class="desc">NPD shows your friends what you're doing, all on its own. It appears on your profile, in the Friends list and on the phone Home screen, and it goes away when you leave NPD.</p>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Do Not Disturb</div>
+            <div class="setting-row-desc">No NPD notifications at all: no ping sound, no pop-ups, and nothing on your phone or computer. Everyone sees a red Do Not Disturb icon on your picture.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="dnd-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Share my activity</div>
+            <div class="setting-row-desc">Turn this off and nothing about what you're doing is shown to anyone.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="rpc-share-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row hidden" id="rpc-detect-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Show games and Spotify</div>
+            <div class="setting-row-desc">The NPD app notices the game you are playing and the Spotify song you are listening to on this computer. Turn this off to stop sharing them.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="rpc-detect-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="rpc-desktop-note hidden" id="rpc-desktop-note">Games on your computer and your Spotify song are shared automatically when you use the NPD app for computers.</div>
+        <div class="field"><label>Showing right now</label><div id="rpc-preview" class="rpc-preview"></div></div>
+        <div class="rpc-auto-list">
+          <div class="rpc-form-title">What gets shared</div>
+          <ul>
+            <li><b>Racing</b> on the Live or Solo NPD Race Track</li>
+            <li><b>Watching</b> or <b>Listening to</b> a video or audio file you're playing in a chat</li>
+            <li><b>Listening to</b> the Shop song you have equipped</li>
+            <li>In the NPD computer app: the <b>game</b> you're playing and your <b>Spotify</b> song</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-keyboard">
+        <h2>Keyboard</h2>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Autocorrect</div>
+            <div class="setting-row-desc">Fixes common typos as you type in chat, on desktop and the on-screen keyboard on mobile.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="autocorrect-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <p class="desc" style="margin:6px 0 0;font-size:12px;">Checks common English words only — it won't touch usernames, mentions, custom emoji shortcodes, or race typing inputs.</p>
+
+        <div class="setting-row" style="margin-top:20px;">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Custom Keyboard</div>
+            <div class="setting-row-desc">Use NPD's own on-screen keyboard on mobile instead of your device's keyboard.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="custom-keyboard-toggle"><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="setting-row" style="margin-top:20px;">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Quick Buttons</div>
+            <div class="setting-row-desc">Show the Quick Text / Copy / Paste row above the custom keyboard.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="quick-buttons-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row ov-setting" style="margin-top:20px;">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Overlay shortcut</div>
+            <div class="setting-row-desc">Opens your friends, DMs and servers on top of anything, including races. Drag a window's top bar to move it and drag its edges to resize it. Click the shortcut, then press the new keys. Default is Shift + ` (the ~ key).</div>
+          </div>
+          <div class="ov-bind-ctl">
+            <button type="button" class="ov-bind-btn" id="overlay-bind-btn" title="Change shortcut"></button>
+            <button type="button" class="btn-secondary slim hidden" id="overlay-bind-reset">Reset</button>
+          </div>
+        </div>
+        <p class="desc" style="margin:6px 0 0;font-size:12px;">All keyboard settings are synced to your account.</p>
+
+        <div class="field" style="margin-top:24px;">
+          <label>Quick Text</label>
+          <p class="desc" style="margin:0 0 10px;font-size:12px;">Tapping one of these on the keyboard's Quick Text button sends it immediately — no need to type or press send.</p>
+          <div id="quicktext-list"></div>
+          <button class="btn-secondary slim" id="quicktext-add-btn" style="margin-top:8px;">+ Add quick text</button>
+        </div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-premium">
+        <h2>NPD Premium</h2>
+        <div class="orb-balance-row">
+          <span class="orb-chip"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg><span id="orb-balance-amt">0</span> Orbs</span>
+          <span class="orb-hint">Earn more from Racing &amp; Quests</span>
+        </div>
+        <div class="premium-hero">
+          <h2>NPD Premium</h2>
+          <p>Unlock themes, a gradient name, bigger uploads, +25% bonus race Orbs, and more. Renews monthly with Orbs.</p>
+        </div>
+        <div class="perk-list">
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="7" cy="12" r="3" fill="#5865f2"/><circle cx="12" cy="7" r="3" fill="#eb459e"/><circle cx="17" cy="12" r="3" fill="#f0b232"/></svg></span><div><div class="t">Exclusive Themes</div><div class="d">Unlocks the Ash and Onyx appearance themes</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.5l2.95 6.4 7 .63-5.3 4.66 1.6 6.86-6.25-3.78-6.25 3.78 1.6-6.86-5.3-4.66 7-.63z"/></svg></span><div><div class="t">Premium Badge</div><div class="d">A star badge next to your name everywhere</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12.5l7-7a3.5 3.5 0 0 1 5 5l-8.5 8.5a5 5 0 0 1-7-7l7.5-7.5"/></svg></span><div><div class="t">Bigger Uploads</div><div class="d">10 MB files and 100 MB videos (5 MB and 50 MB without Premium)</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20"><defs><linearGradient id="pkName" x1="0" x2="1"><stop offset="0" stop-color="#5865f2"/><stop offset="1" stop-color="#eb459e"/></linearGradient></defs><path d="M4 20L10.5 4h3L20 20h-3.2l-1.5-4H8.7l-1.5 4zm5.8-7h4.4L12 7.3z" fill="url(#pkName)"/></svg></span><div><div class="t">Gradient Name</div><div class="d">Your name in two colors you pick, on messages, race lanes, and member lists</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20"><defs><linearGradient id="pkBan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43e97b"/><stop offset="1" stop-color="#4facfe"/></linearGradient></defs><rect x="3" y="6" width="18" height="12" rx="3" fill="url(#pkBan)"/></svg></span><div><div class="t">Custom Gradient Banners</div><div class="d">Mix your own two-color profile banner</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><div class="t">Longer Messages</div><div class="d">Up to 4,000 characters per message (1,000 without Premium)</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2l1.8 5.6L19.5 9l-5.7 1.5L12 16l-1.8-5.5L4.5 9l5.7-1.4zM18.5 14l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg></span><div><div class="t">+25% Race Orb Payouts</div><div class="d">Earn 1.25× Orbs on every Live and Solo race finish</div></div></div>
+          <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><div><div class="t">Top-Speed Messages</div><div class="d">Your messages load and send instantly</div></div></div>
+        </div>
+        <div id="premium-action-area"></div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-quests">
+        <h2>Racing Quests</h2>
+        <p class="desc">Complete typing races to earn Orbs, then spend them on NPD Shop items and NPD Premium.</p>
+        <div class="fg-mount"></div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-themes">
+        <h2>Themes</h2>
+        <p class="desc">NPD Premium unlocks the Ash and Onyx themes.</p>
+        <div class="theme-grid" id="theme-grid"></div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-accessibility">
+        <h2>Accessibility</h2>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Reduce screen shake</div>
+            <div class="setting-row-desc">Stops the screen from shaking or tilting, like the music in the Shop does.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="a11y-no-shake-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Epilepsy mode</div>
+            <div class="setting-row-desc">Turns off flashing lights and flickering effects everywhere, including the Equinox bars and the Account Terminated screen. It also turns on Reduce screen shake.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="a11y-epilepsy-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Liquid glass</div>
+            <div class="setting-row-desc">Menus, pop-ups, pickers and floating bars become frosted, see-through glass, like Apple's liquid glass.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="a11y-glass-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="glass-tune" id="glass-tune-box">
+          <label class="gt-row"><span class="gt-name">Opacity</span><input type="range" id="a11y-glass-opacity" min="10" max="100" step="1" value="34"><span class="gt-val" id="a11y-glass-opacity-val">34%</span></label>
+          <label class="gt-row"><span class="gt-name">Strength</span><input type="range" id="a11y-glass-strength" min="0" max="100" step="1" value="60"><span class="gt-val" id="a11y-glass-strength-val">60%</span></label>
+          <label class="gt-row"><span class="gt-name">Menu background blur</span><input type="range" id="a11y-menu-blur" min="0" max="30" step="1" value="8"><span class="gt-val" id="a11y-menu-blur-val">8px</span></label>
+          <button type="button" class="btn-secondary slim" id="a11y-glass-reset">Reset to default</button>
+        </div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-notifications">
+        <h2>Notifications</h2>
+        <p class="desc">Like Discord, NPD tells you about direct messages, group messages and messages that mention you (or @everyone) while you aren't looking at it. Muted chats stay quiet.</p>
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Show notifications</div>
+            <div class="setting-row-desc" id="notify-where"></div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="notify-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="notify-permission hidden" id="notify-permission">
+          <span id="notify-permission-text"></span>
+          <button type="button" class="btn-accent-inline slim" id="notify-allow-btn">Allow notifications</button>
+        </div>
+        <div class="setting-row hidden" id="notify-game-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Show them over games</div>
+            <div class="setting-row-desc">While you play, a notification pops up in the corner of your screen. Press your overlay shortcut to answer it.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="notify-game-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="notify-app-note hidden" id="notify-app-note">Restart the NPD app to update it and get notifications over games.</div>
+        <button type="button" class="btn-secondary slim" id="notify-test-btn">Send a test notification</button>
+        <div class="notify-test-hint" id="notify-test-hint"></div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-app">
+        <h2>NPD App</h2>
+        <div id="app-pane-body"></div>
+      </div>
+
+      <div class="settings-pane hidden" id="pane-updates">
+        <h2>Update Log</h2>
+        <div id="updates-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: premium quick access ============ -->
+<div class="modal-overlay hidden" id="premium-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2></h2><span class="x" data-close="premium-modal">✕</span></div>
+    <div class="orb-balance-row">
+      <span class="orb-chip"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg><span id="premium-modal-orb-amt">0</span> Orbs</span>
+    </div>
+    <div class="premium-hero">
+      <h2>NPD Premium</h2>
+      <p>Unlock themes, a gradient name, bigger uploads, +25% race Orbs, and more. Renews monthly with Orbs.</p>
+    </div>
+    <div class="perk-list">
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="7" cy="12" r="3" fill="#5865f2"/><circle cx="12" cy="7" r="3" fill="#eb459e"/><circle cx="17" cy="12" r="3" fill="#f0b232"/></svg></span><div><div class="t">Exclusive Themes</div><div class="d">Unlocks the Ash and Onyx appearance themes</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.5l2.95 6.4 7 .63-5.3 4.66 1.6 6.86-6.25-3.78-6.25 3.78 1.6-6.86-5.3-4.66 7-.63z"/></svg></span><div><div class="t">Premium Badge</div><div class="d">A star badge next to your name everywhere</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12.5l7-7a3.5 3.5 0 0 1 5 5l-8.5 8.5a5 5 0 0 1-7-7l7.5-7.5"/></svg></span><div><div class="t">Bigger Uploads</div><div class="d">10 MB files and 100 MB videos (5 MB and 50 MB without Premium)</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20"><defs><linearGradient id="pkName" x1="0" x2="1"><stop offset="0" stop-color="#5865f2"/><stop offset="1" stop-color="#eb459e"/></linearGradient></defs><path d="M4 20L10.5 4h3L20 20h-3.2l-1.5-4H8.7l-1.5 4zm5.8-7h4.4L12 7.3z" fill="url(#pkName)"/></svg></span><div><div class="t">Gradient Name</div><div class="d">Your name in two colors you pick, on messages, race lanes, and member lists</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20"><defs><linearGradient id="pkBan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43e97b"/><stop offset="1" stop-color="#4facfe"/></linearGradient></defs><rect x="3" y="6" width="18" height="12" rx="3" fill="url(#pkBan)"/></svg></span><div><div class="t">Custom Gradient Banners</div><div class="d">Mix your own two-color profile banner</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><div class="t">Longer Messages</div><div class="d">Up to 4,000 characters per message (1,000 without Premium)</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2l1.8 5.6L19.5 9l-5.7 1.5L12 16l-1.8-5.5L4.5 9l5.7-1.4zM18.5 14l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg></span><div><div class="t">+25% Race Orb Payouts</div><div class="d">Earn 1.25× Orbs on every Live and Solo race finish</div></div></div>
+      <div class="perk"><span class="icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><div><div class="t">Top-Speed Messages</div><div class="d">Your messages load and send instantly</div></div></div>
+    </div>
+    <div id="premium-modal-action-area"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: Admin / Co-Owner / Owner Panel (Role-Based, NO Passwords!) ============ -->
+<div class="modal-overlay hidden" id="admin-panel-modal">
+  <div class="modal-box wide admin-box">
+    <div class="modal-header-row">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 id="admin-panel-title">Admin Panel</h2>
+        <span class="staff-mode-pill" id="admin-panel-role-badge">Role-Verified • No Password</span>
+      </div>
+      <div class="admin-panel-switcher" id="admin-panel-switcher">
+        <button type="button" class="btn-secondary slim" id="switch-to-admin-panel">Admin Panel</button>
+        <button type="button" class="btn-secondary slim hidden" id="switch-to-coowner-panel">Co-Owner Panel</button>
+        <button type="button" class="btn-secondary slim hidden" id="switch-to-owner-panel">Owner Panel</button>
+      </div>
+      <span class="x" data-close="admin-panel-modal">✕</span>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab on" data-admin-tab="players" id="admin-tab-players">Players</button>
+      <button class="admin-tab" data-admin-tab="shopmanage">Shop Editor</button>
+      <button class="admin-tab" data-admin-tab="codes">Codes</button>
+      <button class="admin-tab" data-admin-tab="emojis">Emojis</button>
+      <button class="admin-tab" data-admin-tab="stickers">Stickers</button>
+      <button class="admin-tab" data-admin-tab="filter">Filter</button>
+      <button class="admin-tab" data-admin-tab="conversations">Conversations</button>
+      <button class="admin-tab hidden" data-admin-tab="quests">Quests</button>
+      <button class="admin-tab hidden" data-admin-tab="systemhub" id="admin-tab-systemhub">System Hub</button>
+      <button class="admin-tab hidden" data-admin-tab="devices" id="admin-tab-devices">Devices</button>
+      <button class="admin-tab hidden" data-admin-tab="ips" id="admin-tab-ips">IP Bans</button>
+      <button class="admin-tab hidden" data-admin-tab="purgeperms" id="admin-tab-purgeperms">Purge Perms</button>
+    </div>
+
+    <div class="admin-pane" id="admin-pane-players">
+      <div class="admin-layout">
+        <div class="admin-left">
+          <input class="fld-input" id="admin-search" placeholder="Search users" autocomplete="off">
+          <div class="admin-user-list" id="admin-user-list"></div>
+        </div>
+        <div class="admin-right" id="admin-actions"><div class="empty">Select a user to manage.</div></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-emojis">
+      <div class="admin-block">
+        <div class="ab-title">Publish a Custom Emoji</div>
+        <div class="ab-row" style="align-items:flex-end;">
+          <div style="flex:1;"><label class="fld-label">Image</label><input class="fld-input" id="admin-emoji-file" type="file" accept="image/*"></div>
+          <div style="width:180px;"><label class="fld-label">Shortcode</label><input class="fld-input" id="admin-emoji-name" placeholder="e.g. party_blob" maxlength="24"></div>
+          <button class="btn-accent-inline slim" id="admin-emoji-publish">Publish</button>
+        </div>
+        <small class="hint">Used in chat as :shortcode:. Images are auto-resized to 48×48.</small>
+      </div>
+      <div class="admin-block">
+        <div class="ab-title">Published Emojis</div>
+        <div class="admin-emoji-list" id="admin-emoji-list"></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-shopmanage">
+      <div class="shop-mgr-tabs">
+        <button type="button" class="shop-mgr-tab on" data-shop-section="decorations">Decorations</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="masks">Avatar Masks</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="themes">Themes</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="banners">Banners</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="nameplates">Nameplates</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="effects">Profile Effects</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="frames">Profile Frames</button>
+        <button type="button" class="shop-mgr-tab" data-shop-section="music">Music</button>
+      </div>
+      <small class="hint shop-mgr-hint">Click any item below (published or built-in) to edit its price, name, description, or featured status.</small>
+      <div class="admin-block shop-mgr-section" data-shop-section="decorations masks">
+        <div class="ab-title" id="deco-creator-title">Create an Avatar Decoration</div>
+        <div class="ab-row" style="margin-bottom:14px;">
+          <button type="button" class="btn-secondary slim deco-mode-btn on" data-deco-mode="draw">✏️ Draw</button>
+          <button type="button" class="btn-secondary slim deco-mode-btn" data-deco-mode="emoji">😀 Use an Emoji</button>
+        </div>
+        <div class="deco-editor" id="deco-mode-draw">
+          <div class="deco-canvas-wrap">
+            <canvas id="deco-draw-canvas" width="200" height="200"></canvas>
+            <div class="deco-guide-circle"></div>
+          </div>
+          <div class="deco-editor-tools">
+            <div class="deco-preview-block">
+              <label class="fld-label">Preview</label>
+              <div id="deco-preview-avatar" class="deco-preview-avatar"></div>
+            </div>
+            <div class="field"><label class="fld-label">Brush Color</label><input type="color" id="deco-color-input" value="#181818" class="deco-color-input"></div>
+            <div class="field">
+              <label class="fld-label">Brush Size</label>
+              <div class="ab-row">
+                <button type="button" class="btn-secondary slim deco-size-btn" data-size="3">S</button>
+                <button type="button" class="btn-secondary slim deco-size-btn on" data-size="7">M</button>
+                <button type="button" class="btn-secondary slim deco-size-btn" data-size="14">L</button>
+              </div>
+            </div>
+            <div class="ab-row">
+              <button type="button" class="btn-secondary slim" id="deco-eraser-btn">Eraser</button>
+              <button type="button" class="btn-secondary slim" id="deco-clear-btn">Clear</button>
+            </div>
+          </div>
+        </div>
+        <small class="hint" id="deco-draw-hint">The dashed circle shows roughly where the avatar itself sits — draw around it (ears, hats, effects) rather than over it.</small>
+        <div class="hidden" id="deco-mode-emoji"></div>
+        <label class="deco-mask-opt"><input type="checkbox" id="deco-mask-input"> <span><b>Full avatar mask</b> — covers the whole avatar and is sold in the shop's Avatar Masks section instead of Avatar Decorations</span></label>
+        <div class="field" style="margin-top:14px;"><label class="fld-label">Name</label><input type="text" id="deco-name-input" maxlength="24" placeholder="e.g. Wizard Hat" class="fld-input"></div>
+        <div class="field"><label class="fld-label">Description</label><input type="text" id="deco-desc-input" maxlength="80" placeholder="e.g. A pointy hat for the truly magical" class="fld-input"></div>
+        <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="deco-price-input" min="0" placeholder="800" class="fld-input"></div>
+        <button class="btn-accent-inline" id="deco-publish-btn">Publish to Shop</button>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="masks">
+        <div class="ab-title">Published Avatar Masks</div>
+        <div class="admin-emoji-list" id="admin-mask-list"></div>
+      </div>
+      <div class="admin-block shop-mgr-section" data-shop-section="decorations">
+        <div class="ab-title">Published Decorations</div>
+        <div class="admin-emoji-list" id="admin-decoration-list"></div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="themes">
+        <div class="ab-title">Create a Theme (Gradient)</div>
+        <div class="theme-editor">
+          <div class="theme-preview-swatch" id="theme-preview-swatch"></div>
+          <div class="theme-editor-tools">
+            <div class="ab-row">
+              <div class="field"><label class="fld-label">Color 1</label><input type="color" id="theme-color1-input" value="#0a001a" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Color 2</label><input type="color" id="theme-color2-input" value="#160a32" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Color 3</label><input type="color" id="theme-color3-input" value="#271152" class="deco-color-input"></div>
+            </div>
+            <div class="ab-row">
+              <div class="field"><label class="fld-label">Accent</label><input type="color" id="theme-accent-input" value="#b06bff" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Accent 2</label><input type="color" id="theme-accent2-input" value="#e3c9ff" class="deco-color-input"></div>
+            </div>
+            <button type="button" class="btn-secondary slim" id="theme-randomize-btn">🎲 Randomize Colors</button>
+            <div class="field"><label class="fld-label">Name</label><input type="text" id="theme-name-input" maxlength="24" placeholder="e.g. Midnight Rose" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Description</label><input type="text" id="theme-desc-input" maxlength="80" placeholder="e.g. Deep rose pink on a midnight sky" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="theme-price-input" min="0" placeholder="300" class="fld-input"></div>
+            <button class="btn-accent-inline" id="theme-publish-btn">Publish to Shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="themes">
+        <div class="ab-title">Published Themes</div>
+        <div class="admin-emoji-list" id="admin-theme-list"></div>
+      </div>
+
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="nameplates">
+        <div class="ab-title">Create a Nameplate</div>
+        <div class="theme-editor">
+          <div class="deco-preview-block">
+            <label class="fld-label">Preview</label>
+            <div id="nameplate-preview-swatch" class="sic-nameplate-preview"><span>Name</span></div>
+          </div>
+          <div class="theme-editor-tools">
+            <div class="ab-row">
+              <div class="field"><label class="fld-label">Color 1</label><input type="color" id="nameplate-color1-input" value="#2b1418" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Color 2</label><input type="color" id="nameplate-color2-input" value="#1a0d10" class="deco-color-input"></div>
+            </div>
+            <div class="setting-row compact"><div class="setting-row-text"><div class="setting-row-title">Animated (shimmer sweep)</div></div><label class="toggle-switch"><input type="checkbox" id="nameplate-animated-input"><span class="toggle-slider"></span></label></div>
+            <div class="field"><label class="fld-label">Name</label><input type="text" id="nameplate-name-input" maxlength="24" placeholder="e.g. Rosewood" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Description</label><input type="text" id="nameplate-desc-input" maxlength="80" placeholder="e.g. Warm rosewood grain" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="nameplate-price-input" min="0" placeholder="600" class="fld-input"></div>
+            <button class="btn-accent-inline" id="nameplate-publish-btn">Publish to Shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="nameplates">
+        <div class="ab-title">Published Nameplates</div>
+        <div class="admin-emoji-list" id="admin-nameplate-list"></div>
+      </div>
+
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="effects">
+        <div class="ab-title">Create a Profile Effect</div>
+        <div class="theme-editor">
+          <div class="deco-preview-block">
+            <label class="fld-label">Preview</label>
+            <div id="effect-preview-swatch" class="sic-effect-preview effect-style-falling"></div>
+          </div>
+          <div class="theme-editor-tools">
+            <div class="field"><label class="fld-label">Particle Color</label><input type="color" id="effect-color-input" value="#ffe066" class="deco-color-input"></div>
+            <div class="field">
+              <label class="fld-label">Movement</label>
+              <div class="ab-row">
+                <button type="button" class="btn-secondary slim effect-style-btn on" data-style="falling">Falling</button>
+                <button type="button" class="btn-secondary slim effect-style-btn" data-style="floating">Floating</button>
+                <button type="button" class="btn-secondary slim effect-style-btn" data-style="twinkling">Twinkling</button>
+                <button type="button" class="btn-secondary slim effect-style-btn" data-style="rising">Rising</button>
+              </div>
+            </div>
+            <div class="field"><label class="fld-label">Name</label><input type="text" id="effect-name-input" maxlength="24" placeholder="e.g. Golden Dust" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Description</label><input type="text" id="effect-desc-input" maxlength="80" placeholder="e.g. Shimmering gold particles drift by" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="effect-price-input" min="0" placeholder="750" class="fld-input"></div>
+            <button class="btn-accent-inline" id="effect-publish-btn">Publish to Shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="effects">
+        <div class="ab-title">Published Profile Effects</div>
+        <div class="admin-emoji-list" id="admin-effect-list"></div>
+      </div>
+
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="frames">
+        <div class="ab-title">Create a Profile Frame</div>
+        <div class="theme-editor">
+          <div class="deco-preview-block">
+            <label class="fld-label">Preview</label>
+            <div id="frame-preview-swatch" class="sic-frame-preview"></div>
+          </div>
+          <div class="theme-editor-tools">
+            <div class="field"><label class="fld-label">Border Color</label><input type="color" id="frame-color-input" value="#f0b232" class="deco-color-input"></div>
+            <div class="setting-row compact"><div class="setting-row-text"><div class="setting-row-title">Glowing (pulsing border)</div></div><label class="toggle-switch"><input type="checkbox" id="frame-glow-input"><span class="toggle-slider"></span></label></div>
+            <div class="field"><label class="fld-label">Name</label><input type="text" id="frame-name-input" maxlength="24" placeholder="e.g. Sapphire Frame" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Description</label><input type="text" id="frame-desc-input" maxlength="80" placeholder="e.g. A cool blue ring around your avatar" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="frame-price-input" min="0" placeholder="800" class="fld-input"></div>
+            <button class="btn-accent-inline" id="frame-publish-btn">Publish to Shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="frames">
+        <div class="ab-title">Published Profile Frames</div>
+        <div class="admin-emoji-list" id="admin-frame-list"></div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="music">
+        <div class="ab-title">Add a Song</div>
+        <div class="setting-desc" style="margin-bottom:10px;color:var(--text-muted);font-size:13px">Upload an audio file, give it a name and a price, and add a banner if you like. You can also add up to 3 animations (videos). They play one after another the first time someone buys the song, and can be replayed from the Shop. Songs you add are not featured unless you tick the box.</div>
+        <div class="music-creator">
+          <div class="field"><label class="fld-label">Name</label><input type="text" id="music-name-input" maxlength="40" placeholder="e.g. Midnight Drive" class="fld-input"></div>
+          <div class="field"><label class="fld-label">Description (optional)</label><input type="text" id="music-desc-input" maxlength="120" placeholder="Plays on a loop for as long as you are signed in." class="fld-input"></div>
+          <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="music-price-input" min="0" placeholder="250000" class="fld-input"></div>
+          <div class="field"><label class="fld-label">Song (audio file, up to 100 MB)</label><input type="file" id="music-audio-input" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac" class="music-file-input"></div>
+          <div class="field"><label class="fld-label">Banner image (optional, shown behind the name on its Shop card)</label><input type="file" id="music-banner-input" accept="image/*" class="music-file-input"></div>
+          <div class="field"><label class="fld-label">Card preview</label><div id="music-card-preview" class="music-card-preview"></div></div>
+          <div class="field">
+            <label class="fld-label">Animations (optional) <span id="music-anim-count" class="music-anim-count">0/3</span></label>
+            <div id="music-anim-rows"></div>
+            <button type="button" class="btn-secondary slim" id="music-anim-add">+ Add animation</button>
+          </div>
+          <div class="setting-row compact"><div class="setting-row-text"><div class="setting-row-title">Show on the Featured tab</div></div><label class="toggle-switch"><input type="checkbox" id="music-featured-input"><span class="toggle-slider"></span></label></div>
+          <button class="btn-accent-inline" id="music-publish-btn">Publish to Shop</button>
+          <div id="music-publish-status" class="music-publish-status"></div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="music">
+        <div class="ab-title">Music</div>
+        <div class="setting-desc" style="margin-bottom:8px;color:var(--text-muted);font-size:13px">Click a song to change its price or whether it is featured. Songs added here can also be renamed, and they can be disabled (hidden from the Shop) but not deleted. The built-in songs keep their audio and cutscenes, but their name, description, price, featured status and banner can be changed.</div>
+        <div class="admin-emoji-list" id="admin-music-list"></div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="banners">
+        <div class="ab-title">Create a Gradient Banner</div>
+        <div class="banner-editor">
+          <div class="banner-editor-preview">
+            <label class="fld-label">Preview</label>
+            <div class="banner-mock">
+              <div class="banner-mock-banner" id="banner-preview-swatch"></div>
+              <div class="banner-mock-avatar" aria-hidden="true"></div>
+              <div class="banner-mock-lines"><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="theme-editor-tools">
+            <div class="ab-row">
+              <div class="field"><label class="fld-label">Color 1</label><input type="color" id="banner-color1-input" value="#ff0033" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Color 2</label><input type="color" id="banner-color2-input" value="#7a0019" class="deco-color-input"></div>
+              <div class="field"><label class="fld-label">Color 3</label><input type="color" id="banner-color3-input" value="#1a0006" class="deco-color-input"></div>
+            </div>
+            <div class="field">
+              <label class="fld-label" for="banner-angle-input">Angle — <span id="banner-angle-label">135°</span></label>
+              <input type="range" id="banner-angle-input" min="0" max="360" step="5" value="135" class="banner-range">
+            </div>
+            <div class="setting-row compact"><div class="setting-row-text"><div class="setting-row-title">Animated (flowing gradient)</div></div><label class="toggle-switch"><input type="checkbox" id="banner-animated-input"><span class="toggle-slider"></span></label></div>
+            <button type="button" class="btn-secondary slim" id="banner-randomize-btn">Randomize Colors</button>
+            <div class="field"><label class="fld-label">Name</label><input type="text" id="banner-name-input" maxlength="24" placeholder="e.g. Crimson Dusk" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Description</label><input type="text" id="banner-desc-input" maxlength="80" placeholder="e.g. A deep red fade into midnight" class="fld-input"></div>
+            <div class="field"><label class="fld-label">Price (Orbs)</label><input type="number" id="banner-price-input" min="0" placeholder="400" class="fld-input"></div>
+            <button class="btn-accent-inline" id="banner-publish-btn">Publish to Shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-block shop-mgr-section hidden" data-shop-section="banners">
+        <div class="ab-title">Published Banners</div>
+        <div class="admin-emoji-list" id="admin-banner-list"></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-stickers">
+      <div class="admin-block">
+        <div class="ab-title">Publish a Sticker</div>
+        <div class="ab-row" style="align-items:flex-end;">
+          <div style="flex:1;"><label class="fld-label">Image</label><input class="fld-input" id="admin-sticker-file" type="file" accept="image/*"></div>
+          <div style="width:180px;"><label class="fld-label">Name</label><input class="fld-input" id="admin-sticker-name" placeholder="e.g. party_blob" maxlength="24"></div>
+          <button class="btn-accent-inline slim" id="admin-sticker-publish">Publish</button>
+        </div>
+        <small class="hint">Sent as a full sticker from the sticker picker. Images are auto-resized to 160×160.</small>
+      </div>
+      <div class="admin-block">
+        <div class="ab-title">Published Stickers</div>
+        <div class="admin-sticker-list" id="admin-sticker-list"></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-filter">
+      <div class="admin-block">
+        <div class="ab-title">Message Filter</div>
+        <div class="setting-row compact" style="margin-bottom:12px"><div class="setting-row-text"><div class="setting-row-title" id="filter-master-title">Filter is on</div><small class="hint" id="filter-master-note"></small></div><label class="toggle-switch"><input type="checkbox" id="filter-master-toggle"><span class="toggle-slider"></span></label></div>
+        <div class="ab-row">
+          <input class="fld-input" id="admin-filter-word" placeholder="Add a word to filter" maxlength="30">
+          <button class="btn-accent-inline slim" id="admin-filter-add">Add</button>
+        </div>
+        <small class="hint">Catches leetspeak, repeated letters, and spaced-out bypasses of these words — matched as whole words, so it won't touch normal words that merely contain one as a substring. Tagged words show as [CENSORED]. Owners and Co-Owners are never filtered.</small>
+      </div>
+      <div class="admin-block">
+        <div class="ab-title">Filtered Words</div>
+        <small class="hint" style="display:block;margin-bottom:8px">Words can't be deleted. Click a word to turn it off or on.</small>
+        <div class="admin-emoji-list" id="admin-filter-list"></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-codes">
+      <div class="admin-block">
+        <div class="ab-title">Generate a Code</div>
+        <div class="ab-row">
+          <select class="fld-input" id="gen-code-type">
+            <option value="orbs">Orbs</option>
+            <option value="premium">Premium (days)</option>
+          </select>
+          <input class="fld-input" id="gen-code-value" type="number" min="1" placeholder="Amount">
+        </div>
+        <div class="ab-row gen-code-uses-row">
+          <label class="fld-label" for="gen-code-uses">Times it can be redeemed</label>
+          <input class="fld-input" id="gen-code-uses" type="number" min="0" step="1" value="1">
+          <small class="hint">0 = unlimited. Each account can redeem a code once.</small>
+        </div>
+        <div class="ab-row" style="margin-top:8px;">
+          <input class="fld-input" id="gen-code-custom" placeholder="Custom code (optional — leave blank to random-generate)" style="text-transform:uppercase;" maxlength="24">
+          <button class="btn-accent-inline slim" id="gen-code-btn">Generate</button>
+        </div>
+      </div>
+      <div class="admin-block">
+        <div class="ab-title">Recent Codes</div>
+        <div id="admin-codes-list" class="admin-user-list" style="max-height:320px;"></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-conversations">
+      <div class="admin-block">
+        <div class="ab-title">Auto-Delete (messages older than 7 days)</div>
+        <small class="hint">Runs client-side the next time someone opens that conversation — there's no server schedule behind this.</small>
+      </div>
+      <div id="admin-conversations-list" class="admin-user-list" style="max-height:420px;"></div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-quests">
+      <div class="shop-mgr-tabs">
+        <button type="button" class="shop-mgr-tab on" data-quest-section="gag">GAG</button>
+        <button type="button" class="shop-mgr-tab" data-quest-section="cc">CC</button>
+      </div>
+      <div class="quest-section" data-quest-section="gag">
+        <div class="shop-mgr-tabs">
+          <button type="button" class="shop-mgr-tab on" data-gag-section="seeds">Seeds</button>
+          <button type="button" class="shop-mgr-tab" data-gag-section="sprinklers">Sprinklers</button>
+          <button type="button" class="shop-mgr-tab" data-gag-section="pets">Pets</button>
+        </div>
+        <div class="gag-section" data-gag-section="seeds">
+          <div class="admin-block">
+            <div class="ab-title">Create a Seed</div>
+            <div class="gag-form">
+              <div class="field"><label class="fld-label">Name</label><input class="fld-input" id="gag-seed-name" maxlength="24"></div>
+              <div class="field"><label class="fld-label">Emoji</label><input class="fld-input" id="gag-seed-ic" maxlength="8"></div>
+              <div class="field"><label class="fld-label">Rarity</label><select class="fld-input" id="gag-seed-rarity"></select></div>
+              <div class="field"><label class="fld-label">Price</label><input class="fld-input" id="gag-seed-cost" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Grow time</label><input class="fld-input" id="gag-seed-grow" type="number" min="1"></div>
+              <div class="field"><label class="fld-label">Sell value</label><input class="fld-input" id="gag-seed-sell" type="number" min="1"></div>
+              <div class="field"><label class="fld-label">Base weight</label><input class="fld-input" id="gag-seed-weight" type="number" min="0.01" step="0.01"></div>
+              <div class="field"><label class="fld-label">Function</label><select class="fld-input" id="gag-seed-fn"></select></div>
+              <div class="field"><label class="fld-label">Function value</label><input class="fld-input" id="gag-seed-fnval" type="number" min="0"></div>
+            </div>
+            <button class="btn-accent-inline" id="gag-seed-publish">Publish Seed</button>
+          </div>
+          <div class="admin-block"><div class="ab-title">Seeds</div><div class="gag-list" id="gag-list-seeds"></div></div>
+        </div>
+        <div class="gag-section hidden" data-gag-section="sprinklers">
+          <div class="admin-block">
+            <div class="ab-title">Create a Sprinkler</div>
+            <div class="gag-form">
+              <div class="field"><label class="fld-label">Name</label><input class="fld-input" id="gag-spr-name" maxlength="24"></div>
+              <div class="field"><label class="fld-label">Emoji</label><input class="fld-input" id="gag-spr-ic" maxlength="8"></div>
+              <div class="field"><label class="fld-label">Rarity</label><select class="fld-input" id="gag-spr-rarity"></select></div>
+              <div class="field"><label class="fld-label">Price</label><input class="fld-input" id="gag-spr-cost" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Grow speed</label><input class="fld-input" id="gag-spr-speed" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Fruit weight</label><input class="fld-input" id="gag-spr-weight" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Mutation chance</label><input class="fld-input" id="gag-spr-mut" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Sell value</label><input class="fld-input" id="gag-spr-sell" type="number" min="0"></div>
+            </div>
+            <button class="btn-accent-inline" id="gag-spr-publish">Publish Sprinkler</button>
+          </div>
+          <div class="admin-block"><div class="ab-title">Sprinklers</div><div class="gag-list" id="gag-list-sprinklers"></div></div>
+        </div>
+        <div class="gag-section hidden" data-gag-section="pets">
+          <div class="admin-block">
+            <div class="ab-title">Create a Pet</div>
+            <div class="gag-form">
+              <div class="field"><label class="fld-label">Name</label><input class="fld-input" id="gag-pet-name" maxlength="24"></div>
+              <div class="field"><label class="fld-label">Emoji</label><input class="fld-input" id="gag-pet-ic" maxlength="8"></div>
+              <div class="field"><label class="fld-label">Rarity</label><select class="fld-input" id="gag-pet-rarity"></select></div>
+              <div class="field"><label class="fld-label">Price</label><input class="fld-input" id="gag-pet-cost" type="number" min="0"></div>
+              <div class="field"><label class="fld-label">Function</label><select class="fld-input" id="gag-pet-fn"></select></div>
+              <div class="field"><label class="fld-label">Function value</label><input class="fld-input" id="gag-pet-val" type="number" min="0" step="any"></div>
+            </div>
+            <button class="btn-accent-inline" id="gag-pet-publish">Publish Pet</button>
+          </div>
+          <div class="admin-block"><div class="ab-title">Pets</div><div class="gag-list" id="gag-list-pets"></div></div>
+        </div>
+      </div>
+      <div class="quest-section hidden" data-quest-section="cc">
+        <div class="shop-mgr-tabs">
+          <button type="button" class="shop-mgr-tab on" data-cc-section="upgrades">Upgrades</button>
+          <button type="button" class="shop-mgr-tab" data-cc-section="items">Items</button>
+        </div>
+        <div class="cc-section" data-cc-section="upgrades">
+          <div class="admin-block">
+            <div class="ab-title">Create an Upgrade</div>
+            <div class="gag-form">
+              <div class="field"><label class="fld-label">Name</label><input class="fld-input" id="cc-up-name" maxlength="24"></div>
+              <div class="field"><label class="fld-label">Emoji</label><input class="fld-input" id="cc-up-ic" maxlength="8"></div>
+              <div class="field"><label class="fld-label">Price</label><input class="fld-input" id="cc-up-cost" type="number" min="0" step="any"></div>
+              <div class="field"><label class="fld-label">Effect</label><select class="fld-input" id="cc-up-fn"></select></div>
+              <div class="field"><label class="fld-label">Effect value</label><input class="fld-input" id="cc-up-val" type="number" min="0" step="any"></div>
+              <div class="field hidden" id="cc-up-target-field"><label class="fld-label">Boosts</label><select class="fld-input" id="cc-up-target"></select></div>
+              <div class="field"><label class="fld-label">Unlocks after</label><select class="fld-input" id="cc-up-req"></select></div>
+              <div class="field"><label class="fld-label">How many</label><input class="fld-input" id="cc-up-reqn" type="number" min="1" step="1"></div>
+            </div>
+            <small class="hint" id="cc-up-hint"></small>
+            <button class="btn-accent-inline" id="cc-up-publish">Publish Upgrade</button>
+          </div>
+          <div class="admin-block"><div class="ab-title">Upgrades</div><div class="gag-list" id="cc-list-upgrades"></div></div>
+        </div>
+        <div class="cc-section hidden" data-cc-section="items">
+          <div class="admin-block">
+            <div class="ab-title">Create an Item</div>
+            <div class="gag-form">
+              <div class="field"><label class="fld-label">Name</label><input class="fld-input" id="cc-it-name" maxlength="24"></div>
+              <div class="field"><label class="fld-label">Emoji</label><input class="fld-input" id="cc-it-ic" maxlength="8"></div>
+              <div class="field"><label class="fld-label">Starting price</label><input class="fld-input" id="cc-it-cost" type="number" min="1" step="any"></div>
+              <div class="field"><label class="fld-label">CPS</label><input class="fld-input" id="cc-it-cps" type="number" min="0" step="any"></div>
+              <div class="field"><label class="fld-label">Price rise (%)</label><input class="fld-input" id="cc-it-growth" type="number" min="1" max="100" step="any"></div>
+            </div>
+            <button class="btn-accent-inline" id="cc-it-publish">Publish Item</button>
+          </div>
+          <div class="admin-block"><div class="ab-title">Items</div><div class="gag-list" id="cc-list-items"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-systemhub">
+      <div class="admin-layout">
+        <div class="admin-left">
+          <input class="fld-input" id="system-hub-search" placeholder="Search users" autocomplete="off">
+          <div class="admin-user-list" id="system-hub-user-list"></div>
+        </div>
+        <div class="admin-right" id="system-hub-actions"><div class="empty">Select a user to manage.</div></div>
+      </div>
+    </div>
+
+    <div class="admin-pane hidden" id="admin-pane-devices">
+      <div class="admin-layout">
+        <div class="admin-left">
+          <input class="fld-input" id="devices-search" placeholder="Search devices or accounts" autocomplete="off">
+          <button type="button" class="btn-secondary slim" id="devices-cleanup-btn">Clean Up Duplicates</button>
+          <div class="admin-user-list" id="devices-list"></div>
+        </div>
+        <div class="admin-right" id="devices-detail"><div class="empty">Select a device to manage.</div></div>
+      </div>
+    </div>
+    <div class="admin-pane hidden" id="admin-pane-ips">
+      <div class="admin-layout">
+        <div class="admin-left">
+          <input class="fld-input" id="ips-search" placeholder="Search networks or accounts" autocomplete="off">
+          <div class="admin-user-list" id="ips-list"></div>
+        </div>
+        <div class="admin-right" id="ips-detail"><div class="empty">Select a network to manage.</div></div>
+      </div>
+    </div>
+    <div class="admin-pane hidden" id="admin-pane-purgeperms">
+      <div class="purgeperm-pane">
+        <p class="purgeperm-note">Only you and the people on this list can use <b>/purge</b>, in any chat they're in (servers, DMs and groups). Co-Owners, Admins and server owners need to be on it too. Only you can change it.</p>
+        <div class="purgeperm-add">
+          <input class="fld-input" id="purgeperm-name" placeholder="Username" autocomplete="off" maxlength="40">
+          <button class="btn-accent-inline slim" id="purgeperm-give">Give Purge Perms</button>
+        </div>
+        <div class="admin-user-list" id="purgeperm-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: create a poll ============ -->
+<div class="modal-overlay hidden" id="poll-modal">
+  <div class="modal-box poll-modal-box">
+    <div class="modal-header-row">
+      <div class="poll-modal-title"><svg class="poll-modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg><h2>Create a Poll</h2></div>
+      <span class="x" data-close="poll-modal">✕</span>
+    </div>
+    <div class="field">
+      <label>Question</label>
+      <input type="text" id="poll-question" maxlength="300" placeholder="What do you want to ask?">
+      <div class="poll-char-count" id="poll-question-count">0/300</div>
+    </div>
+    <div class="field">
+      <label>Answers</label>
+      <div id="poll-answer-list" class="poll-answer-list"></div>
+      <button type="button" class="btn-secondary slim poll-add-answer" id="poll-add-answer">+ Add another answer</button>
+    </div>
+    <div class="field"><label>Duration</label>
+      <select id="poll-duration" class="fld-input">
+        <option value="3600000">1 hour</option>
+        <option value="14400000">4 hours</option>
+        <option value="86400000" selected>24 hours</option>
+        <option value="259200000">3 days</option>
+        <option value="604800000">7 days</option>
+      </select>
+    </div>
+    <div class="setting-row poll-multiple-row">
+      <div class="setting-row-text">
+        <div class="setting-row-title">Allow multiple answers</div>
+        <div class="setting-row-desc">Voters can pick more than one option.</div>
+      </div>
+      <label class="toggle-switch"><input type="checkbox" id="poll-multiple"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" data-close="poll-modal">Cancel</button><button class="btn-accent-inline" id="poll-submit">Post poll</button></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: friend nickname ============ -->
+<div class="modal-overlay hidden" id="nickname-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Edit Friend Nickname</h2><span class="x" data-close="nickname-modal">✕</span></div>
+    <p class="desc" id="nickname-modal-desc"></p>
+    <div class="field"><label>Nickname</label><input type="text" id="friend-nickname-input" maxlength="32" placeholder="Use their username"></div>
+    <div class="modal-actions"><button class="btn-secondary" id="clear-friend-nickname">Reset</button><button class="btn-accent-inline" id="save-friend-nickname">Save</button></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: server discovery ============ -->
+<div class="modal-overlay hidden" id="explore-servers-modal">
+  <div class="modal-box wide explore-modal-box">
+    <div class="modal-header-row"><div><h2>Explore Servers</h2><p class="desc">Every server currently created in NPD.</p></div><span class="x" data-close="explore-servers-modal">✕</span></div>
+    <div id="explore-server-list" class="explore-server-list"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="image-preview-modal">
+  <div class="image-preview-box" id="image-preview-box">
+    <span class="x image-preview-close" data-close="image-preview-modal">✕</span>
+    <div class="image-preview-scroller" id="image-preview-scroller">
+      <img id="image-preview-img" src="" alt="Preview" draggable="false">
+    </div>
+    <div class="image-preview-links">
+      <button type="button" class="image-preview-open" id="image-preview-copy">Copy image</button>
+      <a class="image-preview-open" id="image-preview-open" href="#" target="_blank" rel="noopener">Open original</a>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="pinned-modal">
+  <div class="modal-box">
+    <div class="modal-header-row"><h2>Pinned Messages</h2><span class="x" data-close="pinned-modal">✕</span></div>
+    <div id="pinned-list"></div>
+  </div>
+</div>
+
+</div><!-- /#page-body -->
+
+<div id="toast-stack"></div>
+
+<!-- ============ MODAL: edit a shop item (admin/co-owner/owner) ============ -->
+<div class="modal-overlay hidden" id="shop-edit-modal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="shop-edit-title">
+    <div class="modal-header-row"><h2 id="shop-edit-title">Edit Item</h2><span class="x" data-close="shop-edit-modal" aria-label="Close">✕</span></div>
+    <div class="shop-edit-kind" id="shop-edit-kind"></div>
+    <div class="field"><label for="shop-edit-name">Name</label><input type="text" id="shop-edit-name" maxlength="24"></div>
+    <div class="field"><label for="shop-edit-desc">Description</label><input type="text" id="shop-edit-desc" maxlength="80"></div>
+    <div class="field"><label for="shop-edit-price">Price (Orbs)</label><input type="number" id="shop-edit-price" min="0"></div>
+    <label class="shop-edit-check"><input type="checkbox" id="shop-edit-featured"> Show in Featured</label>
+    <div class="shop-edit-extra" id="shop-edit-extra"></div>
+    <div class="modal-actions">
+      <button class="btn-danger hidden" id="shop-edit-delete-btn">Delete</button>
+      <button class="btn-secondary hidden" id="shop-edit-reset-btn">Reset to Default</button>
+      <span class="spacer"></span>
+      <button class="btn-secondary" data-close="shop-edit-modal">Cancel</button>
+      <button class="btn-accent-inline" id="shop-edit-save-btn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- All scripts are deferred: the page (and the loading screen) paints first, then they run in order. Firebase Storage is not loaded because nothing uses it. -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script defer src="script.js?v=145"></script>
+</body>
+</html>

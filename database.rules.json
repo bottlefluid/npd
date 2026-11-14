@@ -1,0 +1,30 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "presence": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && (auth.token.n == null || auth.token.n === $uid)",
+        ".validate": "!newData.exists() || (newData.hasChildren(['state', 'lastChanged']) && (newData.child('state').val() === 'online' || newData.child('state').val() === 'idle' || newData.child('state').val() === 'offline') && newData.child('lastChanged').isNumber() && (!newData.child('mobile').exists() || newData.child('mobile').isBoolean()) && (!newData.child('app').exists() || newData.child('app').isBoolean()))"
+      }
+    },
+
+    "races": {
+      ".read": "auth != null",
+      "lobbies": {
+        ".read": "auth != null",
+        "$lobbyId": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          "players": {
+            "$playerId": {
+              ".write": "auth != null"
+            }
+          }
+        }
+      }
+    }
+  }
+}
