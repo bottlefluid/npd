@@ -1,21 +1,23 @@
 rules_version = '2';
-// Frixion's Firestore rules, phase 2 (v4.51, tightened in v4.52). To use them: Firebase console > Firestore Database > Rules, paste all of
-// this in, then Publish. database.rules.json goes in Realtime Database > Rules the same way.
+// NPD (NewBGI) Firestore Security Rules — Project: bottleliquidalt
+// To use them: Firebase console > Firestore Database > Rules, paste all of this in, then Publish.
+// database.rules.json goes in Realtime Database > Rules the same way.
 //
-// Who is asking comes from the sign-in (Firebase Authentication) and accounts/{its uid}, which says which Frixion
+// Built on the same anti-mirroring, role-based (owner / coowner / admin), and anti-cheat security model as Frixion,
+// extended with NPD's racing statistics (`raceStats`), garage/locker inventory, and live multiplayer race lobbies (`raceLobbies`).
+//
+// Who is asking comes from the sign-in (Firebase Authentication) and accounts/{its uid}, which says which NPD
 // account it is. That entry is made once, for a profile that names the same sign-in back, and nothing can change it
-// afterwards. Everything below checks the person asking against it, so a copy of Frixion on another address, or a
-// script, can only do what that person could do in Frixion anyway.
+// afterwards. Everything below checks the person asking against it, so a copy of NPD on another address, or a
+// script, can only do what that person could do in NPD anyway.
 //
-// Since v4.52 server and channel permissions are checked too: who can see and post in each channel (its overrides),
+// Server and channel permissions are checked too: who can see and post in each channel (its overrides),
 // deleting or pinning other people's messages, kicks, bans, timeouts, nicknames, the audit log, and managing channels,
 // roles and the server itself. Only a server's first 8 roles, and a member's first 4, count here (the 1000-step limit).
-// Since v4.54 also slowmode (slowOk()) and role order (roleEditOk(): Manage Roles only gives roles below your own).
-// What these rules can't check (the app checks them, so only a script gets round them):
-// - Orbs, Premium and the Shop. Games run in the browser, so a player can still give themselves Orbs or Premium days.
-// - Slowmode in threads, and the smaller channel permissions (files, embeds, polls, @everyone).
+// Also checks slowmode (slowOk()) and role order (roleEditOk(): Manage Roles only gives roles below your own).
+//
 // The Discord bridge, push notifications and owner tools (functions/api) use a service account, which these rules don't
-// limit. The games' shared lobby is in the Realtime Database: database.rules.json.
+// limit. Live racing lobbies are in the Realtime Database (database.rules.json) with a Firestore mirror at raceLobbies/{lobbyId}.
 //
 // For whoever edits this: rules may only evaluate 1000 steps per request, and a function runs again every time it's
 // called, but a value passed to a function is worked out once. So each rule works out who is asking once, with who(),
@@ -32,7 +34,7 @@ service cloud.firestore {
       return u.get('owner', false) == true ? 3 : (u.get('coowner', false) == true ? 2 : ((u.get('admin', false) == true || u.get('op', false) == true) ? 1 : 0));
     }
     // The person asking: name (their username), ok (the sign-in really is that account: its accounts/ entry names the
-    // profile, and the profile names the sign-in back), rank and u (their profile). A sign-in with no Frixion account
+    // profile, and the profile names the sign-in back), rank and u (their profile). A sign-in with no NPD account
     // makes this an error, which refuses the request.
     function who() {
       let name = get(acctPath()).data.username;
@@ -50,13 +52,13 @@ service cloud.firestore {
       return !(m.u.get('banned', false) == true && (bannedUntil == null || bannedUntil > now))
         && (mutedUntil == null || mutedUntil <= now);
     }
-    // Purge perms (v4.59): the Owner gave this person /purge, which deletes other people's messages in any chat they're
-    // in (a server channel they can see, a DM or a group), the way Frixion staff can. Set only by the Owner (staffEdit()).
+    // Purge perms: the Owner gave this person /purge, which deletes other people's messages in any chat they're
+    // in (a server channel they can see, a DM or a group), the way NPD staff can. Set only by the Owner (staffEdit()).
     function purgeOk(m) { return m.u.get('purgePerm', false) == true; }
-    // Who may use /purge at all (v4.60): the Owner, and whoever has purge perms, whatever their rank or server role.
+    // Who may use /purge at all: the Owner, and whoever has purge perms, whatever their rank or server role.
     // (Staff and server mods still delete single messages; only purging needs purge perms.)
     function purger(m) { return m.rank == 3 || purgeOk(m); }
-    // Not banned from Frixion right now: a banned account sees nothing but its own profile (the ban screen).
+    // Not banned from NPD right now: a banned account sees nothing but its own profile (the ban screen).
     function active(m) {
       let until = m.u.get('bannedUntil', null);
       return m.ok && !(m.u.get('banned', false) == true && (until == null || until > request.time.toMillis()));
@@ -74,7 +76,7 @@ service cloud.firestore {
     function onlyRemoved(f) { return listAfter(f).toSet().difference(listBefore(f).toSet()).size() == 0; }
 
     // ---------- accounts ----------
-    // Which Frixion account a sign-in is: made once, by that sign-in, for the profile it just made (or moved over).
+    // Which NPD account a sign-in is: made once, by that sign-in, for the profile it just made (or moved over).
     match /accounts/{uid} {
       allow get: if signedIn() && (request.auth.uid == uid || isStaff(who()));
       allow create: if signedIn() && request.auth.uid == uid
@@ -405,10 +407,10 @@ service cloud.firestore {
     function chan(sid, cid) { return get(/databases/$(database)/documents/servers/$(sid)/channels/$(cid)).data; }
     function threadOf(sid, tid) { return get(/databases/$(database)/documents/servers/$(sid)/threads/$(tid)).data; }
     function isMember(m, s) { return m.name in s.get('members', []); }
-    // In the server (or Frixion staff), and not banned from Frixion.
+    // In the server (or NPD staff), and not banned from NPD.
     function inServer(m, s) { return active(m) && (isMember(m, s) || m.rank >= 1); }
     function notTimedOut(m, s) { return s.get('timeouts', {}).get(m.name, 0) <= request.time.toMillis(); }
-    // Server permissions, as hasServerPerm() in script.js: the server's owner and Frixion staff have them all; everyone
+    // Server permissions, as hasServerPerm() in script.js: the server's owner and NPD staff have them all; everyone
     // else has what @everyone and their roles give them, and Administrator gives everything. An @everyone role saved
     // before roles had their own permission list also gets Discord's defaults (everyoneRole()). Rules can't loop, so the
     // roles are gone through one by one, and only a server's first 8 count.
@@ -430,7 +432,7 @@ service cloud.firestore {
       return n > 0 && roles[0].get('id', '') == 'everyone' && roles[0].get('permsV2', false) == true ? p : p.concat(everyoneDefaults());
     }
     function isServerBoss(m, s) { return s.get('ownerId', '') == m.name || m.rank >= 1; }
-    // Everything m may do in server s, as a list: just Administrator (everything) for its owner and Frixion staff.
+    // Everything m may do in server s, as a list: just Administrator (everything) for its owner and NPD staff.
     function permsIn(m, s) { return isServerBoss(m, s) ? ['administrator'] : rolePermsOf(m, s); }
     function hasAll(p, needed) { return p.hasAny(['administrator']) || p.hasAll(needed); }
     function hasOne(p, perms) { return p.hasAny(perms.concat(['administrator'])); }
@@ -500,7 +502,7 @@ service cloud.firestore {
         && (needed.size() == 0 || hasAll(p, needed))
         && (!k.hasAny(['auditLog']) || hasOne(p, ['kickMembers', 'banMembers', 'timeoutMembers', 'manageMessages', 'manageServer',
               'manageRoles', 'manageChannels', 'manageNicknames', 'viewAuditLog']))
-        // making, editing and deleting roles: the owner, Frixion staff and Administrators (canEditRoles() in script.js)
+        // making, editing and deleting roles: the owner, NPD staff and Administrators (canEditRoles() in script.js)
         && (!k.hasAny(['roles']) || p.hasAny(['administrator']))
         // giving and taking roles: Manage Roles is enough for roles below your own highest (roleEditOk()), never yours
         && (!k.hasAny(['memberRoles']) || p.hasAny(['administrator']) || roleEditOk(m, s));
@@ -678,7 +680,7 @@ service cloud.firestore {
     function inConv(m, c) { return active(m) && m.name in c.get('participants', []); }
     function convGet(m) { return active(m) && (resource == null || m.name in resource.data.get('participants', []) || m.rank >= 1); }
     function convList(m) { return active(m) && (m.name in resource.data.get('participants', []) || m.rank >= 1); }
-    // (Sapphire's purge cards here only for Frixion staff, the only ones who can purge a DM or group.)
+    // (Sapphire's purge cards here only for NPD staff, the only ones who can purge a DM or group.)
     function convMsgCreate(m, c) { return inConv(m, c) && canPost(m) && c.get('blockedBy', []).removeAll([m.name]).size() == 0 && (newAuthorIsMe(m) || newBotMessage(m, purger(m))); }
     function convMsgUpdate(m, c) { let k = changed(); return inConv(m, c) && (ownEdit(m, k) || dmOthersEdit(m, k)); }
     function convMsgDelete(m, c) { return inConv(m, c) && (isMine(m) || m.rank >= 1 || purgeOk(m) || (isOld() && c.get('autoDelete', true) != false)); }
