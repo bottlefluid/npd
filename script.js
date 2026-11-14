@@ -316,6 +316,7 @@ function profileFrameById(id) { return PROFILE_FRAMES.find(d => d.id === id) || 
 // Settings > Themes does — with 48+ themes plus admin-created ones, that's
 // the only approach that scales without hand-writing a CSS class per theme.
 const SHOP_THEMES = [
+  { id: 'npd-crimson', name: 'NPD Red-Black (Default)', desc: 'Signature NPD Red-Black Gradient.', price: 0, bg: ['#000000', '#0d0000', '#1c0000'], accent: '#e60000', accent2: '#ff3333', featured: true },
   { id: 'plasma', name: 'Plasma', desc: 'Electric violet — a rare, high-value theme.', price: 2500, bg: ['#0a0018', '#160a32', '#271152'], accent: '#b06bff', accent2: '#e3c9ff' },
   { id: 'disco', name: 'Disco', desc: 'Full rainbow color cycling.', price: 200, bg: ['#0a001a', '#00001a', '#11052b'], accent: '#ff00ff', accent2: '#00ffff', anim: 'hue', featured: true },
   { id: 'ocean', name: 'Ocean Deep', desc: 'Deep blue underwater vibes.', price: 150, bg: ['#000e1a', '#001a33', '#06314f'], accent: '#00aaff', accent2: '#33ccff' },
@@ -987,6 +988,15 @@ function applyAdminVisibility() {
   if (swAdmin) swAdmin.classList.toggle('hidden', rank < 1);
   if (swCoowner) swCoowner.classList.toggle('hidden', rank < 2);
   if (swOwner) swOwner.classList.toggle('hidden', rank < 3);
+
+  const ltWrap = $('lt-sb-staff-wrap');
+  const ltAdmin = $('lt-open-admin');
+  const ltCoowner = $('lt-open-coowner');
+  const ltOwner = $('lt-open-owner');
+  if (ltWrap) ltWrap.classList.toggle('hidden', rank < 1);
+  if (ltAdmin) ltAdmin.classList.toggle('hidden', rank < 1);
+  if (ltCoowner) ltCoowner.classList.toggle('hidden', rank < 2);
+  if (ltOwner) ltOwner.classList.toggle('hidden', rank < 3);
 }
 let profileCache = {};
 let currentServerId = null;
@@ -3991,6 +4001,8 @@ document.querySelectorAll('.home-nav-item[data-home-view]').forEach(item => {
 });
 
 function openHomeMainView(which) {
+  document.body.classList.remove('npd-chat-mode');
+  if (typeof setLtSidebarActive === 'function') setLtSidebarActive(which);
   currentServerId = null; currentServerData = null; currentChannelId = null; currentThreadId = null; currentThreadData = null;
   currentDMId = null; currentDMOtherUid = null; currentGroupDMId = null;
   if (unsub.messages) { unsub.messages(); unsub.messages = null; }
@@ -4936,6 +4948,8 @@ function openConversationSheet(kind) {
 }
 
 async function selectDM(id, otherUid) {
+  document.body.classList.add('npd-chat-mode');
+  if (typeof setLtSidebarActive === 'function') setLtSidebarActive('chat-dms');
   clearReplyTarget();
   clearMyTypingDoc();
   currentServerId = null; currentServerData = null; currentChannelId = null; currentGroupDMId = null; currentThreadId = null; currentThreadData = null;
@@ -4971,6 +4985,8 @@ async function selectDM(id, otherUid) {
 }
 
 async function selectGroupDM(id) {
+  document.body.classList.add('npd-chat-mode');
+  if (typeof setLtSidebarActive === 'function') setLtSidebarActive('chat-dms');
   clearReplyTarget();
   clearMyTypingDoc();
   currentServerId = null; currentServerData = null; currentChannelId = null; currentThreadId = null; currentThreadData = null;
@@ -6047,6 +6063,8 @@ function renderBlockedBar(username) {
 // SERVER VIEW
 // ============================================================
 async function selectServer(server) {
+  document.body.classList.add('npd-chat-mode');
+  if (typeof setLtSidebarActive === 'function') setLtSidebarActive('chat-servers');
   currentServerId = server.id;
   currentServerData = server;
   currentDMId = null; currentDMOtherUid = null; currentGroupDMId = null; currentChannelId = null; currentThreadId = null; currentThreadData = null;
@@ -15261,9 +15279,94 @@ function initCcAdmin() {}
 if ($('sidebar-admin-btn')) $('sidebar-admin-btn').onclick = () => openAdminEntry('admin');
 if ($('sidebar-coowner-btn')) $('sidebar-coowner-btn').onclick = () => openAdminEntry('coowner');
 if ($('sidebar-owner-btn')) $('sidebar-owner-btn').onclick = () => openAdminEntry('owner');
+if ($('lt-open-admin')) $('lt-open-admin').onclick = () => openAdminEntry('admin');
+if ($('lt-open-coowner')) $('lt-open-coowner').onclick = () => openAdminEntry('coowner');
+if ($('lt-open-owner')) $('lt-open-owner').onclick = () => openAdminEntry('owner');
 if ($('switch-to-admin-panel')) $('switch-to-admin-panel').onclick = () => openAdminPanel('admin');
 if ($('switch-to-coowner-panel')) $('switch-to-coowner-panel').onclick = () => openAdminPanel('coowner');
 if ($('switch-to-owner-panel')) $('switch-to-owner-panel').onclick = () => openAdminPanel('owner');
+
+// Wire LiquidType-Evolved Primary Sidebar (#lt-sidebar)
+function syncLtSidebarChip() {
+  if (!myProfile) return;
+  const rs = getMyRaceStats(myProfile);
+  const orbs = (myProfile.orbs || 0) + pendingOrbs();
+  const avEl = $('lt-sb-avatar');
+  if (avEl) {
+    avEl.innerHTML = avatarHTML(38, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask);
+  }
+  const nameEl = $('lt-sb-username');
+  if (nameEl) {
+    nameEl.innerHTML = `<span>${esc(displayNameOf(myProfile))}</span>${premiumStar(myProfile)}${roleTag(myProfile)}`;
+  }
+  const orbsEl = $('lt-sb-orbs-count');
+  if (orbsEl) orbsEl.textContent = fmtOrbs(orbs);
+  const wpmEl = $('lt-sb-wpm-badge');
+  if (wpmEl) wpmEl.textContent = `${rs.bestWpm || 0} WPM`;
+  const reqs = (myProfile.incomingRequests || []).length;
+  const fBadge = $('lt-friend-badge');
+  if (fBadge) {
+    fBadge.textContent = reqs > 9 ? '9+' : String(reqs);
+    fBadge.classList.toggle('hidden', reqs < 1);
+  }
+}
+setInterval(syncLtSidebarChip, 1000);
+
+function setLtSidebarActive(navKey) {
+  document.querySelectorAll('#lt-sidebar .lt-sbtab[data-lt-nav]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.ltNav === navKey);
+  });
+}
+
+document.querySelectorAll('#lt-sidebar .lt-sbtab[data-lt-nav]').forEach(btn => {
+  btn.onclick = () => {
+    const target = btn.dataset.ltNav;
+    setLtSidebarActive(target);
+    if (target === 'chat-servers' || target === 'chat-dms') {
+      document.body.classList.add('npd-chat-mode');
+      hideMainPageViews();
+      if (target === 'chat-dms') {
+        $('dm-list').classList.remove('hidden');
+        $('channel-list').classList.add('hidden');
+        $('side-header-title').textContent = 'Direct Messages';
+        renderDMRows();
+        const firstDm = document.querySelector('#dm-rows .dm-row');
+        if (firstDm) firstDm.click();
+        else {
+          $('welcome-view').classList.remove('hidden');
+          $('chat-view').classList.add('hidden');
+        }
+      } else {
+        const firstSrv = document.querySelector('#server-rail-list .rail-item');
+        if (firstSrv) firstSrv.click();
+        else {
+          $('dm-list').classList.remove('hidden');
+          $('welcome-view').classList.remove('hidden');
+        }
+      }
+      return;
+    }
+    document.body.classList.remove('npd-chat-mode');
+    openHomeMainView(target);
+  };
+});
+
+if ($('lt-logo-home')) $('lt-logo-home').onclick = () => navigateToNpdView('dashboard');
+if ($('lt-user-chip')) $('lt-user-chip').onclick = () => { if (myUid) openProfileModal(myUid); };
+if ($('lt-btn-settings')) $('lt-btn-settings').onclick = () => openSettings();
+if ($('lt-btn-themes')) $('lt-btn-themes').onclick = () => {
+  openSettings();
+  const nav = document.querySelector('#settings-nav .nav-item[data-pane="pane-themes"]');
+  if (nav) nav.click();
+};
+if ($('lt-btn-updates')) $('lt-btn-updates').onclick = () => {
+  openSettings();
+  const nav = document.querySelector('#settings-nav .nav-item[data-pane="pane-updates"]');
+  if (nav) nav.click();
+};
+if ($('lt-btn-logout')) $('lt-btn-logout').onclick = () => {
+  if ($('logout-btn')) $('logout-btn').click();
+};
 
 const NPD_CARS = [
   { id: 'car-apex', emoji: '🏎️', name: 'Apex GT', price: 0, desc: 'Standard factory tuner built for high-rev sprints.' },
@@ -15305,6 +15408,8 @@ function getMyRaceStats(p = myProfile) {
 }
 
 function navigateToNpdView(view) {
+  document.body.classList.remove('npd-chat-mode');
+  setLtSidebarActive(view);
   clearHomeNavActive();
   const nav = document.querySelector(`.home-nav-item[data-home-view="${view}"]`);
   if (nav) nav.classList.add('active');
@@ -16441,11 +16546,26 @@ function renderNpdLocker() {
       <div class="npd-section-head-row">
         <div>
           <h2 class="npd-section-title">🏎️ NPD Garage & Locker</h2>
-          <p class="npd-section-sub">Unlock and equip vehicles for the race track, or manage your profile cosmetics.</p>
+          <p class="npd-section-sub">Unlock and equip vehicles for the race track, upload your custom PFP, or equip your owned cosmetics.</p>
         </div>
-        <div class="npd-locker-head-right">
-          <span class="npd-orb-pill">${icon('orb', 'orb-inline')} ${fmtOrbs(orbs)} Orbs</span>
-          <button type="button" class="btn-secondary" id="locker-open-shop-btn">🛍️ Open Item Shop</button>
+        <div class="npd-locker-head-right" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="npd-hero-orbs">${icon('orb', 'orb-inline')} ${fmtOrbs(orbs)} Orbs</span>
+          <button type="button" class="btn-primary slim" id="locker-edit-pfp-btn">🖼️ Upload Custom PFP</button>
+          <button type="button" class="btn-secondary slim" id="locker-open-shop-btn">🛒 Open Item Shop</button>
+        </div>
+      </div>
+
+      <div class="locker-pfp-banner" style="background:linear-gradient(135deg,rgba(230,0,0,0.18),rgba(14,0,0,0.92));border:1px solid rgba(230,0,0,0.35)">
+        <div class="lpb-left">
+          ${avatarHTML(54, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask)}
+          <div>
+            <div class="lpb-title">Custom Profile Picture &amp; Identity</div>
+            <div class="lpb-sub">No PFP shop needed — everyone gets the classic default avatar and can upload their own custom PFP or GIF anytime.</div>
+          </div>
+        </div>
+        <div class="lpb-actions">
+          <button type="button" class="btn-primary slim" id="locker-open-profile-btn">Edit Profile &amp; PFP</button>
+          <button type="button" class="btn-secondary slim" id="locker-open-themes-btn">Change Theme</button>
         </div>
       </div>
 
@@ -16476,6 +16596,13 @@ function renderNpdLocker() {
   `;
 
   $('locker-open-shop-btn').onclick = () => navigateToNpdView('shop');
+  $('locker-edit-pfp-btn').onclick = () => openSettings();
+  $('locker-open-profile-btn').onclick = () => openSettings();
+  $('locker-open-themes-btn').onclick = () => {
+    openSettings();
+    const nav = document.querySelector('#settings-nav .nav-item[data-pane="pane-themes"]');
+    if (nav) nav.click();
+  };
 
   el.querySelectorAll('[data-equip-car]').forEach(btn => {
     btn.onclick = async () => {

@@ -17,64 +17,52 @@ input, textarea,
 }
 
 :root {
-  /* ---- default "Frixion Dark" theme ---- */
-  --bg-deepest: #1e1f22;      /* server rail */
-  --bg-secondary: #2b2d31;    /* channel/dm sidebar */
-  --bg-primary: #313338;      /* chat / main content */
-  --bg-floating: #1e1f22;     /* modals, popouts */
-  --bg-tertiary: #232428;     /* user controls / settings navigation */
-  --bg-input: #383a40;
-  --bg-modifier-hover: rgba(78,80,88,.35);
-  --bg-modifier-selected: rgba(78,80,88,.6);
-  --accent: #5865f2;
-  --accent-hover: #4752c4;
-  --accent-soft: rgba(88,101,242,.15);
-  --premium-grad: linear-gradient(135deg,#f4a4ff,#5865f2);
-  --text-normal: #f2f3f5;
-  --text-muted: #949ba4;
-  --text-faint: #6d6f78;
-  --text-link: #00a8fc;
-  --online: #23a55a;
-  --idle: #f0b232;
-  --dnd: #f23f42;
-  --offline: #80848e;
-  --danger: #da373c;
-  --danger-hover: #a12828;
-  --divider: rgba(255,255,255,.06);
-  --scrollbar-thumb: #1a1b1e;
-  --message-hover: rgba(0,0,0,.08);
-  --shadow-color: rgba(0,0,0,.48);
-  --font: 'Inter', 'gg sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  /* ---- Default "NPD Red-Black Gradient" Theme (LiquidType Sequel) ---- */
+  --bg1: #000000;
+  --bg2: #0d0000;
+  --bg3: #1c0000;
+  --shop-theme-bg: linear-gradient(135deg, #000000 0%, #0d0000 50%, #1c0000 100%);
+  --bg-deepest: rgba(6, 0, 0, 0.94);      /* primary sidebar & deepest chrome */
+  --bg-secondary: rgba(15, 0, 0, 0.86);   /* secondary drawers & cards */
+  --bg-primary: rgba(18, 0, 0, 0.68);     /* main viewport */
+  --bg-floating: #0c0000;                 /* modals & popouts */
+  --bg-tertiary: rgba(10, 0, 0, 0.92);    /* user controls & settings nav */
+  --bg-input: rgba(0, 0, 0, 0.62);
+  --bg-modifier-hover: rgba(230, 0, 0, 0.12);
+  --bg-modifier-selected: rgba(230, 0, 0, 0.22);
+  --accent: #e60000;
+  --accent-hover: #ff1a1a;
+  --accent2: #ff3333;
+  --accent3: #ff6666;
+  --accent-soft: rgba(230, 0, 0, 0.18);
+  --card: rgba(26, 0, 0, 0.78);
+  --cb: rgba(220, 0, 0, 0.3);
+  --glow: 0 0 18px rgba(220, 0, 0, 0.5);
+  --glow2: 0 0 30px rgba(220, 0, 0, 0.25);
+  --premium-grad: linear-gradient(135deg, #ff3333, #880000);
+  --text-normal: #f5f5f5;
+  --text-muted: rgba(255, 225, 225, 0.58);
+  --text-faint: rgba(255, 200, 200, 0.38);
+  --text-link: #ff4d4d;
+  --online: #00e676;
+  --idle: #ffab00;
+  --dnd: #ff1744;
+  --offline: #787070;
+  --danger: #ff1744;
+  --danger-hover: #c51162;
+  --divider: rgba(255, 50, 50, 0.12);
+  --scrollbar-thumb: rgba(220, 0, 0, 0.35);
+  --message-hover: rgba(230, 0, 0, 0.06);
+  --shadow-color: rgba(0, 0, 0, 0.68);
+  --font: 'Rajdhani', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bebas Neue', cursive;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* ---- Shop Themes (ported from Toblox) — a separate, independent layer on
-   top of whichever Settings > Themes class is active. Applying one sets
-   --shop-theme-bg plus overrides for the core bg/accent variables directly
-   via inline styles on <body> itself (see applyShopTheme in script.js) —
-   these used to live on <html> instead, which looked right ("inline
-   beats a class selector") but wasn't: those same variables are also set
-   by body.theme-light/ash/onyx below, and for custom properties, the
-   element CLOSEST to whatever's reading the value wins the inheritance
-   regardless of inline vs. class. Body is closer than html is, so with
-   any Settings theme other than Dark active, body's own class-based
-   value was silently shadowing the override before it ever reached
-   anything — shop themes only ever worked while Dark (which adds no
-   class to body at all) was the active Settings theme. Putting the
-   override on body itself, the same element the class rules are on,
-   makes inline-beats-class actually apply.
-   The animated gradient itself lives on a fixed ::before layer (not
-   <body> directly) so hue-rotating it never turns fixed sidebars/topbars
-   into scrolling elements.
-   That gradient layer only shows up at all because applyShopTheme sets
-   the panel bg variables to translucent rgba() rather than flat opaque
-   hex — #server-rail/#side-panel/#main-col tile the full viewport with
-   no gaps, so with fully opaque panels (as this used to be) the gradient
-   was rendered but permanently hidden behind them regardless of z-index;
-   confirmed by literally sampling rendered pixels, which showed zero
-   trace of the gradient's third color stop. */
+body::before,
 body.shop-theme-active::before {
   content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: var(--shop-theme-bg);
+  background: var(--shop-theme-bg, linear-gradient(135deg, #000000 0%, #0d0000 50%, #1c0000 100%));
 }
 body.shop-anim-hue::before, body.shop-anim-holo::before, body.shop-anim-aurora::before {
   animation: shopThemeHueRot 6s linear infinite;
@@ -5539,15 +5527,389 @@ body.is-mobile .race-input-row {
 }
 
 /* ============================================================
-   NPD (NewBGI) CORE ENGINE COMPONENTS
+   NPD (NewBGI) — LIQUIDTYPE SEQUEL RED-BLACK ARCHITECTURE
    ============================================================ */
+
+/* Hide Frixion's fake desktop titlebar so NPD fills the screen like LiquidType */
+#title-bar {
+  display: none !important;
+}
+#page-body {
+  height: var(--mobile-viewport-height, 100dvh) !important;
+}
+
+/* ── BOOT SCREEN & AUTH SCREEN (LIQUIDTYPE SEQUEL RED-BLACK) ── */
+#boot-screen {
+  background: radial-gradient(circle at center, #240000 0%, #0a0000 55%, #000000 100%) !important;
+  flex-direction: column;
+  gap: 18px;
+}
+.ld-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 5rem;
+  letter-spacing: 12px;
+  color: #e60000;
+  text-shadow: 0 0 28px rgba(230, 0, 0, 0.75), 0 0 60px rgba(230, 0, 0, 0.35);
+  animation: npdLogoPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes npdLogoPulse {
+  from { transform: scale(1); text-shadow: 0 0 18px rgba(230, 0, 0, 0.5); }
+  to { transform: scale(1.06); text-shadow: 0 0 38px rgba(255, 26, 26, 0.9), 0 0 70px rgba(230, 0, 0, 0.4); }
+}
+.ld-dots { display: flex; gap: 12px; }
+.ld-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #e60000;
+  box-shadow: 0 0 14px rgba(230, 0, 0, 0.65);
+  animation: npdDotBounce 1.4s infinite ease-in-out both;
+}
+.ld-dot:nth-child(1) { animation-delay: -0.32s; }
+.ld-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes npdDotBounce {
+  0%, 80%, 100% { transform: scale(0.35); opacity: 0.35; }
+  40% { transform: scale(1); opacity: 1; }
+}
+.ld-status {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: rgba(255, 200, 200, 0.6);
+  text-transform: uppercase;
+}
+
+#auth-screen {
+  background: radial-gradient(circle at 50% 25%, #2b0000 0%, #0d0000 55%, #000000 100%) !important;
+}
+#auth-screen .auth-card {
+  width: 400px;
+  max-width: 94vw;
+  background: rgba(12, 0, 0, 0.94) !important;
+  border: 1px solid rgba(230, 0, 0, 0.45) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 45px rgba(200, 0, 0, 0.28), 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+  padding: 34px 30px !important;
+}
+.lt-auth-header {
+  text-align: center;
+  margin-bottom: 22px;
+  border-bottom: 1px solid rgba(230, 0, 0, 0.2);
+  padding-bottom: 14px;
+}
+.lt-auth-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 3.8rem;
+  letter-spacing: 6px;
+  color: #e60000;
+  text-shadow: 0 0 22px rgba(230, 0, 0, 0.65);
+  line-height: 1;
+}
+.lt-auth-tag {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 200, 200, 0.55);
+  margin-top: 4px;
+}
+#auth-screen h1 {
+  font-family: 'Bebas Neue', cursive !important;
+  font-size: 1.9rem !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase;
+  color: #fff !important;
+}
+#auth-screen .field input {
+  background: #070000 !important;
+  border: 1px solid rgba(220, 0, 0, 0.35) !important;
+  border-radius: 6px !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 600;
+}
+#auth-screen .field input:focus {
+  border-color: #ff1a1a !important;
+  box-shadow: 0 0 12px rgba(230, 0, 0, 0.35) !important;
+}
+#auth-screen .btn-primary,
+.btn-primary,
+.btn-accent-inline {
+  background: linear-gradient(135deg, #e60000, #b30000) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 80, 80, 0.35) !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px rgba(220, 0, 0, 0.35);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+}
+#auth-screen .btn-primary:hover,
+.btn-primary:hover,
+.btn-accent-inline:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 0 24px rgba(255, 26, 26, 0.55);
+}
+
+/* ── LIQUIDTYPE-EVOLVED PRIMARY LEFT SIDEBAR (#lt-sidebar) ── */
+.lt-sidebar {
+  width: 236px;
+  min-width: 236px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(7, 0, 0, 0.96);
+  border-right: 1px solid rgba(230, 0, 0, 0.24);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 90;
+  flex-shrink: 0;
+}
+.lt-sb-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid rgba(230, 0, 0, 0.16);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.lt-sb-logo-mark {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.3rem;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 0 0 16px rgba(230, 0, 0, 0.65);
+  line-height: 1;
+}
+.lt-sb-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+.lt-sb-logo-full {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.15rem;
+  letter-spacing: 2.5px;
+  color: #ffffff;
+  line-height: 1.05;
+}
+.lt-sb-logo-sub {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent2);
+}
+
+/* Sidebar User Chip */
+.lt-sb-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  margin: 12px 10px 6px;
+  background: linear-gradient(135deg, rgba(230, 0, 0, 0.12), rgba(20, 0, 0, 0.85));
+  border: 1px solid rgba(230, 0, 0, 0.28);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.18s ease;
+  flex-shrink: 0;
+}
+.lt-sb-user-chip:hover {
+  background: linear-gradient(135deg, rgba(230, 0, 0, 0.22), rgba(30, 0, 0, 0.92));
+  border-color: rgba(255, 51, 51, 0.5);
+  box-shadow: 0 0 16px rgba(230, 0, 0, 0.25);
+}
+.lt-sb-avatar {
+  flex-shrink: 0;
+}
+.lt-sb-user-info {
+  flex: 1;
+  min-width: 0;
+}
+.lt-sb-username {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.lt-sb-wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.lt-sb-orbs {
+  color: #ffd700;
+}
+.lt-sb-wpm {
+  color: var(--accent2);
+  background: rgba(230, 0, 0, 0.16);
+  border: 1px solid rgba(230, 0, 0, 0.3);
+  padding: 0 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+}
+
+/* Sidebar Navigation */
+.lt-sb-nav {
+  flex: 1;
+  padding: 6px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lt-sb-section {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  color: rgba(255, 160, 160, 0.38);
+  text-transform: uppercase;
+  padding: 12px 10px 4px;
+}
+.lt-staff-sec-title {
+  color: #ff4d4d;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+}
+.lt-sbtab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: rgba(255, 235, 235, 0.58);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  border-radius: 0 8px 8px 0;
+  transition: 0.15s ease;
+  text-align: left;
+}
+.lt-sbtab:hover {
+  background: rgba(230, 0, 0, 0.1);
+  color: #ffffff;
+}
+.lt-sbtab.on {
+  background: linear-gradient(90deg, rgba(230, 0, 0, 0.25), rgba(230, 0, 0, 0.04));
+  color: #ffffff;
+  border-left-color: var(--accent);
+  text-shadow: 0 0 10px rgba(255, 50, 50, 0.45);
+}
+.lt-sbt-icon {
+  font-size: 1.05rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lt-sbt-label {
+  flex: 1;
+}
+.lt-sb-live-pill {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e60000;
+  color: #fff;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px rgba(230, 0, 0, 0.6);
+}
+.lt-sb-badge {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+.lt-staff-tab {
+  color: #ff9999;
+}
+#lt-open-owner {
+  color: #ffd700;
+}
+
+.lt-sb-bottom {
+  padding: 10px 10px 14px;
+  border-top: 1px solid rgba(230, 0, 0, 0.16);
+  flex-shrink: 0;
+}
+.lt-sb-actions {
+  display: flex;
+  gap: 6px;
+}
+.lt-sb-action-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid rgba(230, 0, 0, 0.22);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 220, 220, 0.65);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lt-sb-action-btn:hover {
+  background: rgba(230, 0, 0, 0.18);
+  color: #fff;
+  border-color: rgba(255, 50, 50, 0.45);
+}
+.lt-sb-action-out:hover {
+  background: rgba(255, 23, 68, 0.25);
+  color: #ff5252;
+  border-color: #ff1744;
+}
+
+/* ── HIDE DISCORD SERVER RAIL & CHANNEL DRAWER WHEN NOT IN CHAT MODE ── */
+body:not(.npd-chat-mode):not(.is-mobile) #server-rail,
+body:not(.npd-chat-mode):not(.is-mobile) #side-panel,
+body:not(.npd-chat-mode):not(.is-mobile) #chat-header {
+  display: none !important;
+}
+/* In Chat mode, hide the redundant home-nav inside #side-panel so #side-panel is purely DMs or Server Channels */
+#side-panel #home-nav,
+#side-panel #sidebar-wallet-card,
+#side-panel #user-panel {
+  display: none !important;
+}
+body.is-mobile .lt-sidebar {
+  display: none !important;
+}
+
+/* ── NPD MAIN PAGES: RED-BLACK MOTORSPORT STYLING ── */
 .npd-page-wrap {
-  padding: 24px 28px 60px;
-  max-width: 1180px;
+  padding: 28px 32px 64px;
+  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
 }
 
 .npd-hero-banner {
@@ -5555,70 +5917,79 @@ body.is-mobile .race-input-row {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 24px 28px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(88, 101, 242, 0.24) 0%, rgba(17, 24, 39, 0.92) 65%, rgba(16, 185, 129, 0.16) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  padding: 28px 32px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(220, 0, 0, 0.28) 0%, rgba(18, 0, 0, 0.92) 60%, rgba(0, 0, 0, 0.96) 100%);
+  border: 1px solid var(--cb);
+  box-shadow: var(--glow2);
+  position: relative;
+  overflow: hidden;
 }
 .npd-hero-tag {
   display: inline-block;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #818cf8;
-  background: rgba(88, 101, 242, 0.18);
-  border: 1px solid rgba(129, 140, 248, 0.35);
-  padding: 4px 10px;
-  border-radius: 999px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #ff4d4d;
+  background: rgba(230, 0, 0, 0.16);
+  border: 1px solid rgba(230, 0, 0, 0.4);
+  padding: 3px 12px;
+  border-radius: 4px;
   margin-bottom: 10px;
 }
 .npd-hero-title {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0 0 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.npd-hero-sub {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin: 0 0 18px;
-  max-width: 640px;
-  line-height: 1.5;
-}
-.npd-hero-actions {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.8rem;
+  letter-spacing: 2.5px;
+  margin: 0 0 6px;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  line-height: 1.05;
+}
+.npd-hero-sub {
+  font-size: 1.02rem;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+  max-width: 650px;
+  line-height: 1.45;
+}
+.npd-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .npd-cta-btn {
-  padding: 10px 18px;
-  font-weight: 700;
-  border-radius: 10px;
+  padding: 11px 22px;
+  font-family: 'Bebas Neue', cursive !important;
+  font-size: 1.2rem !important;
+  letter-spacing: 2px !important;
+  border-radius: 7px;
 }
 .npd-hero-car-card {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 18px 24px;
+  background: rgba(8, 0, 0, 0.78);
+  border: 1px solid rgba(230, 0, 0, 0.35);
+  border-radius: 12px;
+  padding: 18px 26px;
   text-align: center;
-  min-width: 170px;
+  min-width: 180px;
   flex-shrink: 0;
+  box-shadow: inset 0 0 24px rgba(230, 0, 0, 0.12);
 }
 .npd-hero-car-emoji {
-  font-size: 46px;
+  font-size: 52px;
   line-height: 1.1;
   margin-bottom: 6px;
+  filter: drop-shadow(0 0 14px rgba(230, 0, 0, 0.5));
 }
 .npd-hero-car-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
   color: var(--text-muted);
   margin-bottom: 8px;
 }
@@ -5626,19 +5997,51 @@ body.is-mobile .race-input-row {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 800;
-  font-size: 13.5px;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.14);
-  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 4px 12px;
   border-radius: 999px;
 }
 
-.npd-stat-val.accent { color: #818cf8; }
-.npd-stat-val.gold { color: #fbbf24; }
-.npd-stat-val.cyan { color: #38bdf8; }
+.npd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.npd-stat-card {
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.npd-stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+.npd-stat-val {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.5rem;
+  letter-spacing: 1.5px;
+  color: #fff;
+  line-height: 1.1;
+  margin-top: 4px;
+}
+.npd-stat-val small {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+.npd-stat-val.accent { color: var(--accent2); text-shadow: 0 0 14px rgba(230, 0, 0, 0.45); }
+.npd-stat-val.gold { color: #ffd700; }
+.npd-stat-val.cyan { color: #00e676; }
 .npd-stat-foot {
-  font-size: 11.5px;
+  font-size: 0.8rem;
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -5649,36 +6052,44 @@ body.is-mobile .race-input-row {
   gap: 18px;
 }
 .npd-dash-panel {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: var(--glow2);
 }
 .npd-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(230, 0, 0, 0.2);
 }
 .npd-panel-head h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 800;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.45rem;
+  letter-spacing: 2px;
+  color: var(--accent2);
 }
 .npd-panel-sub {
-  font-size: 12px;
+  font-size: 0.82rem;
   color: var(--text-muted);
 }
 .btn-link {
   background: none;
   border: none;
-  color: #818cf8;
-  font-size: 13px;
+  color: var(--accent2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.92rem;
   font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   cursor: pointer;
 }
-.btn-link:hover { text-decoration: underline; }
+.btn-link:hover { color: #fff; text-decoration: underline; }
 
 .npd-bot-roster {
   display: grid;
@@ -5690,20 +6101,21 @@ body.is-mobile .race-input-row {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(230, 0, 0, 0.2);
 }
 .npd-bot-car { font-size: 22px; }
 .npd-bot-name {
-  font-size: 13px;
+  font-size: 0.95rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .npd-bot-wpm {
-  font-size: 11.5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
@@ -5713,15 +6125,16 @@ body.is-mobile .race-input-row {
   align-items: center;
   justify-content: center;
   padding: 1px 6px;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #ffffff;
-  background: #ef4444;
-  border: 1px solid #f87171;
+  background: #e60000;
+  border: 1px solid #ff4d4d;
   border-radius: 4px;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 10px rgba(230, 0, 0, 0.6);
   line-height: 1.3;
   vertical-align: middle;
 }
@@ -5733,15 +6146,20 @@ body.is-mobile .race-input-row {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  border-bottom: 1px solid rgba(230, 0, 0, 0.2);
+  padding-bottom: 14px;
 }
 .npd-section-title {
-  margin: 0 0 4px;
-  font-size: 22px;
-  font-weight: 800;
+  margin: 0 0 2px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.3rem;
+  letter-spacing: 3px;
+  color: var(--accent2);
+  text-shadow: 0 0 16px rgba(230, 0, 0, 0.4);
 }
 .npd-section-sub {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 0.95rem;
   color: var(--text-muted);
 }
 .npd-race-controls {
@@ -5752,13 +6170,14 @@ body.is-mobile .race-input-row {
 }
 
 .npd-queue-card {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(30, 31, 34, 0.95));
-  border: 1px solid rgba(239, 68, 68, 0.38);
-  border-radius: 14px;
-  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(230, 0, 0, 0.2), rgba(14, 0, 0, 0.95));
+  border: 1px solid rgba(230, 0, 0, 0.5);
+  border-radius: 12px;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: var(--glow);
 }
 .npd-queue-top {
   display: flex;
@@ -5768,29 +6187,31 @@ body.is-mobile .race-input-row {
   flex-wrap: wrap;
 }
 .npd-queue-title {
-  font-size: 16px;
-  font-weight: 800;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: #fff;
 }
 .npd-queue-sub {
-  font-size: 12.5px;
+  font-size: 0.9rem;
   color: var(--text-muted);
 }
 .npd-queue-timer-box {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 14px;
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(230, 0, 0, 0.45);
+  padding: 8px 16px;
+  border-radius: 8px;
   text-align: right;
 }
 .npd-queue-timer-label {
-  font-size: 10px;
+  font-size: 0.68rem;
   font-weight: 800;
-  color: #fca5a5;
-  letter-spacing: 0.06em;
+  color: var(--accent2);
+  letter-spacing: 1.5px;
 }
 .npd-queue-timer-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 15px;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #fff;
 }
@@ -5804,20 +6225,20 @@ body.is-mobile .race-input-row {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(230, 0, 0, 0.3);
+  font-size: 0.92rem;
   font-weight: 700;
 }
 .npd-qp-human {
-  font-size: 10px;
+  font-size: 0.68rem;
   font-weight: 800;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+  background: rgba(0, 230, 118, 0.18);
+  color: #00e676;
 }
 .npd-queue-actions {
   display: flex;
@@ -5832,32 +6253,34 @@ body.is-mobile .race-input-row {
   gap: 12px;
 }
 .npd-hud-item {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 10px;
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .npd-hud-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
   color: var(--text-muted);
 }
 .npd-hud-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 18px;
-  font-weight: 800;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.75rem;
+  letter-spacing: 1.5px;
+  color: #fff;
 }
-.npd-hud-val.accent { color: #4ade80; }
+.npd-hud-val.accent { color: var(--accent2); }
 
 .npd-track-arena {
-  background: rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 16px;
-  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: var(--glow2);
 }
 .npd-lanes-wrap {
   display: flex;
@@ -5865,45 +6288,48 @@ body.is-mobile .race-input-row {
   gap: 12px;
 }
 .npd-lane {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  padding: 10px 14px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 16px 14px;
 }
 .npd-lane.is-me {
-  background: rgba(88, 101, 242, 0.1);
-  border-color: rgba(88, 101, 242, 0.55);
+  background: rgba(230, 0, 0, 0.12);
+  border-color: rgba(230, 0, 0, 0.65);
+  box-shadow: 0 0 18px rgba(230, 0, 0, 0.2);
 }
 .npd-lane-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  font-size: 13.5px;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 .npd-lane-name {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 .npd-lane-wpm {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  color: #a5b4fc;
+  font-size: 0.85rem;
+  color: var(--accent2);
+  font-weight: 700;
 }
 .npd-lane-road {
   position: relative;
-  height: 14px;
-  background: rgba(0, 0, 0, 0.45);
+  height: 16px;
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(230, 0, 0, 0.22);
   overflow: visible;
 }
 .npd-lane-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #5865f2, #22c55e);
+  background: linear-gradient(90deg, #990000, #ff1a1a);
+  box-shadow: 0 0 10px rgba(230, 0, 0, 0.5);
   transition: width 0.18s linear;
 }
 .npd-lane-car {
@@ -5912,7 +6338,7 @@ body.is-mobile .race-input-row {
   transform: translateY(-50%);
   font-size: 24px;
   transition: left 0.18s linear;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
   z-index: 2;
 }
 .npd-lane-finish {
@@ -5921,83 +6347,87 @@ body.is-mobile .race-input-row {
   top: 50%;
   transform: translateY(-50%);
   font-size: 14px;
-  opacity: 0.75;
+  opacity: 0.8;
 }
 .npd-place-pill {
-  padding: 1px 7px;
-  border-radius: 999px;
-  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.12);
 }
-.npd-place-pill.p-1 { background: rgba(251, 191, 36, 0.25); color: #fbbf24; }
+.npd-place-pill.p-1 { background: rgba(255, 215, 0, 0.22); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.45); }
 
 .npd-typing-deck {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 14px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  box-shadow: var(--glow2);
 }
 .npd-quote-display {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 18px;
-  line-height: 1.7;
-  padding: 16px 18px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.36);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 1.08rem;
+  line-height: 1.85;
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(230, 0, 0, 0.22);
   user-select: none;
   -webkit-user-select: none;
 }
-.rc-done { color: #4ade80; }
+.rc-done { color: #00e676; }
 .rc-cur {
-  background: rgba(88, 101, 242, 0.5);
+  background: rgba(230, 0, 0, 0.45);
   color: #fff;
-  border-bottom: 2px solid #fff;
-  border-radius: 3px;
+  border-bottom: 2px solid #ff3333;
+  border-radius: 2px;
 }
 .rc-err {
-  background: rgba(239, 68, 68, 0.65);
+  background: rgba(255, 23, 68, 0.7);
   color: #fff;
-  border-radius: 3px;
+  border-radius: 2px;
 }
-.rc-todo { color: rgba(255, 255, 255, 0.6); }
+.rc-todo { color: rgba(255, 255, 255, 0.45); }
 
 .npd-race-input {
   width: 100%;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 17px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 2px solid rgba(88, 101, 242, 0.5);
-  background: rgba(0, 0, 0, 0.45);
+  font-size: 1.05rem;
+  padding: 13px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(230, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.65);
   color: #fff;
   outline: none;
+  caret-color: var(--accent);
 }
 .npd-race-input:focus {
-  border-color: #5865f2;
-  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.25);
+  border-color: #ff1a1a;
+  box-shadow: 0 0 16px rgba(230, 0, 0, 0.35);
 }
 .npd-race-input.input-err {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.14);
+  border-color: #ff1744;
+  background: rgba(255, 23, 68, 0.16);
 }
 .npd-anticheat-note {
-  font-size: 12px;
+  font-size: 0.8rem;
   color: var(--text-muted);
+  letter-spacing: 0.5px;
 }
 
 .npd-race-results {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(74, 222, 128, 0.35);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--card);
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  border-radius: 14px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: var(--glow2);
 }
 .npd-results-head {
   display: flex;
@@ -6006,27 +6436,34 @@ body.is-mobile .race-input-row {
   gap: 14px;
   flex-wrap: wrap;
 }
-.npd-results-head h3 { margin: 0 0 4px; font-size: 19px; }
-.npd-results-head p { margin: 0; font-size: 13.5px; color: var(--text-muted); }
+.npd-results-head h3 {
+  margin: 0 0 4px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: #ffd700;
+}
+.npd-results-head p { margin: 0; font-size: 0.95rem; color: var(--text-muted); }
 .npd-results-btns { display: flex; gap: 10px; flex-wrap: wrap; }
 .npd-results-table, .npd-lb-table {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.npd-res-row {
+.npd-res-row, .npd-lb-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.26);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 0, 0, 0.78);
+  border: 1px solid rgba(230, 0, 0, 0.22);
 }
 .npd-res-row.is-me, .npd-lb-row.is-me {
-  border-color: rgba(88, 101, 242, 0.55);
-  background: rgba(88, 101, 242, 0.12);
+  border-color: rgba(230, 0, 0, 0.7);
+  background: rgba(230, 0, 0, 0.16);
+  box-shadow: 0 0 14px rgba(230, 0, 0, 0.22);
 }
 
 /* Garage & Quests */
@@ -6036,9 +6473,9 @@ body.is-mobile .race-input-row {
   gap: 16px;
 }
 .npd-car-card {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--cb);
+  border-radius: 12px;
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -6047,29 +6484,33 @@ body.is-mobile .race-input-row {
   gap: 8px;
 }
 .npd-car-card.equipped {
-  border-color: #4ade80;
-  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.3);
+  border-color: #00e676;
+  box-shadow: 0 0 16px rgba(0, 230, 118, 0.25);
 }
-.npd-car-preview { font-size: 44px; margin-bottom: 4px; }
-.npd-car-title { font-size: 15px; font-weight: 800; }
-.npd-car-desc { font-size: 12.5px; color: var(--text-muted); flex: 1; }
+.npd-car-preview { font-size: 46px; margin-bottom: 4px; }
+.npd-car-title { font-family: 'Bebas Neue', cursive; font-size: 1.35rem; letter-spacing: 1.5px; }
+.npd-car-desc { font-size: 0.85rem; color: var(--text-muted); flex: 1; }
 .npd-car-foot { margin-top: 8px; width: 100%; display: flex; justify-content: center; }
 
 .npd-lb-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .npd-pill-tab {
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.25);
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(230, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.45);
   color: var(--text-normal);
-  font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.92rem;
   font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   cursor: pointer;
 }
 .npd-pill-tab.active {
-  background: #5865f2;
-  border-color: #5865f2;
+  background: var(--accent);
+  border-color: var(--accent2);
   color: #fff;
+  box-shadow: 0 0 14px rgba(230, 0, 0, 0.45);
 }
 
 .npd-quest-bar {
@@ -6081,16 +6522,17 @@ body.is-mobile .race-input-row {
 }
 .npd-quest-fill {
   height: 100%;
-  background: linear-gradient(90deg, #5865f2, #22c55e);
+  background: linear-gradient(90deg, #e60000, #ffd700);
 }
 .npd-quest-reward {
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #ffd700;
   margin-left: 8px;
 }
 .npd-quest-prog {
-  font-size: 11.5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -6100,5 +6542,7 @@ body.is-mobile .race-input-row {
   .npd-dash-columns { grid-template-columns: 1fr; }
   .npd-bot-roster { grid-template-columns: 1fr; }
   .npd-race-hud { grid-template-columns: repeat(2, 1fr); }
+  .npd-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
 
