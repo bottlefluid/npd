@@ -100,7 +100,7 @@ const USING_EMULATORS = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && 
 // App Check (v4.51): every request to the database carries a pass from Google Cloud Fraud Defense (the new name for
 // reCAPTCHA Enterprise), and only authorized addresses can get one: the key lists them. Once it's enforced (Firebase
 // console > App Check > APIs), a copy of NPD on another address can't use the database at all.
-const APP_CHECK_SITE_KEY = '';
+const APP_CHECK_SITE_KEY = '6Lcxax8uAAAAALu1fbfUR2Qr99LUoKjLpcXqKH13';
 const APP_CHECK_ON = !!(APP_CHECK_SITE_KEY && firebase.appCheck && /^(newbgi|npd)\.pages\.dev$/.test(location.hostname));
 if (APP_CHECK_ON) {
   try {
