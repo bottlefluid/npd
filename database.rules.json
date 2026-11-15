@@ -6,9 +6,19 @@
     "presence": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && (auth.token.n == null || auth.token.n === $uid)",
-        ".validate": "!newData.exists() || (newData.hasChildren(['state', 'lastChanged']) && (newData.child('state').val() === 'online' || newData.child('state').val() === 'idle' || newData.child('state').val() === 'offline') && newData.child('lastChanged').isNumber() && (!newData.child('mobile').exists() || newData.child('mobile').isBoolean()) && (!newData.child('app').exists() || newData.child('app').isBoolean()))"
+        ".write": "auth != null && (auth.uid === $uid || auth.token.n === $uid)",
+        ".validate": "!newData.exists() || ((!newData.child('state').exists() || newData.child('state').val() === 'online' || newData.child('state').val() === 'idle' || newData.child('state').val() === 'offline') && (!newData.child('lastChanged').exists() || newData.child('lastChanged').isNumber()) && (!newData.child('mobile').exists() || newData.child('mobile').isBoolean()) && (!newData.child('app').exists() || newData.child('app').isBoolean()))"
       }
+    },
+
+    "globalChat": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+
+    "globalOnline": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     },
 
     "races": {

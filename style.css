@@ -2803,8 +2803,17 @@ body.quick-delete-armed #messages .msg-line:hover .msg-hover-actions { display: 
   --shadow: 0 2px 10px rgba(0,0,0,.4); --shadow-lg: 0 14px 34px rgba(0,0,0,.5);
   --font-display: inherit;
 }
-.orb-ic { display: inline-block; width: .85em; height: .85em; margin-right: .2em; vertical-align: -.1em; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffe08a, #f0b232 60%, #b97a12); box-shadow: 0 0 6px rgba(240,178,50,.45); }
+.orb-ic {
+  display: inline-block;
+  width: 1.05em;
+  height: 1.05em;
+  margin-right: .22em;
+  vertical-align: -.16em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fef08a 0%, #f59e0b 48%, #b91c1c 88%, #7f1d1d 100%);
+  border: 2px dashed rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 2px rgba(255, 215, 0, 0.55), 0 0 8px rgba(230, 0, 0, 0.45);
+}
 .fg-window .empty { padding: 24px; text-align: center; color: var(--text-muted); }
 
 .fg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -5854,7 +5863,15 @@ body.is-mobile .race-input-row {
   color: #ff9999;
 }
 #lt-open-owner {
-  color: #ffd700;
+  color: #ff2b2b !important;
+  background: linear-gradient(90deg, rgba(230, 0, 0, 0.2), rgba(230, 0, 0, 0.04));
+  border-left: 3px solid #ff1a1a;
+  font-weight: 800;
+  text-shadow: 0 0 12px rgba(255, 40, 40, 0.55);
+}
+#lt-open-owner:hover {
+  background: rgba(230, 0, 0, 0.34) !important;
+  color: #ffffff !important;
 }
 
 .lt-sb-bottom {
@@ -5885,19 +5902,26 @@ body.is-mobile .race-input-row {
   color: #fff;
   border-color: rgba(255, 50, 50, 0.45);
 }
+.lt-sb-action-btn.on {
+  background: rgba(230, 0, 0, 0.26);
+  color: #fff;
+  border-color: #ff3333;
+  box-shadow: 0 0 10px rgba(230, 0, 0, 0.35);
+}
 .lt-sb-action-out:hover {
   background: rgba(255, 23, 68, 0.25);
   color: #ff5252;
   border-color: #ff1744;
 }
 
-/* ── HIDE DISCORD SERVER RAIL & CHANNEL DRAWER WHEN NOT IN CHAT MODE ── */
-body:not(.npd-chat-mode):not(.is-mobile) #server-rail,
+/* ── SERVERS REMOVED COMPLETELY -> GLOBAL CHAT & DIRECT MESSAGES ONLY ── */
+#server-rail {
+  display: none !important;
+}
 body:not(.npd-chat-mode):not(.is-mobile) #side-panel,
 body:not(.npd-chat-mode):not(.is-mobile) #chat-header {
   display: none !important;
 }
-/* In Chat mode, hide the redundant home-nav inside #side-panel so #side-panel is purely DMs or Server Channels */
 #side-panel #home-nav,
 #side-panel #sidebar-wallet-card,
 #side-panel #user-panel {
@@ -5907,7 +5931,72 @@ body.is-mobile .lt-sidebar {
   display: none !important;
 }
 
-/* ── NPD FULL-SCREEN FLEXBOX LAYOUT & SCALING OVERRIDE ── */
+/* ── COLLAPSIBLE SIDEBAR ── */
+.lt-sb-collapse-btn {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(230, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 220, 220, 0.8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.15s ease;
+}
+.lt-sb-collapse-btn:hover {
+  background: rgba(230, 0, 0, 0.24);
+  color: #fff;
+  border-color: #ff3333;
+}
+body:not(.is-mobile) #lt-sidebar.collapsed {
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+}
+#lt-sidebar.collapsed .lt-sb-logo {
+  padding: 14px 10px;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+#lt-sidebar.collapsed .lt-sb-logo-text,
+#lt-sidebar.collapsed .lt-sb-user-info,
+#lt-sidebar.collapsed .lt-sb-section,
+#lt-sidebar.collapsed .lt-sbt-label,
+#lt-sidebar.collapsed .lt-sb-live-pill,
+#lt-sidebar.collapsed .lt-sb-badge {
+  display: none !important;
+}
+#lt-sidebar.collapsed .lt-sb-collapse-btn {
+  margin-left: 0;
+  transform: rotate(180deg);
+}
+#lt-sidebar.collapsed .lt-sb-user-chip {
+  justify-content: center;
+  padding: 8px;
+  margin: 8px 8px 4px;
+}
+#lt-sidebar.collapsed .lt-sbtab {
+  justify-content: center;
+  padding: 11px 6px;
+  border-radius: 8px;
+  border-left-width: 0;
+  margin: 2px 6px;
+  width: calc(100% - 12px);
+}
+#lt-sidebar.collapsed .lt-sbtab.on {
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 12px rgba(230, 0, 0, 0.35);
+}
+#lt-sidebar.collapsed .lt-sb-actions {
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── NPD FULL-SCREEN FLEXBOX LAYOUT & VIEWPORT SCALING ── */
 body:not(.is-mobile) #app,
 body:not(.is-mobile) #app.member-list-open {
   display: flex !important;
@@ -5918,23 +6007,17 @@ body:not(.is-mobile) #app.member-list-open {
   overflow: hidden !important;
 }
 body:not(.is-mobile) #lt-sidebar {
-  width: clamp(216px, 15.5vw, 252px) !important;
-  min-width: 216px !important;
-  max-width: 252px !important;
+  width: clamp(210px, 14.5vw, 246px) !important;
+  min-width: 210px !important;
+  max-width: 246px !important;
   height: 100vh !important;
   flex: 0 0 auto !important;
-}
-body:not(.is-mobile) #server-rail {
-  width: 68px !important;
-  min-width: 68px !important;
-  flex: 0 0 68px !important;
-  transform: none !important;
-  visibility: visible !important;
+  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
 }
 body:not(.is-mobile) #side-panel {
-  width: 232px !important;
-  min-width: 232px !important;
-  flex: 0 0 232px !important;
+  width: clamp(220px, 16vw, 260px) !important;
+  min-width: 220px !important;
+  flex: 0 0 auto !important;
   transform: none !important;
   visibility: visible !important;
 }
@@ -5972,15 +6055,16 @@ body:not(.is-mobile) #member-panel {
   flex: 0 0 232px !important;
 }
 
-/* ── NPD MAIN PAGES: RED-BLACK MOTORSPORT STYLING ── */
+/* ── NPD MAIN PAGES: TRUE 100% VIEWPORT SCALING (NO LEFTOVER ROOM) ── */
 .npd-page-wrap {
-  padding: clamp(20px, 2.5vw, 40px) clamp(20px, 3vw, 48px) 64px;
-  max-width: 1640px;
+  padding: clamp(14px, 1.8vw, 30px) clamp(16px, 2.2vw, 38px) 48px;
+  max-width: 100%;
   width: 100%;
+  min-height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 2vw, 26px);
+  gap: clamp(14px, 1.6vw, 24px);
   box-sizing: border-box;
 }
 .npd-svg-ico {
@@ -6800,4 +6884,912 @@ body:not(.is-mobile) #member-panel {
     height: auto !important;
     flex: 1 1 0% !important;
   }
+}
+
+/* ============================================================
+   NPD (NEWBGI) — FULLSCREEN SCALING, MOBILE MODE, NITRO TYPE
+   RACING, 3D GARAGE, EVENTS BATTLEPASS & RED OWNER PANEL
+   ============================================================ */
+
+/* Full-width scaling for all sub-views (no dead space in fullscreen) */
+.main-page-view > div,
+#shop-view .shop-wrap,
+#friends-view .friends-wrap,
+#codes-view .codes-wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+.fg-grid {
+  grid-template-columns: repeat(auto-fill, minmax(clamp(165px, 13.5vw, 220px), 1fr)) !important;
+  gap: clamp(12px, 1.4vw, 20px) !important;
+}
+.npd-stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(clamp(190px, 20vw, 280px), 1fr)) !important;
+}
+.npd-garage-grid {
+  grid-template-columns: repeat(auto-fill, minmax(clamp(220px, 17vw, 290px), 1fr)) !important;
+}
+
+/* Remove legacy overlay root safely */
+#ov-root { display: none !important; }
+
+/* ── OWNER PANEL RED THEME (.owner-mode) & GIVE EVERYTHING SWITCH ── */
+#admin-modal.owner-mode .modal,
+#admin-panel-modal.owner-mode .modal {
+  border: 1.5px solid rgba(255, 30, 30, 0.72) !important;
+  box-shadow: 0 0 42px rgba(230, 0, 0, 0.42), 0 18px 50px rgba(0, 0, 0, 0.88) !important;
+}
+#admin-modal.owner-mode .modal-head,
+#admin-panel-modal.owner-mode .modal-head {
+  background: linear-gradient(90deg, rgba(185, 28, 28, 0.55), rgba(30, 5, 5, 0.96)) !important;
+  border-bottom: 1px solid rgba(255, 45, 45, 0.52) !important;
+}
+#admin-modal.owner-mode .modal-head h3,
+#admin-modal.owner-mode .admin-tab.active,
+#admin-panel-modal.owner-mode .modal-head h3,
+#admin-panel-modal.owner-mode .admin-tab.active {
+  color: #ff4444 !important;
+}
+#admin-modal.owner-mode .admin-tab.active,
+#admin-panel-modal.owner-mode .admin-tab.active {
+  border-bottom-color: #ff2626 !important;
+  background: rgba(230, 0, 0, 0.16) !important;
+}
+#admin-modal.owner-mode .staff-role-badge,
+#admin-panel-modal.owner-mode .staff-role-badge,
+.staff-role-badge.role-owner {
+  background: rgba(230, 0, 0, 0.24) !important;
+  color: #ff3b3b !important;
+  border: 1px solid rgba(255, 50, 50, 0.6) !important;
+}
+.ge-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(220, 0, 0, 0.22), rgba(20, 4, 4, 0.92));
+  border: 1.5px solid rgba(255, 45, 45, 0.55);
+  box-shadow: 0 0 24px rgba(230, 0, 0, 0.2);
+  margin-bottom: 16px;
+}
+.ge-card-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.45rem;
+  letter-spacing: 1.8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ge-pill {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e60000;
+  color: #fff;
+  letter-spacing: 1px;
+}
+.ge-card-sub {
+  font-size: 0.86rem;
+  color: rgba(255, 220, 220, 0.78);
+  margin-top: 3px;
+}
+.ge-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 64px;
+  height: 34px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ge-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ge-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: 0.22s ease;
+}
+.ge-slider::before {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: 0.22s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.ge-switch input:checked + .ge-slider {
+  background: linear-gradient(90deg, #dc2626, #ff4500);
+  border-color: #fca5a5;
+  box-shadow: 0 0 18px rgba(230, 0, 0, 0.7);
+}
+.ge-switch input:checked + .ge-slider::before {
+  transform: translateX(30px);
+  background: #ffffff;
+}
+
+/* ── GLOBAL CHAT VIEW & LIVE ONLINE COUNT ── */
+.npd-global-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  background: rgba(8, 2, 2, 0.88);
+}
+.npd-global-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px clamp(16px, 2.2vw, 32px);
+  border-bottom: 1px solid rgba(230, 0, 0, 0.24);
+  background: rgba(16, 4, 4, 0.94);
+  flex-shrink: 0;
+}
+.npd-global-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.npd-global-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  color: #fff;
+}
+.npd-online-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #86efac;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.npd-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: npdPulseGreen 1.8s infinite;
+}
+@keyframes npdPulseGreen {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.25); }
+}
+.npd-global-feed {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  padding: 16px clamp(14px, 2vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.npd-gc-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.npd-gc-msg:hover {
+  background: rgba(230, 0, 0, 0.08);
+  border-color: rgba(230, 0, 0, 0.24);
+}
+.npd-gc-body {
+  flex: 1;
+  min-width: 0;
+}
+.npd-gc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+.npd-gc-author {
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.npd-gc-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.npd-gc-text {
+  font-size: 0.95rem;
+  color: #f1f5f9;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.npd-global-compose {
+  display: flex;
+  gap: 10px;
+  padding: 12px clamp(14px, 2vw, 28px) 16px;
+  border-top: 1px solid rgba(230, 0, 0, 0.22);
+  background: rgba(12, 3, 3, 0.96);
+  flex-shrink: 0;
+}
+.npd-global-compose input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 16px;
+  border-radius: 9px;
+  border: 1px solid rgba(230, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+.npd-global-compose input:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 12px rgba(230, 0, 0, 0.3);
+}
+
+/* ── NITRO TYPE INSPIRED ASPHALT HIGHWAY & WORD-STREAM TRACK ── */
+.nt-race-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+.nt-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(16, 4, 4, 0.95), rgba(32, 6, 6, 0.9));
+  border: 1px solid rgba(230, 0, 0, 0.34);
+}
+.nt-start-tree {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.nt-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #27272a;
+  box-shadow: inset 0 0 3px #000;
+}
+.nt-light.amber.on { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+.nt-light.green.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; }
+.nt-light.red.on { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+.nt-highway {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #14151a;
+  background-image: linear-gradient(180deg, #101116 0%, #171920 50%, #101116 100%);
+  border: 2px solid rgba(230, 0, 0, 0.45);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.75), 0 10px 32px rgba(0, 0, 0, 0.5);
+  padding: 8px 0;
+}
+.nt-finish-strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 46px;
+  width: 14px;
+  background-image: linear-gradient(45deg, #fff 25%, #111 25%, #111 50%, #fff 50%, #fff 75%, #111 75%);
+  background-size: 14px 14px;
+  opacity: 0.72;
+  z-index: 1;
+  pointer-events: none;
+}
+.nt-lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 54px;
+  padding: 0 14px;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.14);
+}
+.nt-lane:last-child {
+  border-bottom: none;
+}
+.nt-lane.me-lane {
+  background: linear-gradient(90deg, rgba(230, 0, 0, 0.14), rgba(230, 0, 0, 0.04));
+}
+.nt-lane-tag {
+  width: clamp(135px, 16vw, 195px);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  z-index: 3;
+  background: rgba(10, 10, 14, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 4px 8px;
+  margin-right: 12px;
+  overflow: hidden;
+}
+.nt-lane.me-lane .nt-lane-tag {
+  border-color: rgba(255, 50, 50, 0.55);
+}
+.nt-lane-name {
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nt-lane-road {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  margin-right: 34px;
+}
+.nt-car-sprite {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0%;
+  transition: left 0.12s linear;
+  z-index: 4;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.85));
+}
+.nt-lane-stats {
+  width: 82px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.15rem;
+  color: #f8fafc;
+  letter-spacing: 1px;
+  z-index: 3;
+}
+.nt-nitro-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(14, 6, 6, 0.9);
+  border: 1px solid rgba(230, 0, 0, 0.28);
+}
+.nt-nitro-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.nt-nitro-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #f97316, #facc15, #38bdf8);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+  transition: width 0.2s ease;
+}
+.nt-deck {
+  padding: clamp(16px, 2vw, 24px);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(16, 12, 14, 0.96), rgba(9, 5, 6, 0.98));
+  border: 1px solid rgba(230, 0, 0, 0.35);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+.nt-passage {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1.05rem, 1.45vw, 1.32rem);
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  color: rgba(226, 232, 240, 0.52);
+  user-select: none;
+  margin-bottom: 14px;
+  word-wrap: break-word;
+}
+.nt-char.done { color: #22c55e; }
+.nt-char.cur {
+  color: #ffffff;
+  background: rgba(230, 0, 0, 0.55);
+  border-radius: 3px;
+  padding: 0 1px;
+  text-decoration: underline;
+  text-decoration-color: #facc15;
+}
+.nt-char.err {
+  color: #ff4444;
+  background: rgba(239, 68, 68, 0.28);
+  border-radius: 3px;
+}
+.nt-type-input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 2px solid rgba(230, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.15rem;
+  outline: none;
+  box-sizing: border-box;
+}
+.nt-type-input:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 18px rgba(230, 0, 0, 0.35);
+}
+
+/* ── 3D CAR STUDIO, PAINT SHOP & 80-CAR LOCKER ── */
+.npd-studio-split {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.15fr) minmax(290px, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.npd-3d-panel {
+  border-radius: 14px;
+  border: 1px solid rgba(230, 0, 0, 0.35);
+  background: #080406;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.npd-3d-canvas {
+  width: 100%;
+  height: clamp(240px, 28vh, 340px);
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+.npd-3d-canvas:active { cursor: grabbing; }
+.npd-3d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(230, 0, 0, 0.22);
+  background: rgba(16, 4, 4, 0.94);
+}
+.npd-paint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.npd-paint-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.npd-paint-card.active {
+  border-color: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.28);
+}
+.npd-paint-swatch {
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+/* ── EVENTS VIEW: SEASON 1 THANKSGIVING BATTLEPASS ── */
+.bp-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(180, 45, 12, 0.44), rgba(85, 16, 12, 0.92) 55%, rgba(12, 4, 4, 0.98));
+  border: 1.5px solid rgba(249, 115, 22, 0.55);
+  box-shadow: 0 0 36px rgba(234, 88, 12, 0.25);
+}
+.bp-urgency-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.28);
+  border: 1px solid rgba(252, 165, 165, 0.55);
+  color: #fed7aa;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.bp-track-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 12px;
+}
+.bp-tier-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(18, 8, 8, 0.9);
+  border: 1px solid rgba(249, 115, 22, 0.26);
+}
+.bp-tier-card.reached {
+  border-color: rgba(249, 115, 22, 0.72);
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.22);
+}
+.bp-slot {
+  padding: 9px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.bp-slot.prem {
+  background: linear-gradient(135deg, rgba(180, 45, 12, 0.22), rgba(15, 5, 5, 0.7));
+  border-color: rgba(251, 191, 36, 0.38);
+}
+.bp-upcoming-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+.bp-upcoming-card {
+  padding: 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── MOBILE MODE PREVIEW & RESPONSIVE MOBILE BAR ── */
+#npd-mobile-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(10, 2, 2, 0.98);
+  border-top: 1px solid rgba(230, 0, 0, 0.42);
+  z-index: 950;
+  align-items: center;
+  justify-content: space-around;
+}
+body.is-mobile #npd-mobile-bar,
+body.force-mobile-mode #npd-mobile-bar {
+  display: flex !important;
+}
+.npd-mob-btn {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: none;
+  color: rgba(255, 225, 225, 0.62);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.npd-mob-btn.on {
+  color: #ff3333;
+}
+body.force-mobile-mode #mobile-user-pill,
+body.is-mobile #mobile-user-pill,
+body.force-mobile-mode #mobile-notif-page,
+body.is-mobile #mobile-notif-page,
+body.force-mobile-mode #mobile-you-page,
+body.is-mobile #mobile-you-page,
+body.force-mobile-mode #lt-sidebar,
+body.is-mobile #lt-sidebar {
+  display: none !important;
+}
+body.force-mobile-mode #app,
+body.is-mobile #app,
+body.force-mobile-mode #app.member-list-open,
+body.is-mobile #app.member-list-open {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
+  background: #040000 !important;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+}
+body.force-mobile-mode #side-panel,
+body.is-mobile #side-panel {
+  display: none !important;
+}
+body.force-mobile-mode.npd-chat-mode #app:not(.mobile-show-chat) #side-panel,
+body.is-mobile.npd-chat-mode #app:not(.mobile-show-chat) #side-panel {
+  display: flex !important;
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  transform: none !important;
+  visibility: visible !important;
+  border-radius: 0 !important;
+}
+body.force-mobile-mode.npd-chat-mode #app:not(.mobile-show-chat) #main-col,
+body.is-mobile.npd-chat-mode #app:not(.mobile-show-chat) #main-col {
+  display: none !important;
+}
+body.force-mobile-mode #main-col,
+body.is-mobile #main-col {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  position: relative !important;
+  transform: none !important;
+  visibility: visible !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+}
+body.force-mobile-mode #main-col > .main-page-view:not(.hidden),
+body.is-mobile #main-col > .main-page-view:not(.hidden) {
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 12px 12px 24px !important;
+}
+body.force-mobile-mode .npd-stats-grid,
+body.is-mobile .npd-stats-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+body.force-mobile-mode .npd-hero-banner,
+body.is-mobile .npd-hero-banner {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  padding: 16px !important;
+  gap: 14px !important;
+}
+body.force-mobile-mode .npd-dash-columns,
+body.is-mobile .npd-dash-columns {
+  grid-template-columns: 1fr !important;
+}
+body.force-mobile-mode .npd-type-input,
+body.force-mobile-mode .nt-type-input,
+body.is-mobile .npd-type-input,
+body.is-mobile .nt-type-input,
+body.is-mobile input,
+body.is-mobile textarea,
+body.is-mobile select {
+  font-size: 16px !important;
+}
+body.is-mobile .nt-lane,
+body.force-mobile-mode .nt-lane {
+  grid-template-columns: 104px 1fr 52px;
+  gap: 8px;
+  padding: 6px 8px;
+}
+body.is-mobile .nt-car-wrap,
+body.force-mobile-mode .nt-car-wrap {
+  width: 64px;
+}
+body.is-mobile .nt-word-stream,
+body.force-mobile-mode .nt-word-stream {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  padding: 12px 14px;
+}
+body.is-mobile .npd-global-wrap,
+body.force-mobile-mode .npd-global-wrap {
+  height: calc(100dvh - 150px);
+}
+body.is-mobile .npd-games-grid,
+body.force-mobile-mode .npd-games-grid,
+body.is-mobile .npd-garage-grid,
+body.force-mobile-mode .npd-garage-grid,
+body.is-mobile .npd-paints-grid,
+body.force-mobile-mode .npd-paints-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+}
+#npd-mob-more-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+#npd-mob-more-sheet.hidden {
+  display: none !important;
+}
+.npd-mob-sheet-panel {
+  background: #0d0405;
+  border-top: 1.5px solid rgba(230, 0, 0, 0.55);
+  border-radius: 18px 18px 0 0;
+  padding: 16px 16px calc(22px + env(safe-area-inset-bottom, 0px));
+  max-height: 82dvh;
+  overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(230, 0, 0, 0.25);
+}
+.npd-mob-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.npd-mob-sheet-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.35rem;
+  letter-spacing: 1.5px;
+  color: #fff;
+}
+.npd-mob-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.npd-mob-tile {
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+.npd-mob-tile.danger {
+  border-color: rgba(230, 0, 0, 0.5);
+  background: rgba(230, 0, 0, 0.14);
+  color: #ff6b6b;
+}
+.npd-mob-tile.hidden {
+  display: none !important;
+}
+@media (max-width: 960px) {
+  .npd-studio-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── NPD VECTOR TRACK BADGES, DM DRAWER CLEANUP & MOBILE FIT POLISH ── */
+#server-rail {
+  display: none !important;
+}
+body.npd-chat-mode #side-panel #home-nav,
+body.npd-chat-mode #side-panel #sidebar-wallet-card,
+body.npd-chat-mode #side-panel #home-activity {
+  display: none !important;
+}
+.npd-bot-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  color: #fff;
+  background: #dc2626;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.npd-mini-lb-row {
+  display: grid;
+  grid-template-columns: 34px 50px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.npd-mini-lb-row:hover {
+  background: rgba(230, 0, 0, 0.12);
+  border-color: rgba(230, 0, 0, 0.35);
+}
+.npd-lb-pos {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 900;
+  font-size: 13px;
+  color: #facc15;
+}
+.npd-lb-wpm {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent2);
+}
+.nt-todo {
+  color: rgba(226, 232, 240, 0.5);
+}
+.nt-type-input.err {
+  border-color: #ff3b3b;
+  box-shadow: 0 0 12px rgba(255, 59, 59, 0.45);
+}
+.nrc-roster-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+body.force-mobile-mode,
+body.is-mobile {
+  overflow-x: hidden;
+}
+body.force-mobile-mode #main-col > .main-page-view:not(.hidden),
+body.is-mobile #main-col > .main-page-view:not(.hidden) {
+  overflow-x: hidden !important;
+}
+body.force-mobile-mode .modal,
+body.is-mobile .modal,
+body.force-mobile-mode #admin-panel-modal .modal,
+body.is-mobile #admin-panel-modal .modal {
+  width: calc(100vw - 16px) !important;
+  max-width: calc(100vw - 16px) !important;
+  max-height: 90dvh !important;
+}
+body.force-mobile-mode .nt-top-bar,
+body.is-mobile .nt-top-bar {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+body.force-mobile-mode .nt-lane,
+body.is-mobile .nt-lane {
+  grid-template-columns: 92px 1fr 54px;
+  gap: 6px;
 }

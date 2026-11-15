@@ -458,7 +458,12 @@ const SHOP_CATEGORY_DEFS = {
   music: { label: 'Music', get catalog() { return allMusicTracks(); }, ownedField: 'ownedMusic', equipField: 'equippedMusic' },
 };
 const PREMIUM_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
-function isPremium(p) { return !!(p && p.premiumUntil && p.premiumUntil > Date.now()); }
+function npdHasEverything(p) { return !!(p && p.giveEverything === true); }
+function isPremium(p) { return npdHasEverything(p) || !!(p && p.premiumUntil && p.premiumUntil > Date.now()); }
+function npdOwnsShopItem(p, ownedField, id) {
+  if (npdHasEverything(p)) return true;
+  return !!(p && Array.isArray(p[ownedField]) && p[ownedField].includes(id));
+}
 function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
 // ============================================================
@@ -517,8 +522,8 @@ const UPDATES = [
   { v: '1.0', date: '2026-11-09', title: 'Welcome to NPD (NewBGI) — The LiquidType Sequel',
     notes: [
       'welcome to NPD (NewBGI)! we took the best parts of LiquidType (BGI) and rebuilt it from the ground up with a brand-new engine and UI.',
-      'new upgraded sidebar on the left with quick access to your Dashboard, Race Track, Leaderboard, My Stats, Locker, Daily Quests, Codes, Shop, Friends, and Direct Messages.',
-      'earn Bottlecaps from racing and daily quests, redeem codes, and customize your profile in the Shop and Locker.',
+      'new upgraded sidebar on the left with quick access to your Dashboard, Racing, Games, Events, Global Chat, Direct Messages, Leaderboard, My Stats, Garage & Locker, Codes, Shop, and Friends.',
+      'earn Bottlecaps and XP from racing and mini-games, unlock Season 1 Battlepass rewards, customize 80 cars with 36 paints in 3D, and flex in Chat.',
     ] },
 ];
 function renderUpdates() {
@@ -976,27 +981,27 @@ function applyAdminVisibility() {
   const swCoowner = $('switch-to-coowner-panel');
   const swOwner = $('switch-to-owner-panel');
 
-  if (adminEl) adminEl.classList.toggle('hidden', rank < 1);
-  if (coownerEl) coownerEl.classList.toggle('hidden', rank < 2);
-  if (ownerEl) ownerEl.classList.toggle('hidden', rank < 3);
+  if (adminEl) adminEl.classList.toggle('hidden', rank !== 1);
+  if (coownerEl) coownerEl.classList.toggle('hidden', rank !== 2);
+  if (ownerEl) ownerEl.classList.toggle('hidden', rank !== 3);
 
   if (sbGroup) sbGroup.classList.toggle('hidden', rank < 1);
-  if (sbAdmin) sbAdmin.classList.toggle('hidden', rank < 1);
-  if (sbCoowner) sbCoowner.classList.toggle('hidden', rank < 2);
-  if (sbOwner) sbOwner.classList.toggle('hidden', rank < 3);
+  if (sbAdmin) sbAdmin.classList.toggle('hidden', rank !== 1);
+  if (sbCoowner) sbCoowner.classList.toggle('hidden', rank !== 2);
+  if (sbOwner) sbOwner.classList.toggle('hidden', rank !== 3);
 
-  if (swAdmin) swAdmin.classList.toggle('hidden', rank < 1);
-  if (swCoowner) swCoowner.classList.toggle('hidden', rank < 2);
-  if (swOwner) swOwner.classList.toggle('hidden', rank < 3);
+  if (swAdmin) swAdmin.classList.toggle('hidden', rank !== 1);
+  if (swCoowner) swCoowner.classList.toggle('hidden', rank !== 2);
+  if (swOwner) swOwner.classList.toggle('hidden', rank !== 3);
 
   const ltWrap = $('lt-sb-staff-wrap');
   const ltAdmin = $('lt-open-admin');
   const ltCoowner = $('lt-open-coowner');
   const ltOwner = $('lt-open-owner');
   if (ltWrap) ltWrap.classList.toggle('hidden', rank < 1);
-  if (ltAdmin) ltAdmin.classList.toggle('hidden', rank < 1);
-  if (ltCoowner) ltCoowner.classList.toggle('hidden', rank < 2);
-  if (ltOwner) ltOwner.classList.toggle('hidden', rank < 3);
+  if (ltAdmin) ltAdmin.classList.toggle('hidden', rank !== 1);
+  if (ltCoowner) ltCoowner.classList.toggle('hidden', rank !== 2);
+  if (ltOwner) ltOwner.classList.toggle('hidden', rank !== 3);
 }
 let profileCache = {};
 let currentServerId = null;
@@ -1036,17 +1041,18 @@ const WORDLE_BOT_PROFILE = {
 };
 const BOT_PROFILES = { [SAPPHIRE_BOT_UID]: SAPPHIRE_BOT_PROFILE, [WORDLE_BOT_UID]: WORDLE_BOT_PROFILE };
 const NPD_RACE_BOTS = [
-  { username: 'ytggobs', wpmBase: 92, accBase: 97.5, car: 'car-apex', color: '#ef4444', bio: 'Official NPD Racing Bot — Always ready on the grid.' },
-  { username: 'Marco', wpmBase: 84, accBase: 96.8, car: 'car-interceptor', color: '#3b82f6', bio: 'Official NPD Racing Bot — Smooth corners, clean keystrokes.' },
-  { username: 'TheFinnyShow', wpmBase: 105, accBase: 98.2, car: 'car-rocket', color: '#a855f7', bio: 'Official NPD Racing Bot — Live from the fast lane.' },
-  { username: 'Default', wpmBase: 68, accBase: 95.0, car: 'car-classic', color: '#64748b', bio: 'Official NPD Racing Bot — Steady pace, zero mistakes.' },
-  { username: 'Doodlehoney2021', wpmBase: 77, accBase: 96.2, car: 'car-metro', color: '#f59e0b', bio: 'Official NPD Racing Bot — Sweet speed on every track.' },
-  { username: 'Perridise6099', wpmBase: 98, accBase: 97.9, car: 'car-saucer', color: '#10b981', bio: 'Official NPD Racing Bot — Full throttle in paradise.' },
+  { id: 'bot_ytggobs', username: 'ytggobs', wpmBase: 96, accBase: 97.6, car: 'car-apex', paint: 'paint_crimson_gloss', color: '#ef4444', bio: 'Official NPD Racing Bot — Always ready on the grid.' },
+  { id: 'bot_marco', username: 'Marco', wpmBase: 86, accBase: 96.8, car: 'car-interceptor', paint: 'paint_cobalt_metallic', color: '#3b82f6', bio: 'Official NPD Racing Bot — Smooth corners, clean keystrokes.' },
+  { id: 'bot_finny', username: 'TheFinnyShow', wpmBase: 108, accBase: 98.3, car: 'car-rocket', paint: 'paint_amethyst_pearl', color: '#a855f7', bio: 'Official NPD Racing Bot — Live from the fast lane.' },
+  { id: 'bot_cruiser', username: 'CruiserBot', wpmBase: 72, accBase: 95.4, car: 'car-classic', paint: 'paint_obsidian_matte', color: '#64748b', bio: 'Official NPD Racing Bot — Steady pace, clean shifts.' },
+  { id: 'bot_doodle', username: 'Doodlehoney2021', wpmBase: 82, accBase: 96.5, car: 'car-metro', paint: 'paint_tangerine_pulse', color: '#f59e0b', bio: 'Official NPD Racing Bot — Sweet speed on every track.' },
+  { id: 'bot_perridise', username: 'Perridise6099', wpmBase: 101, accBase: 98.0, car: 'car-saucer', paint: 'paint_viper_emerald', color: '#10b981', bio: 'Official NPD Racing Bot — Full throttle in paradise.' },
 ];
 function seedBotProfiles() {
   Object.entries(BOT_PROFILES).forEach(([uid, p]) => { profileCache[uid] = p; });
   NPD_RACE_BOTS.forEach(b => {
-    profileCache[b.username] = {
+    profileCache[b.id] = {
+      id: b.id,
       username: b.username,
       bio: b.bio,
       bot: true,
@@ -1055,7 +1061,7 @@ function seedBotProfiles() {
       avatarUrl: DEFAULT_AVATAR_URL,
       pronouns: 'BOT',
       premiumUntil: null,
-      raceStats: { races: 420, wins: 145, bestWpm: b.wpmBase + 18, avgWpm: b.wpmBase, avgAcc: b.accBase, equippedCar: b.car }
+      raceStats: { races: 420, wins: 145, bestWpm: b.wpmBase + 22, avgWpm: b.wpmBase, avgAcc: b.accBase, equippedCar: b.car, equippedPaint: b.paint }
     };
   });
 }
@@ -1606,7 +1612,7 @@ function isMobileDevice() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS reports itself as a Mac
   return uaMobile && (navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
 }
-function isOnMobile(uid) { return !!mobileCache[uid]; }
+function isOnMobile(uid) { return (uid === myUid && typeof isForceMobileMode === 'function' && isForceMobileMode()) || !!mobileCache[uid]; }
 function isOnApp(uid) { return uid === myUid ? !!DESKTOP : !!appCache[uid]; }
 // Multi-device presence: every open tab/device writes its OWN child under
 // presence/{uid}/connections/{connId} instead of all of them fighting over
@@ -1624,15 +1630,40 @@ let presenceConnectedCb = null;
 let desktopIdle = false;
 let desktopWindowHidden = false;   // the app window is in the tray or minimized (the page itself may still report "visible")
 const pageHidden = () => document.hidden || desktopWindowHidden;
+const FORCE_MOBILE_KEY = 'npd_force_mobile_mode';
+function isForceMobileMode() {
+  try { return localStorage.getItem(FORCE_MOBILE_KEY) === '1'; } catch (e) { return false; }
+}
+function setForceMobileMode(on) {
+  try { localStorage.setItem(FORCE_MOBILE_KEY, on ? '1' : '0'); } catch (e) {}
+  syncDeviceClasses();
+  updateMyConnection();
+  mobileCache[myUid] = isMobileDevice() || isForceMobileMode();
+  renderSelfPanel();
+  toast(on ? 'Mobile Mode enabled — device status set to Mobile.' : 'Desktop Mode restored.');
+}
 function myConnectionState() {
-  return { idle: DESKTOP ? desktopIdle : document.hidden, mobile: isMobileDevice(), app: !!DESKTOP, at: firebase.database.ServerValue.TIMESTAMP };
+  const idle = !!(DESKTOP ? desktopIdle : document.hidden);
+  const mobile = isMobileDevice() || isForceMobileMode();
+  return { idle, mobile, app: !!DESKTOP, at: firebase.database.ServerValue.TIMESTAMP };
 }
 function updateMyConnection() {
-  if (!rtdb || !myUid || !myPresenceConnRef) return;
-  try { myPresenceConnRef.update(myConnectionState()); } catch (e) {}
+  if (!rtdb || !myUid) return;
+  const st = myConnectionState();
+  const key = myPresenceKey();
+  if (myPresenceConnRef) { try { myPresenceConnRef.update(st); } catch (e) {} }
+  if (key) {
+    try {
+      rtdb.ref('presence/' + key).update({
+        state: st.idle ? 'idle' : 'online',
+        mobile: !!st.mobile,
+        app: !!st.app,
+        lastChanged: firebase.database.ServerValue.TIMESTAMP
+      });
+    } catch (e) {}
+  }
 }
-// Presence lives under each account's sign-in (presence/<its Firebase uid>, which is authUid on the profile), because the
-// Realtime Database's rules only let a sign-in write its own (database.rules.json). Before v4.51 it was by username.
+// Presence lives under each account's sign-in (presence/<its Firebase uid>, which is authUid on the profile).
 const myPresenceKey = () => (auth.currentUser ? auth.currentUser.uid : null);
 function presenceKeyOf(uid) {
   if (uid === myUid) return myPresenceKey();
@@ -1640,7 +1671,11 @@ function presenceKeyOf(uid) {
   return p && typeof p.authUid === 'string' && p.authUid ? p.authUid : null;
 }
 function initPresence() {
-  if (!rtdb || !myUid || OVERLAY_WINDOW || !myPresenceKey()) return;   // the app's main window is the one that says you're online
+  if (!rtdb || !myUid || !myPresenceKey()) return;
+  presenceCache[myUid] = true;
+  idleCache[myUid] = !!document.hidden;
+  mobileCache[myUid] = isMobileDevice() || isForceMobileMode();
+  appCache[myUid] = !!DESKTOP;
   try {
     const myRef = rtdb.ref('presence/' + myPresenceKey());
     if (presenceConnectedCb) rtdb.ref('.info/connected').off('value', presenceConnectedCb);
@@ -1648,13 +1683,17 @@ function initPresence() {
       if (snap.val() !== true) return;
       if (!myPresenceConnRef) myPresenceConnRef = myRef.child('connections').push();
       const connRef = myPresenceConnRef;
+      const st = myConnectionState();
+      myRef.onDisconnect().update({ state: 'offline', lastChanged: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
       connRef.onDisconnect().remove()
-        .then(() => connRef.set(myConnectionState()))
-        .then(() => myRef.update({ online: null, idle: null, mobile: null, lastChanged: firebase.database.ServerValue.TIMESTAMP }))
-        .then(() => { myActivityPublished = null; publishActivity(); })   // an offline blip clears the activity, so send it again
+        .then(() => myRef.update({ state: st.idle ? 'idle' : 'online', mobile: !!st.mobile, app: !!st.app, lastChanged: firebase.database.ServerValue.TIMESTAMP }))
+        .then(() => connRef.set(st))
+        .then(() => { myActivityPublished = null; publishActivity(); })
         .catch(() => {});
     };
     rtdb.ref('.info/connected').on('value', presenceConnectedCb);
+    updateMyConnection();
+    if (typeof renderSelfPanel === 'function') renderSelfPanel();
   } catch (e) { console.warn('Presence init failed', e); }
 }
 document.addEventListener('visibilitychange', () => {
@@ -1719,13 +1758,18 @@ function subscribePresence(uid) {
       if (conns.length) {
         online = true;
         idle = conns.every(c => c.idle);
-        mobile = conns.every(c => c.mobile);
+        mobile = conns.some(c => c.mobile) && conns.every(c => c.mobile);
         onApp = conns.some(c => c.app && !c.idle);
       } else {
-        online = !!(val && val.online);
-        idle = !!(val && val.idle);
-        mobile = !!(val && val.online && val.mobile);
-        onApp = false;
+        const stStr = val && typeof val.state === 'string' ? val.state : '';
+        online = stStr === 'online' || stStr === 'idle' || !!(val && val.online);
+        idle = stStr === 'idle' || !!(val && val.idle);
+        mobile = !!(online && val && val.mobile);
+        onApp = !!(online && val && val.app);
+      }
+      if (uid === myUid && auth.currentUser) {
+        online = true;
+        if (isForceMobileMode()) mobile = true;
       }
       const act = cleanActivity(val && val.activity);
       const actSig = JSON.stringify(act);
@@ -1760,8 +1804,15 @@ function subscribePresence(uid) {
 // online/idle/offline, purely from real connection + tab-visibility state.
 function computeDisplayStatus(uid) {
   if (!rtdb) return 'online';
-  if (presenceCache[uid] === undefined) { subscribePresence(uid); return 'offline'; }
-  if (presenceCache[uid] === false) return 'offline';
+  if (presenceCache[uid] === undefined) {
+    subscribePresence(uid);
+    if (uid === myUid && auth.currentUser) {
+      const p = myProfile;
+      return (p && p.dnd === true) ? 'dnd' : (document.hidden ? 'idle' : 'online');
+    }
+    return 'offline';
+  }
+  if (presenceCache[uid] === false && uid !== myUid) return 'offline';
   // Do Not Disturb (on their profile) shows instead of online or idle
   const p = uid === myUid ? myProfile : profileCache[uid];
   if (p && p.dnd === true) return 'dnd';
@@ -1790,8 +1841,7 @@ if (ANDROID_APP) document.documentElement.classList.add('is-android-app');
 // The computer app also opens this page as a see-through window that only shows the overlay, so the overlay shortcut
 // works on top of other programs and games (?overlay=1, see FrxDesktop/main.js). That window shares the sign-in with the
 // main window, and leaves presence, activity, music and the games to the main window.
-const OVERLAY_WINDOW = !!DESKTOP && new URLSearchParams(location.search).get('overlay') === '1';
-if (OVERLAY_WINDOW) document.documentElement.classList.add('ov-window');
+const OVERLAY_WINDOW = false;
 let desktopActivity = null, desktopDetectSent = null;   // desktopActivity: the game / Spotify song the app found on this computer
 let myActivityPublished = null, activityDebounce = 0, musicStartedAt = 0, rpcGameStartedAt = 0, rpcMedia = null;   // rpcMedia: { el, type, name, startedAt } for a chat file that is playing
 const rpcStr = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n) : '');
@@ -3105,7 +3155,6 @@ function renderAccountSignin() {
 
 $('logout-btn').onclick = async () => {
   setMobileTab('home');
-  ovReset();
   musicStop();
   ggRaccoonSeen = null;
   teardownPresence();
@@ -3356,20 +3405,11 @@ async function startTermination(info) {
 // ============================================================
 function initAppForUser() {
   initPresence();
-  if (!OVERLAY_WINDOW) subscribeBlocks();
+  subscribeBlocks();
   unsub.self = db.collection('users').doc(myUid).onSnapshot(snap => {
     if (!snap.exists) return;
     myProfile = snap.data();
     profileCache[myUid] = myProfile;
-    if (OVERLAY_WINDOW) {
-      // Only what the overlay shows. Bans, account deletion, redirects, music and games are the main window's job.
-      staffFlagsFromProfile(myProfile);
-      applyTheme(myProfile.theme || 'default');
-      applyShopTheme(myProfile.equippedTheme);
-      ovRenderBindSetting();
-      if (banStatus(myProfile).banned || myProfile.terminated) ovClose();
-      return;
-    }
     if (terminationActive) return;
     noteMyLook(myProfile);   // tells everyone else's screens when what they show of you changed
     if (myProfile.terminated) {
@@ -3402,17 +3442,20 @@ function initAppForUser() {
     const sfWas = sfMode;
     staffFlagsFromProfile(myProfile);
     applyAdminVisibility();
+    if (typeof syncGiveEverythingIfNeeded === 'function') syncGiveEverythingIfNeeded();
     if (sfWas !== sfMode && typeof renderCurrentView === 'function' && (currentView === 'channel' || currentView === 'dm' || currentView === 'groupdm')) { profileCache[myUid] = myProfile; renderCurrentView(); }
     applyTheme(myProfile.theme || 'default');
     applyCustomKeyboardSetting();
-    ovRenderBindSetting();
     ggOnProfileUpdate();
     renderSelfPanel();
     renderHomeActivity();
     updateFriendReqBadge();
     if (!$('settings-modal').classList.contains('hidden')) populateSettings();
     if (currentView === 'friends') renderFriendsView();
-    if (currentView === 'quests') renderQuests();
+    if (currentView === 'events' && typeof renderNpdEventsView === 'function') renderNpdEventsView();
+    if (currentView === 'dashboard' && typeof renderNpdDashboard === 'function') renderNpdDashboard();
+    if (currentView === 'locker' && typeof renderNpdLocker === 'function') renderNpdLocker();
+    if (currentView === 'shop') refreshOpenShopPanes();
     renderCurrentView();
   });
 
@@ -3421,7 +3464,6 @@ function initAppForUser() {
     snap.forEach(d => servers.push({ id: d.id, ...d.data() }));
     window.__myServers = servers;
     servers.forEach(syncServerCard);
-    if (typeof ovOnServersChanged === 'function') ovOnServersChanged();
     renderServerRail(servers);
     syncServerChannelListeners(servers);
     if (currentServerId) {
@@ -3502,7 +3544,9 @@ function renderSelfPanel() {
   $('self-username').innerHTML = esc(displayNameOf(myProfile)) + premiumStar(myProfile) + roleTag(myProfile);
   const st = STATUSES.find(s => s.key === computeDisplayStatus(myUid));
   const myAct = computeMyActivity();
-  $('self-status-label').textContent = myAct ? activityLine(myAct) : (st ? st.label : 'Online') + (st && st.key !== 'offline' ? (isOnMobile(myUid) ? ' · Mobile' : DESKTOP ? ' · App' : '') : '');
+  const baseStatus = st ? st.label : 'Online';
+  const mobSuffix = (st && st.key !== 'offline') ? (isOnMobile(myUid) ? ' · Mobile' : DESKTOP ? ' · App' : '') : '';
+  $('self-status-label').textContent = (myAct ? activityLine(myAct) : baseStatus) + mobSuffix;
   updateMobileUserPill();
 }
 
@@ -3703,15 +3747,23 @@ document.addEventListener('click', (e) => {
 // side of the screen (whichever axis rotation makes narrow) under 600px,
 // scoped to touch devices so it doesn't also catch a small desktop window.
 function isMobile() {
-  const narrow = Math.min(window.innerWidth, window.innerHeight) <= 600;
+  if (typeof isForceMobileMode === 'function' && isForceMobileMode()) return true;
+  const narrow = window.innerWidth <= 820 || Math.min(window.innerWidth, window.innerHeight) <= 640;
   const touchMedia = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  return narrow && (touchMedia || isMobileDevice());
+  return narrow && (touchMedia || isMobileDevice() || window.innerWidth <= 768);
 }
 // Mirror the detection onto <body> so CSS can key off a real device check
 // (body.is-mobile / body.is-touch) instead of only viewport width.
 function syncDeviceClasses() {
-  document.body.classList.toggle('is-mobile', isMobile());
+  const forced = typeof isForceMobileMode === 'function' && isForceMobileMode();
+  const mob = isMobile();
+  document.body.classList.toggle('is-mobile', mob);
+  document.body.classList.toggle('force-mobile-mode', forced);
   document.body.classList.toggle('is-touch', isTouchDevice() || isMobileDevice());
+  const mobBtn = $('lt-btn-mobile');
+  if (mobBtn) mobBtn.classList.toggle('on', forced);
+  const exitBtn = $('npd-mob-exit-btn');
+  if (exitBtn) exitBtn.classList.toggle('hidden', !forced);
 }
 syncDeviceClasses();
 window.addEventListener('resize', syncDeviceClasses);
@@ -3953,7 +4005,7 @@ document.addEventListener('keydown', (e) => {
 // HOME VIEW (DMs)
 // ============================================================
 function hideMainPageViews() {
-  ['dashboard-view', 'race-view', 'leaderboard-view', 'stats-view', 'locker-view', 'friends-view', 'quests-view', 'codes-view', 'shop-view'].forEach(id => {
+  ['dashboard-view', 'race-view', 'leaderboard-view', 'stats-view', 'locker-view', 'friends-view', 'games-view', 'events-view', 'global-chat-view', 'quests-view', 'codes-view', 'shop-view'].forEach(id => {
     const el = $(id);
     if (el) el.classList.add('hidden');
   });
@@ -4001,7 +4053,13 @@ document.querySelectorAll('.home-nav-item[data-home-view]').forEach(item => {
 
 function openHomeMainView(which) {
   document.body.classList.remove('npd-chat-mode');
+  if (which === 'quests') which = 'games';
   if (typeof setLtSidebarActive === 'function') setLtSidebarActive(which);
+  const moreSheet = $('npd-mob-more-sheet');
+  if (moreSheet) moreSheet.classList.add('hidden');
+  document.querySelectorAll('#npd-mobile-bar .npd-mob-btn').forEach(b => {
+    b.classList.toggle('on', b.dataset.mobNav === which);
+  });
   currentServerId = null; currentServerData = null; currentChannelId = null; currentThreadId = null; currentThreadData = null;
   currentDMId = null; currentDMOtherUid = null; currentGroupDMId = null;
   if (unsub.messages) { unsub.messages(); unsub.messages = null; }
@@ -4014,12 +4072,14 @@ function openHomeMainView(which) {
   hideMainPageViews();
   setChatHeaderHash('');
   if (which === 'dashboard') { currentView = 'dashboard'; $('chat-header-title').textContent = 'Dashboard'; if ($('dashboard-view')) $('dashboard-view').classList.remove('hidden'); if (typeof renderNpdDashboard === 'function') renderNpdDashboard(); }
-  else if (which === 'race') { currentView = 'race'; $('chat-header-title').textContent = 'Race Track'; if ($('race-view')) $('race-view').classList.remove('hidden'); if (typeof renderNpdRaceView === 'function') renderNpdRaceView(); }
+  else if (which === 'race') { currentView = 'race'; $('chat-header-title').textContent = 'Racing'; if ($('race-view')) $('race-view').classList.remove('hidden'); if (typeof renderNpdRaceView === 'function') renderNpdRaceView(); }
+  else if (which === 'games') { currentView = 'games'; $('chat-header-title').textContent = 'Games'; if ($('games-view')) $('games-view').classList.remove('hidden'); if (typeof mountGameHubs === 'function') mountGameHubs(); }
+  else if (which === 'events') { currentView = 'events'; $('chat-header-title').textContent = 'Events — Harvest Drift'; if ($('events-view')) $('events-view').classList.remove('hidden'); if (typeof renderNpdEventsView === 'function') renderNpdEventsView(); }
+  else if (which === 'chat-global') { currentView = 'chat-global'; $('chat-header-title').textContent = 'Global Chat'; if ($('global-chat-view')) $('global-chat-view').classList.remove('hidden'); if (typeof initGlobalChat === 'function') initGlobalChat(); }
   else if (which === 'leaderboard') { currentView = 'leaderboard'; $('chat-header-title').textContent = 'Leaderboard'; if ($('leaderboard-view')) $('leaderboard-view').classList.remove('hidden'); if (typeof renderNpdLeaderboard === 'function') renderNpdLeaderboard(); }
   else if (which === 'stats') { currentView = 'stats'; $('chat-header-title').textContent = 'My Stats'; if ($('stats-view')) $('stats-view').classList.remove('hidden'); if (typeof renderNpdStats === 'function') renderNpdStats(); }
-  else if (which === 'locker') { currentView = 'locker'; $('chat-header-title').textContent = 'Locker'; if ($('locker-view')) $('locker-view').classList.remove('hidden'); if (typeof renderNpdLocker === 'function') renderNpdLocker(); }
+  else if (which === 'locker') { currentView = 'locker'; $('chat-header-title').textContent = 'Garage & Locker'; if ($('locker-view')) $('locker-view').classList.remove('hidden'); if (typeof renderNpdLocker === 'function') renderNpdLocker(); }
   else if (which === 'friends') { currentView = 'friends'; $('chat-header-title').textContent = 'Friends'; $('friends-view').classList.remove('hidden'); renderFriendsView(); }
-  else if (which === 'quests') { currentView = 'quests'; $('chat-header-title').textContent = 'Quests'; $('quests-view').classList.remove('hidden'); renderQuests(); }
   else if (which === 'codes') { currentView = 'codes'; $('chat-header-title').textContent = 'Codes'; $('codes-view').classList.remove('hidden'); }
   else if (which === 'shop') { currentView = 'shop'; $('chat-header-title').textContent = 'Shop'; $('shop-view').classList.remove('hidden'); openShop(); }
   setMobilePane('chat');
@@ -4057,7 +4117,6 @@ function subscribeDMList() {
     if (currentView !== 'channel') renderDMRows();    // draw the list straight away (names are the usernames); avatars fill in as profiles arrive
     await Promise.all(dms.map(dm => getProfile(dm.participants.find(p => p !== myUid))));
     hydrateConversationPreviews('dms', dms);
-    ovRenderLists();
     if (currentView !== 'channel') renderDMRows();
     refreshUnread();
   });
@@ -4676,11 +4735,6 @@ $('notify-test-btn').onclick = () => {
 };
 if (DESKTOP && typeof DESKTOP.onNotifyOpen === 'function') DESKTOP.onNotifyOpen(o => {
   if (!o || typeof o !== 'object') return;
-  if (OVERLAY_WINDOW) {          // answering from the overlay over a game: open that chat in the overlay
-    if (o.type === 'dm' && o.other) ovLastChat = { kind: 'dm', uid: o.other };
-    else if (o.type === 'ch') ovLastChat = { kind: 'ch', sid: o.sid, cid: o.cid };
-    return;
-  }
   openNotifyTarget(o);
 });
 // ---------- THE FRIXION APP FOR ANDROID ----------
@@ -4887,7 +4941,7 @@ async function startDMWith(uname) {
   const dsnap = await ref.get();
   if (!dsnap.exists) {
     // refused when they blocked you (v4.61); like Discord, it doesn't say so
-    try { await ref.set({ participants: [myUid, uname], autoDelete: true, createdAt: FieldValue.serverTimestamp() }); }
+    try { await ref.set({ participants: [myUid, uname], autoDelete: false, createdAt: FieldValue.serverTimestamp() }); }
     catch (e) { toast('You can\'t message this person.', 'error'); return; }
     db.collection('users').doc(myUid).update({ 'stats.dmsStarted': FieldValue.increment(1) }).catch(() => {});
   }
@@ -4975,7 +5029,7 @@ async function selectDM(id, otherUid) {
   setMobilePane('chat');
   scheduleMsgLoading();
   const dmDoc = (window.__myDMs || []).find(d => d.id === id);
-  if (!dmDoc || dmDoc.autoDelete !== false) sweepOldMessages(db.collection('dms').doc(id).collection('messages'));
+  if (dmDoc && dmDoc.autoDelete === true) sweepOldMessages(db.collection('dms').doc(id).collection('messages'));
   listenToMessages(db.collection('dms').doc(id).collection('messages'), snap => {
     const msgs = [];
     snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
@@ -5015,7 +5069,7 @@ async function selectGroupDM(id) {
   showChat();
   setMobilePane('chat');
   scheduleMsgLoading();
-  if (!g || g.autoDelete !== false) sweepOldMessages(db.collection('groupDMs').doc(id).collection('messages'));
+  if (g && g.autoDelete === true) sweepOldMessages(db.collection('groupDMs').doc(id).collection('messages'));
   listenToMessages(db.collection('groupDMs').doc(id).collection('messages'), snap => {
     const msgs = [];
     snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
@@ -5078,7 +5132,7 @@ $('confirm-new-group-dm').onclick = async () => {
   try {
     const participants = [myUid, ...checks];
     const ref = await db.collection('groupDMs').add({
-      name: name || null, participants, ownerId: myUid, autoDelete: true, createdAt: FieldValue.serverTimestamp(),
+      name: name || null, participants, ownerId: myUid, autoDelete: false, createdAt: FieldValue.serverTimestamp(),
     });
     postSystemMessage(db.collection('groupDMs').doc(ref.id).collection('messages'), { system: 'add', place: 'group', uid: myUid, username: myProfile.username, targets: checks });
     closeModal('new-group-dm-modal');
@@ -6063,7 +6117,7 @@ function renderBlockedBar(username) {
 // ============================================================
 async function selectServer(server) {
   document.body.classList.add('npd-chat-mode');
-  if (typeof setLtSidebarActive === 'function') setLtSidebarActive('chat-servers');
+  if (typeof setLtSidebarActive === 'function') setLtSidebarActive('chat-global');
   currentServerId = server.id;
   currentServerData = server;
   currentDMId = null; currentDMOtherUid = null; currentGroupDMId = null; currentChannelId = null; currentThreadId = null; currentThreadData = null;
@@ -7450,7 +7504,7 @@ async function createChannelFromModal() {
   const btn = $('confirm-create-channel');
   btn.disabled = true;
   try {
-    await db.collection('servers').doc(currentServerId).collection('channels').add({ name, categoryId, autoDelete: true, createdAt: FieldValue.serverTimestamp() });
+    await db.collection('servers').doc(currentServerId).collection('channels').add({ name, categoryId, autoDelete: false, createdAt: FieldValue.serverTimestamp() });
     logAudit(currentServerId, `created #${name}`);
     closeModal('create-channel-modal');
     toast(`Created #${name}.`);
@@ -7506,7 +7560,7 @@ function selectChannel(channel) {
   showChat();
   setMobilePane('chat');
   scheduleMsgLoading();
-  if (channel.autoDelete !== false) sweepOldMessages(db.collection('servers').doc(currentServerId).collection('channels').doc(channel.id).collection('messages'));
+  if (channel.autoDelete === true) sweepOldMessages(db.collection('servers').doc(currentServerId).collection('channels').doc(channel.id).collection('messages'));
   listenToMessages(db.collection('servers').doc(currentServerId).collection('channels').doc(channel.id).collection('messages'), channelSnapHandler(channel.id));
 }
 // A channel's (or thread's) messages arriving: pings for mentions, read-aloud /tts messages, then the list is redrawn.
@@ -11442,10 +11496,10 @@ function renderMobileYou() {
   const row = (pane, label, icon) => `<button type="button" class="myou-row" data-ypane="${pane}"><span class="myou-ico">${YOU_ICONS[icon]}</span><span class="myou-label">${label}</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
   const staff = [];
   const rank = sfMode ? 0 : platformRank(myProfile);
-  if (rank >= 3) staff.push(`<button type="button" class="myou-row" data-ystaff="owner"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Owner Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
-  if (rank >= 2) staff.push(`<button type="button" class="myou-row" data-ystaff="coowner"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Co-Owner Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
-  if (rank >= 1) staff.push(`<button type="button" class="myou-row" data-ystaff="admin"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Admin Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
-  // Friends, the Shop, Quests and Codes sit here on a phone, the way Discord keeps its extras out of the Messages screen.
+  if (rank === 3) staff.push(`<button type="button" class="myou-row" data-ystaff="owner"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Owner Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
+  if (rank === 2) staff.push(`<button type="button" class="myou-row" data-ystaff="coowner"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Co-Owner Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
+  if (rank === 1) staff.push(`<button type="button" class="myou-row" data-ystaff="admin"><span class="myou-ico">${YOU_ICONS.shield}</span><span class="myou-label">Admin Panel</span><svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`);
+  // Friends, the Shop, Games and Codes sit here on a phone.
   const reqs = (p.incomingRequests || []).length;
   const page = (view, label, icon, badge) => `<button type="button" class="myou-row" data-yview="${view}"><span class="myou-ico">${YOU_ICONS[icon]}</span><span class="myou-label">${label}</span>${badge ? `<span class="myou-badge">${badge > 9 ? '9+' : badge}</span>` : ''}<svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
   box.innerHTML = `<div class="mpage-title">${MPAGE_BACK}<span>You</span></div><div class="mpage-body">
@@ -11455,7 +11509,7 @@ function renderMobileYou() {
       <svg class="myou-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </button>
     <div class="mpage-label">NPD // NewBGI</div>
-    <div class="myou-group">${page('dashboard', 'Dashboard', 'activity')}${page('race', 'Race Track', 'activity')}${page('leaderboard', 'Leaderboard', 'premium')}${page('stats', 'My Stats', 'account')}${page('locker', 'Locker', 'themes')}${page('quests', 'Quests', 'activity')}${page('friends', 'Friends', 'friends', reqs)}${page('shop', 'Shop', 'shop')}${page('codes', 'Codes', 'codes')}</div>
+    <div class="myou-group">${page('dashboard', 'Dashboard', 'activity')}${page('race', 'Racing', 'activity')}${page('games', 'Games', 'activity')}${page('events', 'Events', 'premium')}${page('leaderboard', 'Leaderboard', 'premium')}${page('stats', 'My Stats', 'account')}${page('locker', 'Garage & Locker', 'themes')}${page('friends', 'Friends', 'friends', reqs)}${page('shop', 'Shop', 'shop')}${page('codes', 'Codes', 'codes')}</div>
     <div class="mpage-label">Settings</div>
     <div class="myou-group">${row('pane-account', 'My Account', 'account')}${row('pane-activity', 'Activity Status', 'activity')}${row('pane-premium', 'NPD Premium', 'premium')}${row('pane-themes', 'Themes', 'themes')}${row('pane-accessibility', 'Accessibility', 'access')}${row('pane-notifications', 'Notifications', 'notify')}${row('pane-keyboard', 'Keyboard', 'keyboard')}</div>
     <div class="mpage-label">App</div>
@@ -11676,7 +11730,7 @@ async function giftPremiumTo(recipientUsername) {
     const dmId = dmIdFor(myUid, recipientUsername);
     const ref = db.collection('dms').doc(dmId);
     const dsnap = await ref.get();
-    if (!dsnap.exists) await ref.set({ participants: [myUid, recipientUsername], autoDelete: true, createdAt: FieldValue.serverTimestamp() });
+    if (!dsnap.exists) await ref.set({ participants: [myUid, recipientUsername], autoDelete: false, createdAt: FieldValue.serverTimestamp() });
     await ref.collection('messages').add({
       text: `Gifted NPD Premium! Redeem this code in Settings > Codes for ${days} days: ${code}`,
       uid: myUid, username: myProfile.username, createdAt: FieldValue.serverTimestamp(),
@@ -12123,7 +12177,9 @@ function fxTextHTML(text, fx) {
 // SHOP — Featured, Avatar Decorations, Nameplates, Profile Effects, and
 // Profile Frames are all functional.
 // ============================================================
-function orbIconSVG(size) { return `<svg viewBox="0 0 24 24" width="${size}" height="${size}"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="9" cy="9" r="2.6" fill="#fff" opacity=".55"/></svg>`; }
+function orbIconSVG(size) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="M12 1.5l1.9 1.3 2.3-.3 1.2 1.9 2.2.8.3 2.3 1.6 1.6-.7 2.2.7 2.2-1.6 1.6-.3 2.3-2.2.8-1.2 1.9-2.3-.3L12 22.5l-1.9-1.3-2.3.3-1.2-1.9-2.2-.8-.3-2.3-1.6-1.6.7-2.2-.7-2.2 1.6-1.6.3-2.3 2.2-.8 1.2-1.9 2.3.3z" fill="currentColor"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#fff" stroke-width="1.6" opacity=".75"/></svg>`;
+}
 
 function shopItemPreviewHTML(key, item) {
   if (key === 'decorations') return `<div class="sic-deco-stage">${avatarHTML(72, myProfile.avatarColor, initials(myProfile.username), null, myProfile.avatarUrl, item.id)}</div>`;
@@ -12165,7 +12221,7 @@ function shopItemPreviewHTML(key, item) {
 function itemCutscenes(item) { return item.cutscenes || (item.cutscene ? [{ src: item.cutscene, label: 'Cutscene' }] : []); }
 function shopItemCardHTML(key, item) {
   const def = SHOP_CATEGORY_DEFS[key];
-  const owned = (myProfile[def.ownedField] || []).includes(item.id);
+  const owned = npdOwnsShopItem(myProfile, def.ownedField, item.id);
   const equipped = myProfile[def.equipField] === item.id;
   const action = equipped ? 'unequip' : owned ? 'equip' : 'buy';
   const label = equipped ? 'Unequip' : owned ? 'Equip' : `${orbIconSVG(13)}<span>${Number(item.price).toLocaleString()}</span>`;
@@ -12268,7 +12324,7 @@ async function buyShopItem(key, id) {
   const item = def && def.catalog.find(i => i.id === id);
   if (!item || shopBuying) return;
   if (item.disabled) { toast('That item is not available right now.', 'error'); return; }
-  if ((myProfile[def.ownedField] || []).includes(id)) { toast('You already own this.'); return; }
+  if (npdOwnsShopItem(myProfile, def.ownedField, id)) { toast('You already own this.'); return; }
   if ((myProfile.orbs || 0) + pendingOrbs() < item.price) { toast('Not enough Bottlecaps. Play games to earn more.'); return; }
   shopBuying = true;
   try {
@@ -12297,7 +12353,7 @@ function replayCutscene(key, id, seg) {
   const def = SHOP_CATEGORY_DEFS[key];
   const item = def && def.catalog.find(i => i.id === id);
   const cut = item && itemCutscenes(item)[seg || 0];
-  if (!cut || !(myProfile[def.ownedField] || []).includes(id) || cutsceneActive) return;
+  if (!cut || !npdOwnsShopItem(myProfile, def.ownedField, id) || cutsceneActive) return;
   const run = async () => {
     cutsceneActive = true;
     if (musicAudio) try { musicAudio.pause(); } catch (e) {}
@@ -12395,13 +12451,12 @@ let adminSelectedUser = null;
 function openAdminPanel(requestedMode) {
   const rank = sfMode ? 0 : platformRank(myProfile);
   if (rank < 1) { toast('Access denied — Staff role required.', 'error'); return; }
-  let mode = requestedMode;
-  if (!mode) {
-    mode = rank >= 3 ? 'owner' : rank >= 2 ? 'coowner' : 'admin';
-  }
-  if (mode === 'owner' && rank < 3) mode = rank >= 2 ? 'coowner' : 'admin';
-  if (mode === 'coowner' && rank < 2) mode = 'admin';
+  // Strict single highest-rank panel: Owner -> Owner ONLY, Co-Owner -> Co-Owner ONLY, Admin -> Admin ONLY.
+  const mode = rank >= 3 ? 'owner' : rank >= 2 ? 'coowner' : 'admin';
   currentPanelMode = mode;
+
+  const modalEl = $('admin-panel-modal');
+  if (modalEl) modalEl.classList.toggle('owner-mode', mode === 'owner');
 
   const titles = {
     admin: 'Admin Panel',
@@ -12422,16 +12477,32 @@ function openAdminPanel(requestedMode) {
 
   ['admin', 'coowner', 'owner'].forEach(m => {
     const btn = $('switch-to-' + m + '-panel');
-    if (btn) btn.classList.toggle('active', m === mode);
+    if (btn) {
+      btn.classList.toggle('active', m === mode);
+      btn.classList.toggle('hidden', m !== mode);
+    }
   });
+  const swWrap = $('admin-panel-switcher');
+  if (swWrap) swWrap.classList.add('hidden');
 
   const isHigherMode = (mode === 'coowner' || mode === 'owner') && isOwner;
+  const isStrictOwner = mode === 'owner' && realOwner();
   $('admin-tab-players').classList.toggle('hidden', isHigherMode);
   $('admin-tab-systemhub').classList.toggle('hidden', !isHigherMode);
   $('admin-tab-devices').classList.toggle('hidden', !isHigherMode);
   $('admin-tab-ips').classList.toggle('hidden', !isHigherMode);
-  $('admin-tab-purgeperms').classList.toggle('hidden', !(mode === 'owner' && realOwner()));
+  $('admin-tab-purgeperms').classList.toggle('hidden', !isStrictOwner);
   if ($('admin-tab-quests')) $('admin-tab-quests').classList.add('hidden');
+
+  const giveBox = $('systemhub-give-everything-box');
+  if (giveBox) giveBox.classList.toggle('hidden', !isStrictOwner);
+  const frixBox = $('owner-frixion-import-box');
+  if (frixBox) frixBox.classList.toggle('hidden', !isStrictOwner);
+  const giveToggle = $('give-everything-toggle');
+  if (giveToggle) {
+    giveToggle.checked = npdHasEverything(myProfile);
+    if (typeof wireOwnerSystemControls === 'function') wireOwnerSystemControls();
+  }
 
   adminSelectedDevice = null; adminSelectedIp = null;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('on'));
@@ -12542,13 +12613,13 @@ async function renderAdminConversationsList() {
   const rows = [];
   try {
     const dmSnap = await db.collection('dms').get();
-    dmSnap.forEach(d => rows.push({ label: d.id, ref: d.ref, autoDelete: d.data().autoDelete !== false }));
+    dmSnap.forEach(d => rows.push({ label: d.id, ref: d.ref, autoDelete: d.data().autoDelete === true }));
 
     const gSnap = await db.collection('groupDMs').get();
     gSnap.forEach(d => {
       const data = d.data();
       const label = 'Group: ' + (data.name || (data.participants || []).join(', '));
-      rows.push({ label, ref: d.ref, autoDelete: data.autoDelete !== false });
+      rows.push({ label, ref: d.ref, autoDelete: data.autoDelete === true });
     });
 
     const serversSnap = await db.collection('servers').get();
@@ -12556,7 +12627,7 @@ async function renderAdminConversationsList() {
       const sData = sDoc.data();
       const chSnap = await sDoc.ref.collection('channels').get();
       chSnap.forEach(c => {
-        rows.push({ label: `${sData.name} / #${c.data().name}`, ref: c.ref, autoDelete: c.data().autoDelete !== false });
+        rows.push({ label: `${sData.name} / #${c.data().name}`, ref: c.ref, autoDelete: c.data().autoDelete === true });
       });
     }
   } catch (e) { wrap.innerHTML = '<div class="empty">Could not load conversations.</div>'; return; }
@@ -14353,44 +14424,42 @@ async function orbsLocalFallback(route, body) {
   if (!myUid) throw new Error('Not signed in.');
   const uRef = db.collection('users').doc(myUid);
   if (route === 'earn') {
-    const reqAmt = Math.max(0, Math.min(EARN_CAP, Math.floor(Number(body.amount) || 0)));
+    const reqAmt = Math.max(0, Math.min(EARN_CAP, Math.floor(Number(body.amount ?? body.n) || 0)));
     if (!reqAmt) return { added: 0, capped: false };
     await uRef.update({ orbs: FieldValue.increment(reqAmt) });
     return { added: reqAmt, capped: false };
   }
   if (route === 'buy') {
-    const kind = body.kind, id = body.id;
-    const KIND_MAP = {
-      decoration: { col: 'shopDecorations', field: 'ownedDecorations', eq: 'equippedDecoration', builtin: typeof BUILTIN_DECORATIONS !== 'undefined' ? BUILTIN_DECORATIONS : [] },
-      mask: { col: 'shopDecorations', field: 'ownedDecorations', eq: 'equippedMask', builtin: [] },
-      theme: { col: 'shopThemes', field: 'ownedThemes', eq: null, builtin: typeof BUILTIN_THEMES !== 'undefined' ? BUILTIN_THEMES : [] },
-      nameplate: { col: 'shopNameplates', field: 'ownedNameplates', eq: 'equippedNameplate', builtin: typeof BUILTIN_NAMEPLATES !== 'undefined' ? BUILTIN_NAMEPLATES : [] },
-      effect: { col: 'shopProfileEffects', field: 'ownedProfileEffects', eq: 'equippedProfileEffect', builtin: typeof BUILTIN_PROFILE_EFFECTS !== 'undefined' ? BUILTIN_PROFILE_EFFECTS : [] },
-      frame: { col: 'shopProfileFrames', field: 'ownedProfileFrames', eq: 'equippedProfileFrame', builtin: typeof BUILTIN_PROFILE_FRAMES !== 'undefined' ? BUILTIN_PROFILE_FRAMES : [] },
-      banner: { col: 'shopBanners', field: 'ownedBanners', eq: 'equippedBanner', builtin: typeof BUILTIN_BANNERS !== 'undefined' ? BUILTIN_BANNERS : [] },
-      music: { col: 'shopMusic', field: 'ownedMusic', eq: 'equippedMusic', builtin: typeof BUILTIN_MUSIC !== 'undefined' ? BUILTIN_MUSIC : [] }
+    const rawKind = body.cat || body.kind || '';
+    const ALIAS = {
+      decoration: 'decorations', decorations: 'decorations',
+      mask: 'masks', masks: 'masks',
+      theme: 'themes', themes: 'themes',
+      nameplate: 'nameplates', nameplates: 'nameplates',
+      effect: 'profile_effects', profile_effects: 'profile_effects',
+      frame: 'profile_frames', profile_frames: 'profile_frames',
+      banner: 'banners', banners: 'banners',
+      music: 'music',
     };
-    const cfg = KIND_MAP[kind];
-    if (!cfg || !id) throw new Error('Invalid shop item.');
-    let item = cfg.builtin.find(x => x.id === id);
-    if (!item) {
-      const snap = await db.collection(cfg.col).doc(id).get();
-      if (snap.exists) item = snap.data();
-    }
+    const catKey = ALIAS[rawKind] || rawKind;
+    const def = SHOP_CATEGORY_DEFS[catKey];
+    const id = body.id;
+    if (!def || !id) throw new Error('Invalid shop item.');
+    const item = def.catalog.find(x => x.id === id);
     if (!item) throw new Error('Item not found.');
     const price = Math.max(0, Number(item.price) || 0);
     await db.runTransaction(async tx => {
       const uSnap = await tx.get(uRef);
       const u = uSnap.data() || {};
       if (item.premiumOnly && !isPremium(u)) throw new Error('NPD Premium required for this item.');
-      const owned = Array.isArray(u[cfg.field]) ? u[cfg.field] : [];
+      const owned = Array.isArray(u[def.ownedField]) ? u[def.ownedField] : [];
       if (!owned.includes(id)) {
         if ((u.orbs || 0) < price) throw new Error('Not enough Bottlecaps.');
-        const up = { orbs: (u.orbs || 0) - price, [cfg.field]: FieldValue.arrayUnion(id) };
-        if (cfg.eq) up[cfg.eq] = id;
+        const up = { orbs: (u.orbs || 0) - price, [def.ownedField]: FieldValue.arrayUnion(id) };
+        if (def.equipField) up[def.equipField] = id;
         tx.update(uRef, up);
-      } else if (cfg.eq) {
-        tx.update(uRef, { [cfg.eq]: id });
+      } else if (def.equipField) {
+        tx.update(uRef, { [def.equipField]: id });
       }
     });
     return { ok: true };
@@ -14524,757 +14593,312 @@ const AI_CONFIG = {
 };
 function aiOn(){ return !!(AI_CONFIG.endpoint && (AI_CONFIG.enabled || AI_CONFIG.apiKey)); }
 function aiHeaders(){ const h={'Content-Type':'application/json'}; if(AI_CONFIG.apiKey) h['Authorization']='Bearer '+AI_CONFIG.apiKey; return h; }
-// ============================================================
-//  GAMES — COOKIE CLICKER
-// ============================================================
-const COOKIE_CASH_RATE=10000; // cookies per 1 Orb
-const COOKIE_BUILDINGS=[
-  {id:'cursor',name:'Cursor',base:15,cps:0.1,ic:'👆'},
-  {id:'grandma',name:'Grandma',base:100,cps:1,ic:'👵'},
-  {id:'farm',name:'Farm',base:1100,cps:8,ic:'🌾'},
-  {id:'mine',name:'Mine',base:12000,cps:47,ic:'⛏️'},
-  {id:'factory',name:'Factory',base:130000,cps:260,ic:'🏭'},
-  {id:'bank',name:'Bank',base:1400000,cps:1400,ic:'🏦'},
-  {id:'temple',name:'Temple',base:20000000,cps:7800,ic:'🏛️'},
-  {id:'wizard',name:'Wizard Tower',base:330000000,cps:44000,ic:'🧙'},
-  {id:'shipment',name:'Shipment',base:5100000000,cps:260000,ic:'🚀'},
-  {id:'alchemy',name:'Alchemy Lab',base:75000000000,cps:1600000,ic:'🧪'},
-  {id:'portal',name:'Portal',base:1000000000000,cps:10000000,ic:'🌀'},
-  {id:'timemachine',name:'Time Machine',base:14000000000000,cps:65000000,ic:'⏳'},
-  {id:'antimatter',name:'Antimatter Condenser',base:170000000000000,cps:430000000,ic:'☢️'},
-  {id:'prism',name:'Prism',base:2100000000000000,cps:2900000000,ic:'🌈'},
-];
-// Compact numbers: 1.23K, 4.56M, 7.89B, 1.20T. Past a quadrillion they are written as a
-// power of ten (3.33x10^66) so the text never turns into a wall of digits or "e+" notation.
-function fmtNum(n){
-  if(!isFinite(n)) return n>0 ? '∞' : '0';
-  n=Math.floor(n||0);
-  if(n<1000) return ''+n;
-  if(n>=1e15) return fmtPower(n);
-  const u=['K','M','B','T']; let i=-1, x=n;
-  while(x>=1000){ x/=1000; i++; }
-  return (x<10?x.toFixed(2):x<100?x.toFixed(1):Math.floor(x))+u[i];
-}
-function fmtPower(n){ const [m,e]=n.toExponential(2).split('e'); return m+'×10^'+(+e); }
-// Orb balances show in full up to 999,999, then switch to the compact form.
-function fmtOrbs(n){
-  n=Math.floor(n||0);
-  return n<1e6 ? n.toLocaleString() : fmtNum(n);
-}
-// ============================================================
-// OVERLAY (desktop only — there is deliberately no mobile version)
-// Opens on top of everything, including the Quests game window, so you can
-// keep talking to friends and servers without leaving what you're playing.
-// Friends, Messages and Servers tabs; every window can be dragged and resized. The shortcut
-// is synced to the account (users/{name}.overlayKeybind) and can be changed
-// in Settings → Keyboard. Default: Shift + ` (the ~ key).
-// ============================================================
-const OV_DEFAULT_BIND = { code: 'Backquote', shift: true, ctrl: false, alt: false, meta: false };
-let ovRoot = null, ovOpen = false, ovTab = 'friends', ovQuery = '';   // ovTab: friends | messages | servers
-let ovPrevFocus = null, ovTimer = null, ovLastChat = null, ovCapturing = false;
-let ovChats = [];   // [{ key, kind: 'dm'|'channel', slot, el, unsub, msgs, stick, ... }]
-let ovBrowseSid = null, ovChannels = [], ovCats = [], ovBrowseUnsubs = [];   // Servers tab drill-down
 
-function ovMaxChats() { return window.innerWidth >= 1500 ? 3 : window.innerWidth >= 1100 ? 2 : 1; }
-
-// ---------- shortcut: read, match, label ----------
-function ovGetBind() {
-  const b = myProfile && myProfile.overlayKeybind;
-  return (b && typeof b.code === 'string')
-    ? { code: b.code, shift: !!b.shift, ctrl: !!b.ctrl, alt: !!b.alt, meta: !!b.meta }
-    : OV_DEFAULT_BIND;
+// Compact numbers: 1.23K, 4.56M, 7.89B, 1.20T. Past a quadrillion they use powers of 10.
+function fmtNum(n) {
+  if (!isFinite(n)) return n > 0 ? '∞' : '0';
+  n = Math.floor(n || 0);
+  if (n < 1000) return '' + n;
+  if (n >= 1e15) return fmtPower(n);
+  const u = ['K', 'M', 'B', 'T'];
+  let i = -1, x = n;
+  while (x >= 1000) { x /= 1000; i++; }
+  return (x < 10 ? x.toFixed(2) : x < 100 ? x.toFixed(1) : Math.floor(x)) + u[i];
 }
-function ovMatches(e, b) {
-  return e.code === b.code && e.shiftKey === b.shift && e.ctrlKey === b.ctrl && e.altKey === b.alt && e.metaKey === b.meta;
+function fmtPower(n) {
+  const [m, e] = n.toExponential(2).split('e');
+  return m + '×10^' + (+e);
 }
-function ovKeyLabel(code) {
-  if (/^Key[A-Z]$/.test(code)) return code.slice(3);
-  if (/^Digit\d$/.test(code)) return code.slice(5);
-  const map = { Backquote: '`', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\',
-    Semicolon: ';', Quote: "'", Comma: ',', Period: '.', Slash: '/', Space: 'Space',
-    ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
-  return map[code] || code.replace(/^Numpad/, 'Num ');
-}
-function ovBindHTML(b) {
-  const mac = /Mac/i.test(navigator.platform || '');
-  const parts = [];
-  if (b.ctrl) parts.push('Ctrl');
-  if (b.alt) parts.push(mac ? 'Option' : 'Alt');
-  if (b.shift) parts.push('Shift');
-  if (b.meta) parts.push(mac ? 'Cmd' : 'Win');
-  parts.push(ovKeyLabel(b.code));
-  return parts.map(k => `<kbd>${esc(k)}</kbd>`).join(' + ');
-}
-// Keeps the Settings row, the Help popover and the overlay footer showing the live shortcut.
-function ovRenderBindSetting() {
-  const html = ovBindHTML(ovGetBind());
-  const btn = $('overlay-bind-btn');
-  if (btn && !ovCapturing) btn.innerHTML = html;
-  const help = $('help-overlay-kbd');
-  if (help) help.innerHTML = html;
-  const foot = $('ov-foot-kbd');
-  if (foot) foot.innerHTML = html;
-  const reset = $('overlay-bind-reset');
-  if (reset) reset.classList.toggle('hidden', !(myProfile && myProfile.overlayKeybind));
-  if (!ovCapturing) syncDesktopOverlayBind();
-}
-
-// ---------- settings: click the shortcut, press the new combo ----------
-async function ovSaveBind(b) {
-  try { await db.collection('users').doc(myUid).update({ overlayKeybind: b }); toast('Overlay shortcut saved.'); }
-  catch (err) { toast('Could not save that shortcut.', 'error'); }
-}
-function ovStartCapture() {
-  if (ovCapturing || !myUid) return;
-  ovCapturing = true;
-  syncDesktopOverlayBind(true);   // let the old shortcut through while you press the new one
-  const btn = $('overlay-bind-btn');
-  btn.classList.add('capturing');
-  btn.textContent = 'Press a shortcut…';
-  const finish = () => {
-    ovCapturing = false;
-    btn.classList.remove('capturing');
-    window.removeEventListener('keydown', onKey, true);
-    document.removeEventListener('mousedown', onAway, true);
-    ovRenderBindSetting();
-  };
-  const onKey = (e) => {
-    e.preventDefault(); e.stopImmediatePropagation();
-    if (/^(Shift|Control|Alt|Meta)(Left|Right)$/.test(e.code)) return;   // wait for the real key
-    if (e.code === 'Escape') { finish(); return; }
-    const b = { code: e.code, shift: e.shiftKey, ctrl: e.ctrlKey, alt: e.altKey, meta: e.metaKey };
-    // A bare typing key would stop that key from working while you chat.
-    if (!b.ctrl && !b.alt && !b.meta && /^(Key[A-Z]|Digit\d|Numpad\d|Space|Enter|Tab|Backspace|Arrow\w+)$/.test(b.code)) {
-      toast('Add Ctrl or Alt to that key, or pick a function key.', 'error');
-      return;
-    }
-    finish();
-    ovSaveBind(b);
-  };
-  const onAway = (e) => { if (!btn.contains(e.target)) finish(); };
-  window.addEventListener('keydown', onKey, true);
-  document.addEventListener('mousedown', onAway, true);
-}
-$('overlay-bind-btn').addEventListener('click', ovStartCapture);
-$('overlay-bind-reset').addEventListener('click', async () => {
-  try { await db.collection('users').doc(myUid).update({ overlayKeybind: FieldValue.delete() }); toast('Overlay shortcut reset.'); }
-  catch (err) { toast('Could not reset the shortcut.', 'error'); }
-});
-
-// ---------- the shortcut itself ----------
-// Capture phase on window so it still works while a game is eating keys, and so
-// Esc closes the overlay before the game window's own Esc handler sees it.
-window.addEventListener('keydown', (e) => {
-  if (ovCapturing || !myUid || e.repeat) return;
-  if (ovOpen && e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); ovClose(); return; }
-  const b = ovGetBind();
-  if (!ovMatches(e, b)) return;
-  // Don't hijack a character while typing in a normal message box. Inside games and
-  // inside the overlay itself the shortcut always works.
-  const t = document.activeElement;
-  const inGame = !!(gameWin && !gameWin.hidden);
-  const plain = !b.ctrl && !b.alt && !b.meta;
-  if (plain && isTypingTarget(t) && !(ovRoot && ovRoot.contains(t)) && !inGame) return;
-  e.preventDefault(); e.stopImmediatePropagation();
-  if (ovOpen) ovClose(); else ovShow();
-}, true);
-
-// ---------- show / hide ----------
-function ovShow() {
-  if (!myUid || !myProfile || isMobile()) return;
-  ovBuild();
-  ovPrevFocus = document.activeElement;
-  ovOpen = true;
-  ovRoot.hidden = false;
-  ovPlaceWindow(ovPanel, 'panel', OV_PANEL_MIN, ovDefaultPanelRect);
-  ovRoot.querySelectorAll('.ov-tab').forEach(t => t.classList.toggle('on', t.dataset.ovTab === ovTab));
-  ovRoot.querySelector('.ov-search').value = ovQuery;
-  ovUpdateSearchPlaceholder();
-  ovRenderBindSetting();
-  ovRenderLists();
-  ovTimer = setInterval(ovRenderLists, 5000);   // keeps online dots fresh
-  if (ovLastChat) ovOpenChat(ovLastChat);
-  else ovRoot.querySelector('.ov-search').focus();
-}
-function ovClose() {
-  if (ovOpen) {
-    ovOpen = false;
-    ovRoot.hidden = true;
-    clearInterval(ovTimer);
-    ovChats.slice().forEach(c => ovCloseChat(c, false));
-    ovStopBrowsing();
-    if (ovPrevFocus && document.contains(ovPrevFocus) && ovPrevFocus.focus) ovPrevFocus.focus();
-    ovPrevFocus = null;
-  }
-  if (OVERLAY_WINDOW) desktopHideOverlay();          // the see-through window goes away with it
-}
-
-// ---------- the computer app: the overlay on top of other programs ----------
-// The app registers the shortcut with the computer itself, so it works while a game or any other program is in front,
-// and shows this page in a see-through window on top (OVERLAY_WINDOW). In Frixion's own window it opens the overlay here.
-function desktopOverlayReady(signedIn) { try { if (DESKTOP && DESKTOP.overlayReady) DESKTOP.overlayReady(!!signedIn); } catch (e) {} }
-function desktopHideOverlay() { try { if (DESKTOP && DESKTOP.hideOverlay) DESKTOP.hideOverlay(); } catch (e) {} }
-let desktopBindSent = null;
-function syncDesktopOverlayBind(paused) {          // paused: while Settings is waiting for a new shortcut
-  if (!DESKTOP || typeof DESKTOP.setOverlayShortcut !== 'function' || !myUid) return;
-  const b = paused ? null : ovGetBind();
-  const s = JSON.stringify(b);
-  if (s === desktopBindSent) return;
-  desktopBindSent = s;
-  try { DESKTOP.setOverlayShortcut(b); } catch (e) {}
-}
-if (DESKTOP && typeof DESKTOP.onOverlay === 'function') {
-  try {
-    DESKTOP.onOverlay(what => {
-      if (OVERLAY_WINDOW && what === 'show') { if (!ovOpen) ovShow(); else { const s = ovRoot.querySelector('.ov-search'); if (s) s.focus(); } }
-      else if (OVERLAY_WINDOW && what === 'hide') ovClose();
-      else if (!OVERLAY_WINDOW && what === 'toggle') { if (ovOpen) ovClose(); else ovShow(); }
-    });
-  } catch (e) {}
-}
-// The overlay window uses whoever is signed in on the main window, so it starts over when that changes.
-if (OVERLAY_WINDOW) window.addEventListener('storage', e => { if (e.key === SESSION_KEY) location.reload(); });
-function ovReset() { ovClose(); ovLastChat = null; ovQuery = ''; ovTab = 'friends'; ovBrowseSid = null; }
-
-// ---------- movable / resizable windows ----------
-// The side panel and every chat window can be dragged by their header and resized from any edge
-// or corner. Positions are remembered in this browser (localStorage) and clamped to the screen.
-const OV_LAYOUT_KEY = 'frixion.overlayLayout.v1';
-const OV_PANEL_MIN = { w: 240, h: 260 };
-const OV_CHAT_MIN = { w: 260, h: 220 };
-let ovLayout = (() => { try { return JSON.parse(localStorage.getItem(OV_LAYOUT_KEY) || '{}') || {}; } catch (e) { return {}; } })();
-let ovPanel = null, ovZ = 1;
-function ovSaveLayout() { try { localStorage.setItem(OV_LAYOUT_KEY, JSON.stringify(ovLayout)); } catch (e) {} }
-function ovClampRect(r, min) {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  r.w = Math.round(Math.max(Math.min(min.w, vw), Math.min(r.w, vw)));
-  r.h = Math.round(Math.max(Math.min(min.h, vh), Math.min(r.h, vh)));
-  r.x = Math.round(Math.max(0, Math.min(r.x, vw - r.w)));
-  r.y = Math.round(Math.max(0, Math.min(r.y, vh - r.h)));
-  return r;
-}
-function ovApplyRect(el, r) {
-  el._ovRect = r;
-  el.style.left = r.x + 'px'; el.style.top = r.y + 'px';
-  el.style.width = r.w + 'px'; el.style.height = r.h + 'px';
-}
-function ovRaise(el) { el.style.zIndex = String(++ovZ); }
-function ovDefaultPanelRect() {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const w = vw <= 900 ? 280 : 320;
-  return { x: vw - 16 - w, y: 16, w, h: vh - 32 };
-}
-function ovDefaultChatRect(slot) {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const w = vw <= 900 ? 300 : 340, h = Math.min(480, vh - 32);
-  const pr = ovPanel && ovPanel._ovRect ? ovPanel._ovRect : ovDefaultPanelRect();
-  let x = pr.x - 12 - w - slot * (w + 12);
-  if (x < 8) x = 16 + slot * 32;           // no room beside the panel: cascade instead
-  return { x, y: vh - 16 - h, w, h };
-}
-// Gives a window its rectangle (saved one if there is one, else the default) and keeps it on screen.
-function ovPlaceWindow(el, key, min, defaultFn) {
-  const saved = ovLayout[key];
-  el._ovCustom = !!saved;
-  ovApplyRect(el, ovClampRect(Object.assign({}, saved || defaultFn()), min));
-}
-function ovMakeWindow(el, key, handle, min) {
-  el.classList.add('ov-win');
-  el._ovKey = key; el._ovMin = min;
-  ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].forEach(d => {
-    const h = document.createElement('div');
-    h.className = 'ov-rz ov-rz-' + d; h.dataset.dir = d;
-    el.appendChild(h);
-  });
-  el.addEventListener('pointerdown', (e) => {
-    ovRaise(el);
-    if (e.button !== 0) return;
-    let mode = null;
-    const rz = e.target.closest('.ov-rz');
-    if (rz && rz.parentNode === el) mode = rz.dataset.dir;
-    else if (handle && handle.contains(e.target) && !e.target.closest('button, input, textarea, a, select')) mode = 'move';
-    if (!mode) return;
-    e.preventDefault();
-    const start = { x: e.clientX, y: e.clientY, r: Object.assign({}, el._ovRect) };
-    const vw = window.innerWidth, vh = window.innerHeight;
-    el.setPointerCapture(e.pointerId);
-    el.classList.add('ov-dragging');
-    const onMove = (ev) => {
-      const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
-      const r = Object.assign({}, start.r);
-      if (mode === 'move') {
-        r.x += dx; r.y += dy;
-        ovApplyRect(el, ovClampRect(r, min));
-        return;
-      }
-      if (mode.includes('e')) r.w = start.r.w + dx;
-      if (mode.includes('s')) r.h = start.r.h + dy;
-      if (mode.includes('w')) { r.w = start.r.w - dx; r.x = start.r.x + dx; }
-      if (mode.includes('n')) { r.h = start.r.h - dy; r.y = start.r.y + dy; }
-      // never smaller than the minimum; the edge opposite the one you are dragging stays put
-      if (r.w < min.w) { if (mode.includes('w')) r.x = start.r.x + start.r.w - min.w; r.w = min.w; }
-      if (r.h < min.h) { if (mode.includes('n')) r.y = start.r.y + start.r.h - min.h; r.h = min.h; }
-      // never past the screen edges
-      if (r.x < 0) { r.w += r.x; r.x = 0; }
-      if (r.y < 0) { r.h += r.y; r.y = 0; }
-      if (r.x + r.w > vw) r.w = vw - r.x;
-      if (r.y + r.h > vh) r.h = vh - r.y;
-      ovApplyRect(el, r);
-    };
-    const onUp = () => {
-      el.classList.remove('ov-dragging');
-      el.removeEventListener('pointermove', onMove);
-      el.removeEventListener('pointerup', onUp);
-      el.removeEventListener('pointercancel', onUp);
-      ovLayout[key] = Object.assign({}, el._ovRect);
-      el._ovCustom = true;
-      ovSaveLayout();
-    };
-    el.addEventListener('pointermove', onMove);
-    el.addEventListener('pointerup', onUp);
-    el.addEventListener('pointercancel', onUp);
-  });
-}
-function ovResetLayout() {
-  ovLayout = {};
-  ovSaveLayout();
-  if (ovPanel) ovPlaceWindow(ovPanel, 'panel', OV_PANEL_MIN, ovDefaultPanelRect);
-  ovChats.forEach(c => ovPlaceWindow(c.el, 'chat' + c.slot, OV_CHAT_MIN, () => ovDefaultChatRect(c.slot)));
-  toast('Overlay layout reset.');
-}
-window.addEventListener('resize', () => {
-  if (!ovOpen || !ovPanel) return;
-  if (ovPanel._ovCustom) ovApplyRect(ovPanel, ovClampRect(Object.assign({}, ovPanel._ovRect), OV_PANEL_MIN));
-  else ovApplyRect(ovPanel, ovClampRect(ovDefaultPanelRect(), OV_PANEL_MIN));
-  ovChats.forEach(c => {
-    if (c.el._ovCustom) ovApplyRect(c.el, ovClampRect(Object.assign({}, c.el._ovRect), OV_CHAT_MIN));
-    else ovApplyRect(c.el, ovClampRect(ovDefaultChatRect(c.slot), OV_CHAT_MIN));
-  });
-});
-
-function ovBuild() {
-  if (ovRoot) return;
-  ovRoot = document.createElement('div');
-  ovRoot.id = 'ov-root';
-  ovRoot.hidden = true;
-  ovRoot.setAttribute('role', 'dialog');
-  ovRoot.setAttribute('aria-label', 'Overlay');
-  ovRoot.innerHTML =
-    '<div class="ov-chats" id="ov-chats"></div>' +
-    '<aside class="ov-panel">' +
-      '<div class="ov-grip" title="Drag to move"><span class="ov-grip-dots"></span></div>' +
-      '<div class="ov-tabs" role="tablist">' +
-        '<button type="button" class="ov-tab on" data-ov-tab="friends" role="tab">Friends</button>' +
-        '<button type="button" class="ov-tab" data-ov-tab="messages" role="tab">Messages</button>' +
-        '<button type="button" class="ov-tab" data-ov-tab="servers" role="tab">Servers</button>' +
-      '</div>' +
-      '<div class="ov-search-wrap">' +
-        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
-        '<input class="ov-search" type="text" placeholder="Search friends" autocomplete="off" maxlength="24" aria-label="Search">' +
-      '</div>' +
-      '<div class="ov-list" id="ov-list"></div>' +
-      '<div class="ov-foot"><span id="ov-foot-kbd"></span><span>closes this</span><button type="button" class="ov-reset" id="ov-reset-layout" title="Put the windows back where they started">Reset layout</button></div>' +
-    '</aside>';
-  document.body.appendChild(ovRoot);
-  ovPanel = ovRoot.querySelector('.ov-panel');
-  ovMakeWindow(ovPanel, 'panel', ovPanel.querySelector('.ov-grip'), OV_PANEL_MIN);
-  ovRoot.querySelector('#ov-reset-layout').onclick = ovResetLayout;
-
-  // A click on the dimmed area closes the overlay, but only when the press also started there,
-  // so letting go of a window you were dragging doesn't close everything.
-  let downOnBackdrop = false;
-  ovRoot.addEventListener('pointerdown', (e) => { downOnBackdrop = e.target === ovRoot || e.target.id === 'ov-chats'; }, true);
-  ovRoot.addEventListener('click', (e) => { if (downOnBackdrop && (e.target === ovRoot || e.target.id === 'ov-chats')) ovClose(); downOnBackdrop = false; });
-  // Nothing typed in here may reach the game or the page underneath.
-  ['keyup', 'keypress'].forEach(t => ovRoot.addEventListener(t, e => e.stopPropagation()));
-  ovRoot.addEventListener('keydown', (e) => {
-    e.stopPropagation();
-    if (e.key !== 'Tab') return;
-    const f = [...ovRoot.querySelectorAll('button, input, textarea, a[href]')].filter(el => !el.disabled && el.offsetParent !== null);
-    if (!f.length) return;
-    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
-    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
-  });
-  ovRoot.querySelectorAll('.ov-tab').forEach(tab => tab.onclick = () => {
-    ovTab = tab.dataset.ovTab;
-    ovRoot.querySelectorAll('.ov-tab').forEach(t => t.classList.toggle('on', t === tab));
-    if (ovTab !== 'servers') ovStopBrowsing();
-    const search = ovRoot.querySelector('.ov-search');
-    search.value = ''; ovQuery = '';
-    ovUpdateSearchPlaceholder();
-    ovRenderLists();
-  });
-  const search = ovRoot.querySelector('.ov-search');
-  search.addEventListener('input', () => { ovQuery = search.value; ovRenderLists(); });
-  search.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-    const first = ovRoot.querySelector('.ov-list .ov-row:not(.ov-back)');
-    if (first) first.click();
-  });
-  ovRoot.querySelector('#ov-list').addEventListener('click', (e) => {
-    const row = e.target.closest('.ov-row');
-    if (!row) return;
-    if (row.dataset.back) { ovStopBrowsing(); ovQuery = ''; search.value = ''; ovUpdateSearchPlaceholder(); ovRenderLists(); }
-    else if (row.dataset.cid) ovOpenChat({ kind: 'channel', sid: row.dataset.sid, cid: row.dataset.cid });
-    else if (row.dataset.sid) { ovBrowse(row.dataset.sid); ovQuery = ''; search.value = ''; ovUpdateSearchPlaceholder(); }
-    else if (row.dataset.uid) ovOpenChat({ kind: 'dm', uid: row.dataset.uid });
-  });
-}
-function ovUpdateSearchPlaceholder() {
-  const s = ovRoot && ovRoot.querySelector('.ov-search');
-  if (!s) return;
-  s.placeholder = ovTab === 'friends' ? 'Search friends' : ovTab === 'messages' ? 'Search messages' : (ovBrowseSid ? 'Search channels' : 'Search servers');
-}
-
-// ---------- servers (browse a server's channels from inside the overlay) ----------
-function ovServerById(id) { return (window.__myServers || []).find(s => s.id === id) || null; }
-function ovBrowse(sid) {
-  ovStopBrowsing();
-  ovBrowseSid = sid; ovChannels = []; ovCats = [];
-  const sref = db.collection('servers').doc(sid);
-  ovBrowseUnsubs.push(sref.collection('channels').orderBy('createdAt', 'asc').onSnapshot(snap => {
-    ovChannels = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    ovRenderLists();
-  }, () => { ovStopBrowsing(); ovRenderLists(); }));
-  ovBrowseUnsubs.push(sref.collection('categories').orderBy('createdAt', 'asc').onSnapshot(snap => {
-    ovCats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    ovRenderLists();
-  }, () => {}));
-  ovRenderLists();
-}
-function ovStopBrowsing() {
-  ovBrowseUnsubs.forEach(u => { try { u(); } catch (e) {} });
-  ovBrowseUnsubs = [];
-  ovBrowseSid = null; ovChannels = []; ovCats = [];
-}
-// The server list changed (joined, left, kicked, renamed, roles edited).
-function ovOnServersChanged() {
-  if (!ovOpen) return;
-  if (ovBrowseSid && !ovServerById(ovBrowseSid)) ovStopBrowsing();
-  ovChats.filter(c => c.kind === 'channel' && !ovServerById(c.sid)).forEach(c => ovCloseChat(c, true));
-  ovRenderLists();
-  ovChats.forEach(ovRefreshComposer);
-}
-function ovServersListHTML() {
-  const q = ovQuery.trim().toLowerCase();
-  const servers = [...(window.__myServers || [])].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  if (!ovBrowseSid) {
-    const list = servers.filter(s => !q || (s.name || '').toLowerCase().includes(q));
-    if (!list.length) return `<div class="ov-empty">${servers.length ? `No servers match “${esc(ovQuery.trim())}”.` : 'You are not in any servers yet.'}</div>`;
-    return list.map(s => {
-      const n = visibleMemberCount(s);
-      return `<button type="button" class="ov-row" data-sid="${esc(s.id)}"><span class="ov-srv-ico">${serverIconInner(s)}</span>` +
-        `<span class="ov-row-copy"><span class="ov-row-name">${esc(s.name)}</span><span class="ov-row-sub">${n} member${n === 1 ? '' : 's'}</span></span></button>`;
-    }).join('');
-  }
-  const server = ovServerById(ovBrowseSid);
-  if (!server) return '';
-  const visible = ovChannels.filter(c => canViewChannel(c, server, myUid) && (!q || (c.name || '').toLowerCase().includes(q)));
-  const chanRow = (c) => `<button type="button" class="ov-row ov-chan" data-sid="${esc(server.id)}" data-cid="${esc(c.id)}"><span class="ov-hash">#</span><span class="ov-row-copy"><span class="ov-row-name">${esc(c.name)}</span></span></button>`;
-  let html = `<button type="button" class="ov-row ov-back" data-back="1"><span class="ov-back-arrow">‹</span><span class="ov-row-copy"><span class="ov-row-name">${esc(server.name)}</span><span class="ov-row-sub">All servers</span></span></button>`;
-  const loose = visible.filter(c => !c.categoryId || !ovCats.some(k => k.id === c.categoryId));
-  html += loose.map(chanRow).join('');
-  ovCats.forEach(cat => {
-    const inCat = visible.filter(c => c.categoryId === cat.id);
-    if (inCat.length) html += `<div class="ov-section">${esc(cat.name || 'Category')}</div>` + inCat.map(chanRow).join('');
-  });
-  if (!visible.length) html += `<div class="ov-empty">${ovChannels.length ? `No channels match “${esc(ovQuery.trim())}”.` : 'No channels you can see here.'}</div>`;
-  return html;
-}
-
-// ---------- friends / messages list ----------
-function ovStatusText(st) { return ({ online: 'Online', idle: 'Idle', dnd: 'Do not disturb' })[st] || 'Offline'; }
-function ovRowHTML(uid, sub) {
-  const p = profileCache[uid] || { username: uid, avatarColor: '#5865f2' };
-  const st = computeDisplayStatus(uid);
-  return `<button type="button" class="ov-row${st === 'offline' ? ' off' : ''}" data-uid="${esc(uid)}">` +
-    avatarHTML(36, p.avatarColor, initials(p.username), st, p.avatarUrl, p.equippedDecoration, uid, p.equippedMask) +
-    `<span class="ov-row-copy"><span class="ov-row-name">${esc(displayNameOf(p))}</span><span class="ov-row-sub">${esc(sub)}</span></span></button>`;
-}
-async function ovRenderLists() {
-  if (!ovRoot || !ovOpen || !myProfile) return;
-  const listEl = ovRoot.querySelector('#ov-list');
-  if (ovTab === 'servers') {
-    // keep scroll position when a snapshot refreshes the list
-    const top = listEl.scrollTop;
-    listEl.innerHTML = ovServersListHTML();
-    listEl.scrollTop = top;
-    ovChats.forEach(ovRefreshComposer);
-    return;
-  }
-  const friends = myProfile.friends || [];
-  const dms = [...(window.__myDMs || [])].sort((a, b) => timeValue(b.updatedAt) - timeValue(a.updatedAt));
-  const dmUids = dms.map(d => d.participants.find(x => x !== myUid)).filter(Boolean);
-  await Promise.all([...friends, ...dmUids].map(getProfile));
-  if (!ovOpen || ovTab === 'servers') return;
-  const q = ovQuery.trim().toLowerCase();
-  const nameOf = u => displayNameOf(profileCache[u] || { username: u });
-  const match = u => !q || (nameOf(u) + ' ' + ((profileCache[u] || {}).username || u)).toLowerCase().includes(q);
-  let html = '';
-  if (ovTab === 'friends') {
-    const rank = u => ({ online: 0, idle: 1 })[computeDisplayStatus(u)] ?? 2;
-    const list = friends.filter(match).sort((a, b) => rank(a) - rank(b) || nameOf(a).localeCompare(nameOf(b)));
-    const on = list.filter(u => rank(u) < 2), off = list.filter(u => rank(u) === 2);
-    if (on.length) html += `<div class="ov-section">Online (${on.length})</div>` + on.map(u => ovRowHTML(u, ovStatusText(computeDisplayStatus(u)))).join('');
-    if (off.length) html += `<div class="ov-section">Offline (${off.length})</div>` + off.map(u => ovRowHTML(u, 'Offline')).join('');
-    if (!list.length) html = `<div class="ov-empty">${friends.length ? `No friends match “${esc(ovQuery.trim())}”.` : 'No friends yet. Add some from the Friends page.'}</div>`;
-  } else {
-    const rows = dms.filter(d => match(d.participants.find(x => x !== myUid)));
-    html = rows.map(d => {
-      const u = d.participants.find(x => x !== myUid);
-      const lm = d.lastMessage || conversationPreviewCache.get(`dms:${d.id}`);
-      const mine = lm && lm.username === myProfile.username;
-      return ovRowHTML(u, (mine ? 'You: ' : '') + previewForMessage(lm));
-    }).join('') || `<div class="ov-empty">${dms.length ? `No messages match “${esc(ovQuery.trim())}”.` : 'No conversations yet. Pick a friend to say hi.'}</div>`;
-  }
-  listEl.innerHTML = html;
-  ovChats.forEach(c => {
-    if (c.kind !== 'dm') return;
-    const s = c.el.querySelector('.ov-chat-status');
-    if (s) s.textContent = ovStatusText(computeDisplayStatus(c.uid));
-  });
-}
-
-// ---------- chat windows (a DM or a server channel) ----------
-function ovAttr(s) { return esc(s).replace(/"/g, '&quot;'); }
-function ovSafeUrl(u) { return /^(https?:|data:image\/|blob:)/i.test(u || '') ? ovAttr(u) : ''; }
-function ovAutosize(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 96) + 'px'; }
-function ovKeyOf(t) { return t.kind === 'dm' ? 'dm:' + t.uid : `ch:${t.sid}:${t.cid}`; }
-function ovCommandText(raw) { return /^\/(mute|unmute|ban|unban|kick)\b/i.test(raw); }
-
-// Why can't I type in this channel right now? '' means I can.
-function ovChannelBlockReason(chat) {
-  const server = ovServerById(chat.sid), ch = chat.channel;
-  if (!server || !ch) return '';
-  if (isSiteMuted()) return siteMuteText();
-  if (!(isServerOwnerLevel(server, myUid) || hasServerPerm(server, myUid, 'administrator')) && timeoutUntil(server, myUid)) {
-    return `You are timed out for ${timeoutLeftText(timeoutUntil(server, myUid))}.`;
-  }
-  if (!hasChannelPerm(ch, server, myUid, 'sendMessages')) return 'You do not have permission to send messages in this channel.';
-  return '';
-}
-function ovRefreshComposer(chat) {
-  if (chat.kind !== 'channel') return;
-  const input = chat.el.querySelector('.ov-input');
-  const why = ovChannelBlockReason(chat);
-  input.disabled = !!why;
-  input.placeholder = why || `Message #${chat.channel ? chat.channel.name : 'channel'}`;
-}
-
-async function ovOpenChat(target) {
-  if (typeof target === 'string') target = { kind: 'dm', uid: target };
-  const key = ovKeyOf(target);
-  const existing = ovChats.find(c => c.key === key);
-  if (existing) {
-    ovRaise(existing.el);
-    const inp = existing.el.querySelector('.ov-input');
-    if (!inp.disabled) inp.focus();
-    return;
-  }
-  const chat = { key, kind: target.kind, id: null, uid: target.uid, sid: target.sid, cid: target.cid, msgs: [], unsub: null, unsubChan: null, stick: true, channel: null, el: document.createElement('section') };
-  let headHTML, placeholder, label;
-
-  if (target.kind === 'dm') {
-    const p = await getProfile(target.uid);
-    chat.id = dmIdFor(myUid, target.uid);
-    try {
-      const ref = db.collection('dms').doc(chat.id);
-      const snap = await ref.get();
-      if (!snap.exists) {
-        await ref.set({ participants: [myUid, target.uid], autoDelete: true, createdAt: FieldValue.serverTimestamp() });
-        db.collection('users').doc(myUid).update({ 'stats.dmsStarted': FieldValue.increment(1) }).catch(() => {});
-      }
-    } catch (err) { toast('Could not open that chat.', 'error'); return; }
-    headHTML = avatarHTML(30, p.avatarColor, initials(p.username), null, p.avatarUrl, p.equippedDecoration, target.uid, p.equippedMask) +
-      `<div class="ov-chat-who"><div class="ov-chat-name">${esc(displayNameOf(p))}</div>` +
-      `<div class="ov-chat-status">${ovStatusText(computeDisplayStatus(target.uid))}</div></div>`;
-    placeholder = `Message @${esc(p.username)}`;
-    label = `Message ${esc(displayNameOf(p))}`;
-  } else {
-    const server = ovServerById(target.sid);
-    if (!server) { toast('You are not in that server.', 'error'); return; }
-    chat.id = target.cid;
-    headHTML = `<span class="ov-srv-ico small">${serverIconInner(server)}</span>` +
-      `<div class="ov-chat-who"><div class="ov-chat-name">#<span class="ov-chan-name">…</span></div>` +
-      `<div class="ov-chat-status">${esc(server.name)}</div></div>`;
-    placeholder = 'Message #channel';
-    label = 'Message channel';
-  }
-  if (!ovOpen || ovChats.some(c => c.key === key)) return;   // closed or double-clicked while loading
-  while (ovChats.length >= ovMaxChats()) ovCloseChat(ovChats[0], false);
-
-  const used = new Set(ovChats.map(c => c.slot));
-  chat.slot = 0; while (used.has(chat.slot)) chat.slot++;
-  chat.el.className = 'ov-chat';
-  chat.el.innerHTML =
-    '<header class="ov-chat-head" title="Drag to move">' + headHTML +
-      '<button type="button" class="ov-x" aria-label="Close chat">✕</button>' +
-    '</header>' +
-    '<div class="ov-msgs"></div>' +
-    '<div class="ov-compose">' +
-      `<textarea class="ov-input" rows="1" ${Number.isFinite(myMessageLimit()) ? `maxlength="${myMessageLimit()}" ` : ""}placeholder="${placeholder}" aria-label="${label}"></textarea>` +
-    '</div>';
-  ovChats.push(chat);
-  ovRoot.querySelector('#ov-chats').appendChild(chat.el);
-  ovMakeWindow(chat.el, 'chat' + chat.slot, chat.el.querySelector('.ov-chat-head'), OV_CHAT_MIN);
-  ovPlaceWindow(chat.el, 'chat' + chat.slot, OV_CHAT_MIN, () => ovDefaultChatRect(chat.slot));
-  ovRaise(chat.el);
-  ovLastChat = target;
-
-  const box = chat.el.querySelector('.ov-msgs');
-  const input = chat.el.querySelector('.ov-input');
-  chat.el.querySelector('.ov-x').onclick = () => { ovCloseChat(chat, true); ovRoot.querySelector('.ov-search').focus(); };
-  input.addEventListener('input', () => ovAutosize(input));
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ovSend(chat, input); }
-  });
-  // Images loading in late shouldn't leave the newest message out of view.
-  box.addEventListener('load', () => { if (chat.stick) box.scrollTop = box.scrollHeight; }, true);
-  box.addEventListener('scroll', () => { chat.stick = box.scrollHeight - box.scrollTop - box.clientHeight < 80; });
-
-  let msgsRef;
-  if (chat.kind === 'dm') {
-    msgsRef = db.collection('dms').doc(chat.id).collection('messages');
-  } else {
-    const chRef = db.collection('servers').doc(chat.sid).collection('channels').doc(chat.cid);
-    msgsRef = chRef.collection('messages');
-    let first = true;
-    chat.unsubChan = chRef.onSnapshot(snap => {
-      const server = ovServerById(chat.sid);
-      if (!snap.exists || !server) { ovCloseChat(chat, true); return; }
-      chat.channel = { id: snap.id, ...snap.data() };
-      if (first) {
-        first = false;
-        if (!canViewChannel(chat.channel, server, myUid)) { toast("You don't have access to that channel.", 'error'); ovCloseChat(chat, true); return; }
-      } else if (!canViewChannel(chat.channel, server, myUid)) { ovCloseChat(chat, true); return; }
-      const nm = chat.el.querySelector('.ov-chan-name');
-      if (nm) nm.textContent = chat.channel.name;
-      input.setAttribute('aria-label', `Message #${chat.channel.name}`);
-      ovRefreshComposer(chat);
-    }, () => ovCloseChat(chat, true));
-  }
-  chat.unsub = msgsRef.orderBy('createdAt', 'desc').limit(40)
-    .onSnapshot(async snap => {
-      chat.msgs = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).reverse();
-      // channels have many authors; make sure we know who they are before drawing
-      const missing = [...new Set(chat.msgs.map(m => m.uid))].filter(u => u && !profileCache[u]);
-      if (missing.length) await Promise.all(missing.map(getProfile));
-      if (ovChats.includes(chat)) ovRenderMsgs(chat);
-    }, () => { if (ovChats.includes(chat)) ovCloseChat(chat, true); });
-  if (!input.disabled) input.focus();
-}
-function ovCloseChat(chat, forget) {
-  if (chat.unsub) chat.unsub();
-  if (chat.unsubChan) chat.unsubChan();
-  chat.el.remove();
-  ovChats = ovChats.filter(c => c !== chat);
-  if (forget && ovLastChat && ovKeyOf(ovLastChat) === chat.key) ovLastChat = null;
-}
-
-function ovMsgBody(m) {
-  let h = m.text ? `<div class="ov-text">${msgTextHTML(m)}</div>` : '';
-  const atts = m.attachments || (m.attachment ? [m.attachment] : []);
-  atts.forEach(a => {
-    const url = ovSafeUrl(a.url);
-    if (!url) return;
-    h += a.type === 'image' ? `<img class="ov-img" src="${url}" alt="">`
-      : `<a class="ov-file" href="${url}" target="_blank" rel="noopener noreferrer">${esc(a.name || 'File')}</a>`;
-  });
-  const gif = ovSafeUrl(m.gifUrl);
-  if (gif) h += `<img class="ov-img" src="${gif}" alt="GIF">`;
-  return h || `<div class="ov-text ov-note">${esc(previewForMessage(m))}</div>`;
-}
-function ovRenderMsgs(chat) {
-  const box = chat.el.querySelector('.ov-msgs');
-  let html = '', prev = null;
-  chat.msgs.forEach(m => {
-    const p = profileCache[m.uid] || { username: m.username || m.uid, avatarColor: '#5865f2' };
-    const grouped = prev && prev.uid === m.uid && timeValue(m.createdAt) - timeValue(prev.createdAt) < 5 * 60 * 1000;
-    html += `<div class="ov-msg${grouped ? '' : ' first'}">` +
-      (grouped ? '<div class="ov-gutter"></div>'
-        : `<div class="ov-gutter">${avatarHTML(32, p.avatarColor, initials(p.username), null, p.avatarUrl, p.equippedDecoration, m.uid, p.equippedMask)}</div>`) +
-      '<div class="ov-msg-main">' +
-      (grouped ? '' : `<div class="ov-msg-meta"><span class="ov-msg-name">${esc(displayNameOf(p))}</span><span class="ov-msg-time">${esc(timeStr(m.createdAt))}</span></div>`) +
-      ovMsgBody(m) + '</div></div>';
-    prev = m;
-  });
-  const empty = chat.kind === 'dm'
-    ? `Say hi to ${esc(displayNameOf(profileCache[chat.uid] || { username: chat.uid }))}.`
-    : `No messages in #${esc(chat.channel ? chat.channel.name : 'this channel')} yet.`;
-  box.innerHTML = html || `<div class="ov-empty">${empty}</div>`;
-  if (chat.stick) box.scrollTop = box.scrollHeight;
-}
-
-async function ovSend(chat, input) {
-  const raw = input.value.trim();
-  if (!raw) return;
-  // Moderation commands only work in the main window, inside a server. Here they do nothing.
-  if (ovCommandText(raw)) { input.value = ''; ovAutosize(input); return; }
-  if (isSiteMuted()) { toast(siteMuteText(), 'error'); return; }
-  { const tooLong = messageTooLong(raw); if (tooLong) { toast(tooLong, 'error'); return; } }
-  let server = null, ch = null;
-  if (chat.kind === 'channel') {
-    server = ovServerById(chat.sid); ch = chat.channel;
-    if (!server || !ch) return;
-    const why = ovChannelBlockReason(chat);
-    if (why) { toast(why, 'error'); return; }
-    const bypass = ['bypassSlowmode', 'manageChannels', 'manageMessages'].some(p => hasChannelPerm(ch, server, myUid, p));
-    if (ch.slowmode && !bypass) {
-      const left = Math.max(0, Math.ceil(((lastChannelSendAt[ch.id] || 0) + ch.slowmode * 1000 - Date.now()) / 1000));
-      if (left > 0) { toast(`Slowmode is on. You can send another message in ${left}s.`); return; }
-    }
-  }
-  input.value = '';
-  ovAutosize(input);
-  chat.stick = true;
-  const text = applyMessageFilter(raw);
-  const payload = { text, uid: myUid, username: myProfile.username, createdAt: FieldValue.serverTimestamp() };
-  try {
-    if (chat.kind === 'dm') {
-      const ref = db.collection('dms').doc(chat.id);
-      await ref.collection('messages').add(payload);
-      await ref.update({ updatedAt: FieldValue.serverTimestamp(), lastMessage: { text: previewForMessage({ text }), username: myProfile.username } });
-      db.collection('users').doc(myUid).update({
-        'dailyStats.dmsMessaged': FieldValue.increment(1),
-        'stats.messagesSent': FieldValue.increment(1),
-        'dailyStats.messagesSent': FieldValue.increment(1),
-      }).catch(() => {});
-    } else {
-      if (/(^|[\s(>])@(everyone|here)\b/i.test(text) && !hasChannelPerm(ch, server, myUid, 'mentionEveryone')) payload.everyoneBlocked = true;
-      if (ch.slowmode) lastChannelSendAt[ch.id] = Date.now();
-      const sent = await addChannelMessage(chat.sid, chat.cid, ch, payload);
-      noteChannelMessage(chat.sid, chat.cid, payload, sent, null, chat.channel && chat.channel.name);
-      bridgeOut(chat.sid, chat.cid, sent, ch);
-      db.collection('users').doc(myUid).update({
-        'dailyStats.channelsMessaged': FieldValue.increment(1),
-        'stats.messagesSent': FieldValue.increment(1),
-        'dailyStats.messagesSent': FieldValue.increment(1),
-      }).catch(() => {});
-    }
-  } catch (err) {
-    input.value = raw;
-    ovAutosize(input);
-    toast(err.message || 'Failed to send message.', 'error');
-  }
+function fmtOrbs(n) {
+  n = Math.floor(n || 0);
+  return n < 1e6 ? n.toLocaleString() : fmtNum(n);
 }
 
 // ============================================================
 // NPD (NewBGI) — CORE SEQUEL ENGINE
-// Live RTDB + Firestore Fallback Racing, 5-Min Queue + 6 Bots
-// (ytggobs, Marco, TheFinnyShow, Default, Doodlehoney2021, Perridise6099)
-// with Red BOT Tags, Anti-Cheat, Dashboard, Leaderboard, Stats,
-// Locker, Quests & Staff Panel Switchers
+// Nitro Type Highway Racing, 80 Cars + 36 Paints + 3D Studio,
+// 18 Mini-Games, Global Chat, Season 1 Battlepass (Events),
+// Level 1..1,000,000 Progression & Owner System Hub Controls
 // ============================================================
 
-let ggRaccoonSeen = true;
-function startCookieEngine() {}
-function stopCookieEngine() {}
-function closeGame() {}
-function mountGameHubs() {}
-function initGagAdmin() {}
-function initCcAdmin() {}
+const NPD_SVG_ICONS = {
+  flag: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+  bot: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  target: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  garage: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5V20a1 1 0 0 1-1 1h-2v-7H6v7H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 17h6"/><circle cx="12" cy="11.5" r="1.5"/></svg>',
+  cart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  image: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  close: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  cap: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 1.5l1.9 1.3 2.3-.3 1.2 1.9 2.2.8.3 2.3 1.6 1.6-.7 2.2.7 2.2-1.6 1.6-.3 2.3-2.2.8-1.2 1.9-2.3-.3L12 22.5l-1.9-1.3-2.3.3-1.2-1.9-2.2-.8-.3-2.3-1.6-1.6.7-2.2-.7-2.2 1.6-1.6.3-2.3 2.2-.8 1.2-1.9 2.3.3z" fill="currentColor"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-width="1.7" opacity=".75"/></svg>',
+  cube: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  paint: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
+};
 
-// Wire Staff Panel Sidebar & Modal Switcher Buttons
+function npdIcon(name) {
+  return `<span class="npd-svg-ico">${NPD_SVG_ICONS[name] || ''}</span>`;
+}
+
+function npdPlaceBadge(place) {
+  const p = Number(place) || 0;
+  if (p === 1) return '<span class="npd-place-pill p-1">1ST</span>';
+  if (p === 2) return '<span class="npd-place-pill p-2">2ND</span>';
+  if (p === 3) return '<span class="npd-place-pill p-3">3RD</span>';
+  return `<span class="npd-place-pill">#${p}</span>`;
+}
+
+function npdOrdinal(n) {
+  const v = Number(n) || 1;
+  if (v === 1) return '1st';
+  if (v === 2) return '2nd';
+  if (v === 3) return '3rd';
+  return `${v}th`;
+}
+
+const STARTER_CAR_IDS = ['car-apex', 'car-interceptor', 'car-metro', 'car-classic'];
+function getMyRaceStats(p = myProfile) {
+  const rs = (p && p.raceStats) || {};
+  const allOn = npdHasEverything(p);
+  const baseOwnedCars = Array.isArray(rs.ownedCars) ? rs.ownedCars.map(normalizeCarId) : STARTER_CAR_IDS.slice();
+  STARTER_CAR_IDS.forEach(id => { if (!baseOwnedCars.includes(id)) baseOwnedCars.push(id); });
+  const baseOwnedPaints = Array.isArray(rs.ownedPaints) ? rs.ownedPaints.slice() : ['paint_stock'];
+  if (!baseOwnedPaints.includes('paint_stock')) baseOwnedPaints.unshift('paint_stock');
+
+  const xp = Math.max(0, Math.floor(Number((p && p.xp) ?? rs.xp ?? 0)));
+  const effectiveXp = allOn ? Math.max(xp, npdTotalXpForLevel(NPD_MAX_LEVEL)) : xp;
+  const levelInfo = npdCalcLevelInfo(effectiveXp);
+  const tierMeta = getNpdTierMeta(levelInfo.level);
+
+  return {
+    races: Number(rs.races) || 0,
+    wins: Number(rs.wins) || 0,
+    bestWpm: Number(rs.bestWpm) || 0,
+    avgWpm: Number(rs.avgWpm) || 0,
+    avgAcc: Number(rs.avgAcc) || 100,
+    equippedCar: normalizeCarId(rs.equippedCar),
+    equippedPaint: rs.equippedPaint || 'paint_stock',
+    ownedCars: allOn ? NPD_CARS.map(c => c.id) : baseOwnedCars,
+    ownedPaints: allOn ? NPD_PAINTS.map(x => x.id) : baseOwnedPaints,
+    history: Array.isArray(rs.history) ? rs.history : [],
+    xp: effectiveXp,
+    levelInfo,
+    tierMeta,
+    bpXp: allOn ? 999999 : Math.max(0, Math.floor(Number(p && p.bpXp) || 0)),
+    bpPremium: allOn || !!(p && p.bpPremium),
+    bpClaimed: Array.isArray(p && p.bpClaimed) ? p.bpClaimed : []
+  };
+}
+
+function npdOwnsCar(p, carId) {
+  if (npdHasEverything(p)) return true;
+  const rs = getMyRaceStats(p);
+  return rs.ownedCars.includes(normalizeCarId(carId));
+}
+
+function npdOwnsPaint(p, paintId) {
+  if (npdHasEverything(p) || paintId === 'paint_stock') return true;
+  const rs = getMyRaceStats(p);
+  return rs.ownedPaints.includes(paintId);
+}
+
+// ============================================================
+// OWNER SYSTEM HUB: GIVE EVERYTHING SWITCH + FRIXION SHOP IMPORT
+// ============================================================
+let _geSyncTimer = 0;
+let _geSyncInFlight = false;
+
+function buildGiveEverythingPayload() {
+  const uniq = arr => [...new Set((arr || []).filter(Boolean))];
+  const decos = uniq([...AVATAR_DECORATIONS.map(x => x.id), ...customDecorations.map(x => x.id)]);
+  const names = uniq([...NAMEPLATES.map(x => x.id), ...customNameplates.map(x => x.id)]);
+  const effs = uniq([...PROFILE_EFFECTS.map(x => x.id), ...customProfileEffects.map(x => x.id)]);
+  const frames = uniq([...PROFILE_FRAMES.map(x => x.id), ...customProfileFrames.map(x => x.id)]);
+  const themes = uniq([...SHOP_THEMES.map(x => x.id), ...customThemes.map(x => x.id)]);
+  const banners = uniq(customBanners.map(x => x.id));
+  const music = uniq(allMusicTracks().map(x => x.id));
+  const allCars = NPD_CARS.map(c => c.id);
+  const allPaints = NPD_PAINTS.map(x => x.id);
+  const bpClaims = [];
+  NPD_BATTLEPASS_S1.tiers.forEach(t => {
+    bpClaims.push('free:' + t.tier, 'prem:' + t.tier);
+  });
+  return {
+    giveEverything: true,
+    orbs: 999999999,
+    premiumUntil: Date.now() + 3650 * 86400000,
+    xp: npdTotalXpForLevel(NPD_MAX_LEVEL),
+    bpXp: 999999,
+    bpPremium: true,
+    bpClaimed: bpClaims,
+    ownedDecorations: decos,
+    ownedNameplates: names,
+    ownedProfileEffects: effs,
+    ownedProfileFrames: frames,
+    ownedThemes: themes,
+    ownedBanners: banners,
+    ownedMusic: music,
+    'raceStats.ownedCars': allCars,
+    'raceStats.ownedPaints': allPaints
+  };
+}
+
+async function applyGiveEverythingToOwner() {
+  if (!realOwner() || !myUid) return;
+  const payload = buildGiveEverythingPayload();
+  await db.collection('users').doc(myUid).update(payload);
+  try {
+    UC.hasRaccoon = true;
+    UC.coins = 999999999;
+    localStorage.setItem('npd_ge_games_complete', '1');
+  } catch (e) {}
+}
+
+function syncGiveEverythingIfNeeded() {
+  if (!myProfile || !realOwner() || !npdHasEverything(myProfile) || _geSyncInFlight) return;
+  clearTimeout(_geSyncTimer);
+  _geSyncTimer = setTimeout(async () => {
+    if (!myProfile || !realOwner() || !npdHasEverything(myProfile) || _geSyncInFlight) return;
+    const target = buildGiveEverythingPayload();
+    const rs = (myProfile && myProfile.raceStats) || {};
+    const needSync = (
+      target.ownedDecorations.some(id => !(myProfile.ownedDecorations || []).includes(id)) ||
+      target.ownedNameplates.some(id => !(myProfile.ownedNameplates || []).includes(id)) ||
+      target.ownedProfileEffects.some(id => !(myProfile.ownedProfileEffects || []).includes(id)) ||
+      target.ownedProfileFrames.some(id => !(myProfile.ownedProfileFrames || []).includes(id)) ||
+      target.ownedThemes.some(id => !(myProfile.ownedThemes || []).includes(id)) ||
+      target.ownedBanners.some(id => !(myProfile.ownedBanners || []).includes(id)) ||
+      target.ownedMusic.some(id => !(myProfile.ownedMusic || []).includes(id)) ||
+      NPD_CARS.some(c => !(rs.ownedCars || []).includes(c.id)) ||
+      NPD_PAINTS.some(p => !(rs.ownedPaints || []).includes(p.id)) ||
+      (Number(myProfile.xp) || 0) < target.xp ||
+      !myProfile.bpPremium ||
+      (myProfile.orbs || 0) < 1000000
+    );
+    if (!needSync) return;
+    _geSyncInFlight = true;
+    try { await applyGiveEverythingToOwner(); } catch (e) {}
+    finally { _geSyncInFlight = false; }
+  }, 900);
+}
+
+let _ownerControlsWired = false;
+function wireOwnerSystemControls() {
+  const toggle = $('give-everything-toggle');
+  if (toggle && !toggle.dataset.wired) {
+    toggle.dataset.wired = '1';
+    toggle.onchange = async () => {
+      if (!realOwner()) {
+        toggle.checked = false;
+        toast('Only the NPD Owner can use Give Everything.', 'error');
+        return;
+      }
+      const on = toggle.checked;
+      toggle.disabled = true;
+      try {
+        if (on) {
+          await applyGiveEverythingToOwner();
+          toast('GIVE EVERYTHING ACTIVATED — Level 1,000,000, Battlepass, All 80 Cars, All 36 Paints & Every Shop Item unlocked!');
+        } else {
+          await db.collection('users').doc(myUid).update({ giveEverything: false });
+          toast('Give Everything switch turned OFF.');
+        }
+        if (currentView === 'dashboard') renderNpdDashboard();
+        if (currentView === 'events') renderNpdEventsView();
+        if (currentView === 'locker') renderNpdLocker();
+        if (currentView === 'shop') refreshOpenShopPanes();
+      } catch (e) {
+        toggle.checked = !on;
+        toast(e.message || 'Could not update Give Everything switch.', 'error');
+      } finally {
+        toggle.disabled = false;
+      }
+    };
+  }
+
+  const impBtn = $('owner-shop-import-btn');
+  if (impBtn && !impBtn.dataset.wired) {
+    impBtn.dataset.wired = '1';
+    impBtn.onclick = async () => {
+      if (!realOwner()) { toast('Owner only.', 'error'); return; }
+      const raw = ($('owner-shop-import-json') && $('owner-shop-import-json').value || '').trim();
+      if (!raw) { toast('Paste exported Frixion Shop JSON first.', 'error'); return; }
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (e) { toast('Invalid JSON syntax: ' + e.message, 'error'); return; }
+
+      const COL_BY_KIND = {
+        decoration: 'shopDecorations', decorations: 'shopDecorations', mask: 'shopDecorations', masks: 'shopDecorations',
+        theme: 'shopThemes', themes: 'shopThemes',
+        nameplate: 'shopNameplates', nameplates: 'shopNameplates',
+        banner: 'shopBanners', banners: 'shopBanners',
+        effect: 'shopProfileEffects', profile_effect: 'shopProfileEffects', profile_effects: 'shopProfileEffects', shopProfileEffects: 'shopProfileEffects',
+        frame: 'shopProfileFrames', profile_frame: 'shopProfileFrames', profile_frames: 'shopProfileFrames', shopProfileFrames: 'shopProfileFrames',
+        shopDecorations: 'shopDecorations', customDecorations: 'shopDecorations',
+        shopThemes: 'shopThemes', customThemes: 'shopThemes',
+        shopNameplates: 'shopNameplates', customNameplates: 'shopNameplates',
+        shopBanners: 'shopBanners', customBanners: 'shopBanners',
+        customProfileEffects: 'shopProfileEffects',
+        customProfileFrames: 'shopProfileFrames'
+      };
+
+      const queue = [];
+      if (Array.isArray(parsed)) {
+        parsed.forEach(item => {
+          if (item && typeof item === 'object') {
+            const k = item.kind || item.cat || item.category || (item.bg ? 'themes' : item.mask ? 'masks' : item.url ? 'decorations' : 'decorations');
+            const col = COL_BY_KIND[k];
+            if (col) queue.push({ col, item });
+          }
+        });
+      } else if (parsed && typeof parsed === 'object') {
+        Object.entries(parsed).forEach(([k, arr]) => {
+          const col = COL_BY_KIND[k];
+          if (col && Array.isArray(arr)) arr.forEach(item => { if (item && typeof item === 'object') queue.push({ col, item }); });
+        });
+      }
+
+      if (!queue.length) {
+        toast('No valid shop items found in JSON.', 'error');
+        return;
+      }
+
+      impBtn.disabled = true;
+      let count = 0;
+      try {
+        for (const { col, item } of queue) {
+          const docData = { ...item };
+          delete docData.kind; delete docData.cat; delete docData.category;
+          docData.price = Math.max(0, Math.floor(Number(docData.price) || 0));
+          docData.createdAt = docData.createdAt || FieldValue.serverTimestamp();
+          const docId = docData.id && typeof docData.id === 'string' && !/[/?#]/.test(docData.id) ? docData.id : null;
+          delete docData.id;
+          if (docId) await db.collection(col).doc(docId).set(docData, { merge: true });
+          else await db.collection(col).add(docData);
+          count++;
+        }
+        if ($('owner-shop-import-json')) $('owner-shop-import-json').value = '';
+        toast(`Imported ${count} custom shop item${count === 1 ? '' : 's'} into NPD!`);
+        refreshOpenShopPanes();
+      } catch (e) {
+        toast('Import failed: ' + (e.message || 'Check permissions.'), 'error');
+      } finally {
+        impBtn.disabled = false;
+      }
+    };
+  }
+  _ownerControlsWired = true;
+}
+
+// ============================================================
+// STAFF PANELS & COLLAPSIBLE SIDEBAR + MOBILE NAVIGATION
+// ============================================================
 if ($('sidebar-admin-btn')) $('sidebar-admin-btn').onclick = () => openAdminEntry('admin');
 if ($('sidebar-coowner-btn')) $('sidebar-coowner-btn').onclick = () => openAdminEntry('coowner');
 if ($('sidebar-owner-btn')) $('sidebar-owner-btn').onclick = () => openAdminEntry('owner');
@@ -15285,11 +14909,38 @@ if ($('switch-to-admin-panel')) $('switch-to-admin-panel').onclick = () => openA
 if ($('switch-to-coowner-panel')) $('switch-to-coowner-panel').onclick = () => openAdminPanel('coowner');
 if ($('switch-to-owner-panel')) $('switch-to-owner-panel').onclick = () => openAdminPanel('owner');
 
-// Wire LiquidType-Evolved Primary Sidebar (#lt-sidebar)
+// Hide Server UI affordances cleanly (Global Chat + Direct Messages only)
+if ($('rail-explore')) $('rail-explore').classList.add('hidden');
+
+const SB_COLLAPSED_KEY = 'npd_sb_collapsed';
+function applySidebarCollapsed(collapsed) {
+  const sb = $('lt-sidebar');
+  if (sb) sb.classList.toggle('collapsed', !!collapsed);
+  document.body.classList.toggle('lt-sb-collapsed', !!collapsed);
+}
+try {
+  if (localStorage.getItem(SB_COLLAPSED_KEY) === '1') applySidebarCollapsed(true);
+} catch (e) {}
+if ($('lt-sb-collapse-btn')) {
+  $('lt-sb-collapse-btn').onclick = e => {
+    e.stopPropagation();
+    const sb = $('lt-sidebar');
+    const next = sb ? !sb.classList.contains('collapsed') : !document.body.classList.contains('lt-sb-collapsed');
+    applySidebarCollapsed(next);
+    try { localStorage.setItem(SB_COLLAPSED_KEY, next ? '1' : '0'); } catch (err) {}
+  };
+}
+
+if ($('lt-btn-mobile')) {
+  $('lt-btn-mobile').onclick = () => {
+    setForceMobileMode(!isForceMobileMode());
+  };
+}
+
 function syncLtSidebarChip() {
   if (!myProfile) return;
   const rs = getMyRaceStats(myProfile);
-  const orbs = (myProfile.orbs || 0) + pendingOrbs();
+  const orbs = npdHasEverything(myProfile) ? 999999999 : ((myProfile.orbs || 0) + pendingOrbs());
   const avEl = $('lt-sb-avatar');
   if (avEl) {
     avEl.innerHTML = avatarHTML(38, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask);
@@ -15301,7 +14952,7 @@ function syncLtSidebarChip() {
   const orbsEl = $('lt-sb-orbs-count');
   if (orbsEl) orbsEl.textContent = fmtOrbs(orbs);
   const wpmEl = $('lt-sb-wpm-badge');
-  if (wpmEl) wpmEl.textContent = `${rs.bestWpm || 0} WPM`;
+  if (wpmEl) wpmEl.textContent = `LV ${npdFormatLevel(rs.levelInfo.level)} · ${rs.bestWpm || 0} WPM`;
   const reqs = (myProfile.incomingRequests || []).length;
   const fBadge = $('lt-friend-badge');
   if (fBadge) {
@@ -15315,38 +14966,96 @@ function setLtSidebarActive(navKey) {
   document.querySelectorAll('#lt-sidebar .lt-sbtab[data-lt-nav]').forEach(btn => {
     btn.classList.toggle('on', btn.dataset.ltNav === navKey);
   });
+  document.querySelectorAll('#npd-mobile-bar .npd-mob-btn[data-lt-nav]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.ltNav === navKey);
+  });
 }
 
-document.querySelectorAll('#lt-sidebar .lt-sbtab[data-lt-nav]').forEach(btn => {
+function openDirectMessagesMode() {
+  document.body.classList.add('npd-chat-mode');
+  setLtSidebarActive('chat-dms');
+  hideMainPageViews();
+  const ms = $('npd-mob-more-sheet');
+  if (ms) ms.classList.add('hidden');
+  $('dm-list').classList.remove('hidden');
+  $('channel-list').classList.add('hidden');
+  $('side-header-title').textContent = 'Direct Messages';
+  if ($('side-header-chevron')) $('side-header-chevron').classList.add('hidden');
+  renderDMRows();
+  const firstDm = document.querySelector('#dm-rows .dm-row');
+  if (firstDm) {
+    firstDm.click();
+  } else {
+    setMobilePane('list');
+    $('welcome-view').classList.remove('hidden');
+    $('chat-view').classList.add('hidden');
+  }
+}
+
+document.querySelectorAll('[data-lt-nav]').forEach(btn => {
   btn.onclick = () => {
     const target = btn.dataset.ltNav;
-    setLtSidebarActive(target);
-    if (target === 'chat-servers' || target === 'chat-dms') {
-      document.body.classList.add('npd-chat-mode');
-      hideMainPageViews();
-      if (target === 'chat-dms') {
-        $('dm-list').classList.remove('hidden');
-        $('channel-list').classList.add('hidden');
-        $('side-header-title').textContent = 'Direct Messages';
-        renderDMRows();
-        const firstDm = document.querySelector('#dm-rows .dm-row');
-        if (firstDm) firstDm.click();
-        else {
-          $('welcome-view').classList.remove('hidden');
-          $('chat-view').classList.add('hidden');
-        }
-      } else {
-        const firstSrv = document.querySelector('#server-rail-list .rail-item');
-        if (firstSrv) firstSrv.click();
-        else {
-          $('dm-list').classList.remove('hidden');
-          $('welcome-view').classList.remove('hidden');
-        }
-      }
-      return;
-    }
+    if (!target) return;
+    if (target === 'chat-dms') { openDirectMessagesMode(); return; }
     document.body.classList.remove('npd-chat-mode');
     openHomeMainView(target);
+  };
+});
+
+// Mobile More Menu Sheet & Mobile Header Back
+const moreBtn = $('npd-mob-more-btn');
+const moreSheet = $('npd-mob-more-sheet');
+if (moreBtn && moreSheet) {
+  moreBtn.onclick = () => {
+    const rank = sfMode ? 0 : platformRank(myProfile);
+    const staffBtn = $('npd-mob-staff-btn');
+    if (staffBtn) {
+      staffBtn.classList.toggle('hidden', rank < 1);
+      staffBtn.textContent = rank === 3 ? 'Owner Panel' : rank === 2 ? 'Co-Owner Panel' : 'Admin Panel';
+      staffBtn.onclick = () => {
+        moreSheet.classList.add('hidden');
+        openAdminEntry(rank === 3 ? 'owner' : rank === 2 ? 'coowner' : 'admin');
+      };
+    }
+    const exitBtn = $('npd-mob-exit-btn');
+    if (exitBtn) exitBtn.classList.toggle('hidden', !isForceMobileMode());
+    moreSheet.classList.toggle('hidden');
+  };
+  moreSheet.onclick = e => {
+    if (e.target === moreSheet) moreSheet.classList.add('hidden');
+  };
+}
+if ($('npd-mob-sheet-close') && moreSheet) {
+  $('npd-mob-sheet-close').onclick = () => moreSheet.classList.add('hidden');
+}
+document.querySelectorAll('#npd-mob-more-sheet [data-mob-nav]').forEach(tile => {
+  tile.onclick = () => {
+    if (moreSheet) moreSheet.classList.add('hidden');
+    const nav = tile.dataset.mobNav;
+    if (nav === 'dms') { openDirectMessagesMode(); return; }
+    navigateToNpdView(nav);
+  };
+});
+if ($('npd-mob-settings-btn')) {
+  $('npd-mob-settings-btn').onclick = () => {
+    if (moreSheet) moreSheet.classList.add('hidden');
+    openSettings();
+  };
+}
+if ($('npd-mob-exit-btn')) {
+  $('npd-mob-exit-btn').onclick = () => {
+    if (moreSheet) moreSheet.classList.add('hidden');
+    setForceMobileMode(false);
+  };
+}
+
+document.querySelectorAll('[data-npd-back="1"]').forEach(el => {
+  el.onclick = () => {
+    if (document.body.classList.contains('npd-chat-mode')) {
+      setMobilePane('list');
+    } else {
+      navigateToNpdView('dashboard');
+    }
   };
 });
 
@@ -15363,132 +15072,14 @@ if ($('lt-btn-updates')) $('lt-btn-updates').onclick = () => {
   const nav = document.querySelector('#settings-nav .nav-item[data-pane="pane-updates"]');
   if (nav) nav.click();
 };
-if ($('lt-btn-logout')) $('lt-btn-logout').onclick = () => {
-  if ($('logout-btn')) $('logout-btn').click();
-};
-
-// ============================================================
-// NPD (NewBGI) CUSTOM VECTOR SVG ICONS & RACE CARS (ZERO EMOJIS)
-// ============================================================
-const NPD_SVG_ICONS = {
-  flag: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
-  bolt: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-  trophy: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
-  chart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
-  globe: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
-  bot: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
-  shield: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-  clock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-  target: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
-  garage: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5v5Z"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
-  cart: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
-  image: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
-  close: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-  check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-  cap: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 1.5l1.9 1.3 2.3-.3 1.2 1.9 2.2.8.3 2.3 1.6 1.6-.7 2.2.7 2.2-1.6 1.6-.3 2.3-2.2.8-1.2 1.9-2.3-.3L12 22.5l-1.9-1.3-2.3.3-1.2-1.9-2.2-.8-.3-2.3-1.6-1.6.7-2.2-.7-2.2 1.6-1.6.3-2.3 2.2-.8 1.2-1.9 2.3.3z" fill="currentColor"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-width="1.7" opacity=".75"/></svg>'
-};
-
-function npdIcon(name) {
-  return `<span class="npd-svg-ico">${NPD_SVG_ICONS[name] || ''}</span>`;
-}
-
-function npdPlaceBadge(place) {
-  const p = Number(place) || 0;
-  if (p === 1) return `<span class="npd-place-pill p-1">1ST</span>`;
-  if (p === 2) return `<span class="npd-place-pill p-2">2ND</span>`;
-  if (p === 3) return `<span class="npd-place-pill p-3">3RD</span>`;
-  return `<span class="npd-place-pill">#${p}</span>`;
-}
-
-const NPD_CARS = [
-  { id: 'car-apex', name: 'Apex GT', color: '#ff1a1a', accent: '#ffffff', price: 0, desc: 'Factory crimson twin-turbo GT built for high-rev straightaways.' },
-  { id: 'car-interceptor', name: 'Interceptor', color: '#3b82f6', accent: '#93c5fd', price: 0, desc: 'Pursuit spec interceptor with launch-control telemetry.' },
-  { id: 'car-metro', name: 'Metro Spec', color: '#f59e0b', accent: '#fde68a', price: 0, desc: 'Street-tuned yellow coupe with short-ratio gearing.' },
-  { id: 'car-classic', name: 'Street Classic', color: '#94a3b8', accent: '#e2e8f0', price: 0, desc: 'Balanced touring chassis built for clean consistency.' },
-  { id: 'car-rocket', name: 'Starlight V12', color: '#a855f7', accent: '#e9d5ff', price: 500, desc: 'Low-drag aero prototype engineered for 100+ WPM bursts.' },
-  { id: 'car-saucer', name: 'Nebula X', color: '#10b981', accent: '#a7f3d0', price: 1200, desc: 'Zero-lift carbon track weapon with active ground effect.' },
-  { id: 'car-volt', name: 'Volt Hypercar', color: '#06b6d4', accent: '#cffafe', price: 2500, desc: 'Quad-motor electric hypercar with instant torque vectoring.' },
-  { id: 'car-dragon', name: 'Crimson Wraith', color: '#e11d48', accent: '#fecdd3', price: 5000, desc: 'Mythic endurance flagship forged for circuit champions.' },
-  { id: 'car-sovereign', name: 'Sovereign Gold', color: '#eab308', accent: '#fef08a', price: 0, premiumOnly: true, desc: 'Exclusive 24K gold-trimmed flagship for NPD Premium & Staff.' }
-];
-
-const LEGACY_CAR_MAP = {
-  '🏎️': 'car-apex',
-  '🚓': 'car-interceptor',
-  '🚕': 'car-metro',
-  '🚗': 'car-classic',
-  '🚀': 'car-rocket',
-  '🛸': 'car-saucer',
-  '⚡': 'car-volt',
-  '🐉': 'car-dragon',
-  '👑': 'car-sovereign'
-};
-
-function normalizeCarId(raw) {
-  if (!raw) return 'car-apex';
-  if (LEGACY_CAR_MAP[raw]) return LEGACY_CAR_MAP[raw];
-  if (NPD_CARS.some(c => c.id === raw)) return raw;
-  return 'car-apex';
-}
-
-function getCarMeta(raw) {
-  const id = normalizeCarId(raw);
-  return NPD_CARS.find(c => c.id === id) || NPD_CARS[0];
-}
-
-function renderNpdCarSvg(rawCar, widthPx = 44) {
-  const car = getCarMeta(rawCar);
-  const h = Math.round(widthPx * 0.48);
-  return `<span class="npd-car-svg-wrap" title="${esc(car.name)}">
-    <svg viewBox="0 0 64 30" width="${widthPx}" height="${h}" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Rear Wing -->
-      <path d="M4 10L9 10L11 16H5L4 10Z" fill="${car.accent}" opacity="0.9"/>
-      <!-- Sleek Aerodynamic Chassis -->
-      <path d="M6 16L18 14L27 8H43L53 14L61 17V22H54C54 18.5 46 18.5 46 22H24C24 18.5 16 18.5 16 22H6V16Z" fill="${car.color}" stroke="${car.accent}" stroke-width="1.2" stroke-linejoin="round"/>
-      <!-- Cockpit Canopy -->
-      <path d="M27 9.5H41.5L49 14H21.5L27 9.5Z" fill="#090d16" stroke="${car.accent}" stroke-width="0.9"/>
-      <!-- Racing Stripe & Headlight -->
-      <path d="M22 17H52" stroke="${car.accent}" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
-      <path d="M57 16.5L61 17.5V19.5L57 18.5V16.5Z" fill="#ffffff"/>
-      <!-- Front & Rear Wheels -->
-      <circle cx="20" cy="22" r="4.8" fill="#0b0b0e" stroke="${car.accent}" stroke-width="1.6"/>
-      <circle cx="20" cy="22" r="1.8" fill="${car.color}"/>
-      <circle cx="50" cy="22" r="4.8" fill="#0b0b0e" stroke="${car.accent}" stroke-width="1.6"/>
-      <circle cx="50" cy="22" r="1.8" fill="${car.color}"/>
-    </svg>
-  </span>`;
-}
-
-const NPD_QUOTES = [
-  "The art of racing on a keyboard comes down to rhythm and calm focus. Every clean keystroke builds momentum down the straightaway while hesitation costs precious tenths of a second.",
-  "Beneath the neon lights of the midnight circuit, six drivers lined up on the starting grid waiting for the green flag to drop and the engines to roar.",
-  "Speed is a byproduct of accuracy. When your fingers already know the path across the home row, the words flow onto the screen without a single wasted motion.",
-  "A true champion never panics when falling behind on the opening lap. Stay locked in, trust your muscle memory, and overtake them on the final stretch.",
-  "Technology moves fast, but human reflexes sharpened by thousands of races still set the standard when the countdown hits zero.",
-  "Rain slicked the asphalt along the coastal highway as the lead pack drafted bumper to bumper through the sweeping chicane toward the finish line.",
-  "Consistency beats raw burst speed every single time. One careless typo at ninety words per minute will cost you more ground than a steady pace.",
-  "The crowd stood on their feet as the telemetry readout climbed past one hundred words per minute in the closing seconds of the championship heat.",
-  "Precision engineering and relentless practice turn ordinary typists into legends of the track, one race at a time.",
-  "Every great sequel builds on what came before it, keeping the soul of the original while pushing the engine into a whole new gear."
-];
-
-function getMyRaceStats(p = myProfile) {
-  const rs = (p && p.raceStats) || {};
-  return {
-    races: Number(rs.races) || 0,
-    wins: Number(rs.wins) || 0,
-    bestWpm: Number(rs.bestWpm) || 0,
-    avgWpm: Number(rs.avgWpm) || 0,
-    avgAcc: Number(rs.avgAcc) || 100,
-    equippedCar: normalizeCarId(rs.equippedCar),
-    ownedCars: Array.isArray(rs.ownedCars) ? rs.ownedCars.map(normalizeCarId) : ['car-apex', 'car-interceptor', 'car-metro', 'car-classic'],
-    history: Array.isArray(rs.history) ? rs.history : []
+if ($('lt-btn-logout')) {
+  $('lt-btn-logout').onclick = () => {
+    if ($('logout-btn')) $('logout-btn').click();
   };
 }
 
 function navigateToNpdView(view) {
   document.body.classList.remove('npd-chat-mode');
-  setLtSidebarActive(view);
   clearHomeNavActive();
   const nav = document.querySelector(`.home-nav-item[data-home-view="${view}"]`);
   if (nav) nav.classList.add('active');
@@ -15500,147 +15091,110 @@ function navigateToNpdView(view) {
 // 1. NPD DASHBOARD
 // ============================================================
 async function renderNpdDashboard() {
-  const el = $('dashboard-view');
-  if (!el || !myProfile) return;
+  if (!myProfile || !$('dashboard-view')) return;
   const rs = getMyRaceStats(myProfile);
   const carMeta = getCarMeta(rs.equippedCar);
+  const paintMeta = getPaintMeta(rs.equippedPaint);
   const winRate = rs.races > 0 ? Math.round((rs.wins / rs.races) * 100) : 0;
-  const caps = (myProfile.orbs || 0) + pendingOrbs();
-  const claimed = (myProfile.dailyStats && Array.isArray(myProfile.dailyStats.claimedQuests)) ? myProfile.dailyStats.claimedQuests : [];
+  const caps = npdHasEverything(myProfile) ? 999999999 : ((myProfile.orbs || 0) + pendingOrbs());
+  const bpProg = calcBattlepassProgress(rs.bpXp);
 
-  el.innerHTML = `
-    <div class="npd-page-wrap">
-      <div class="npd-hero-banner">
-        <div class="npd-hero-left">
-          <div class="npd-hero-tag">NPD // NEWBGI SEQUEL</div>
-          <h1 class="npd-hero-title">Welcome back, ${esc(displayNameOf(myProfile))}${premiumStar(myProfile)}${roleTag(myProfile)}</h1>
-          <p class="npd-hero-sub">Compete in live RTDB multiplayer typing races, earn Bottlecaps, customize your vehicle in the Garage, and climb the global player leaderboard.</p>
-          <div class="npd-hero-actions">
-            <button type="button" class="btn-primary npd-cta-btn" id="dash-live-race-btn">${npdIcon('flag')} Enter Live Race Track</button>
-            <button type="button" class="btn-secondary npd-cta-btn" id="dash-solo-race-btn">${npdIcon('bolt')} Quick Bot Race</button>
-            <button type="button" class="btn-secondary npd-cta-btn" id="dash-locker-btn">${npdIcon('garage')} Garage &amp; Locker</button>
-          </div>
-        </div>
-        <div class="npd-hero-car-card">
-          <div class="npd-hero-car-emoji">${renderNpdCarSvg(rs.equippedCar, 96)}</div>
-          <div class="npd-hero-car-label">${esc(carMeta.name)}</div>
-          <div class="npd-hero-orbs">${icon('orb', 'orb-inline')} <span>${fmtOrbs(caps)} Bottlecaps</span></div>
-        </div>
+  if ($('dash-welcome-title')) {
+    $('dash-welcome-title').innerHTML = `Welcome back, ${esc(displayNameOf(myProfile))}${premiumStar(myProfile)}${roleTag(myProfile)}`;
+  }
+  if ($('dash-welcome-sub')) {
+    $('dash-welcome-sub').innerHTML = `
+      <span>Level <b>${npdFormatLevel(rs.levelInfo.level)}</b> / 1,000,000 · <b style="color:${esc(rs.tierMeta.color)}">${esc(rs.tierMeta.name)}</b> (Text Difficulty Tier ${rs.tierMeta.tier})</span>
+      <div style="margin-top:8px;max-width:460px;height:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;">
+        <div style="width:${rs.levelInfo.pct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,#dc2626,#f59e0b);"></div>
       </div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">${fmtNum(rs.levelInfo.into)} / ${fmtNum(rs.levelInfo.needed)} XP to Level ${npdFormatLevel(Math.min(NPD_MAX_LEVEL, rs.levelInfo.level + 1))}</div>
+    `;
+  }
+  if ($('dash-league-name')) {
+    $('dash-league-name').innerHTML = `<div style="margin-bottom:6px;">${renderNpdCarSvg(rs.equippedCar, 124, rs.equippedPaint)}</div><div>LV ${npdFormatLevel(rs.levelInfo.level)} · ${esc(carMeta.name)}</div>`;
+  }
+  if ($('dash-league-sub')) {
+    $('dash-league-sub').textContent = `${paintMeta.name} Paint · ${rs.tierMeta.name}`;
+  }
+  if ($('dash-stat-avg-wpm')) $('dash-stat-avg-wpm').textContent = `${rs.avgWpm} WPM`;
+  if ($('dash-stat-best-wpm')) $('dash-stat-best-wpm').textContent = `${rs.bestWpm} WPM`;
+  if ($('dash-stat-wins')) $('dash-stat-wins').textContent = `${rs.wins} (${winRate}%)`;
+  if ($('dash-stat-races')) $('dash-stat-races').textContent = `${rs.races} total races`;
+  if ($('dash-stat-orbs')) $('dash-stat-orbs').textContent = `${fmtOrbs(caps)} Bottlecaps`;
+  if ($('dash-stat-acc')) $('dash-stat-acc').textContent = `${rs.avgAcc.toFixed(1)}% accuracy`;
 
-      <div class="npd-stats-grid">
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Best Speed</div>
-          <div class="npd-stat-val accent">${rs.bestWpm} <small>WPM</small></div>
-          <div class="npd-stat-foot">Personal Record</div>
+  // Wire dashboard CTA buttons cleanly
+  if ($('dash-quick-live-btn')) $('dash-quick-live-btn').onclick = () => { navigateToNpdView('race'); startLiveMatchmakingQueue(); };
+  if ($('dash-quick-solo-btn')) $('dash-quick-solo-btn').onclick = () => { navigateToNpdView('race'); startInstantBotRace(); };
+  if ($('dash-hero-race-btn')) $('dash-hero-race-btn').onclick = () => navigateToNpdView('race');
+  if ($('dash-hero-shop-btn')) $('dash-hero-shop-btn').onclick = () => navigateToNpdView('shop');
+  if ($('dash-hero-locker-btn')) $('dash-hero-locker-btn').onclick = () => navigateToNpdView('locker');
+  if ($('dash-view-all-quests')) $('dash-view-all-quests').onclick = () => navigateToNpdView('events');
+  if ($('dash-view-leaderboard')) $('dash-view-leaderboard').onclick = () => navigateToNpdView('leaderboard');
+
+  // Battlepass preview box
+  const bpBox = $('dash-quests-preview');
+  if (bpBox) {
+    bpBox.innerHTML = `
+      <div style="padding:14px;border-radius:12px;background:linear-gradient(135deg,rgba(180,45,12,.3),rgba(20,6,6,.92));border:1px solid rgba(249,115,22,.4);">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <strong style="font-size:15px;color:#fed7aa;">HARVEST DRIFT PASS</strong>
+          <span class="bp-urgency-pill" style="font-size:11px;padding:3px 9px;">1 Month Left · Ends Dec 1</span>
         </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Average Speed</div>
-          <div class="npd-stat-val">${rs.avgWpm} <small>WPM</small></div>
-          <div class="npd-stat-foot">${rs.avgAcc.toFixed(1)}% Accuracy</div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px;">Tier <b>${bpProg.tier}</b> / ${NPD_BATTLEPASS_S1.totalTiers} · ${rs.bpPremium ? 'PREMIUM ACTIVE' : 'FREE TRACK'}</div>
+        <div style="height:8px;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden;margin-bottom:10px;">
+          <div style="width:${bpProg.pct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,#ea580c,#fbbf24);"></div>
         </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Races Won</div>
-          <div class="npd-stat-val gold">${rs.wins} <small>/ ${rs.races}</small></div>
-          <div class="npd-stat-foot">${winRate}% Win Rate</div>
-        </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Bottlecaps</div>
-          <div class="npd-stat-val cyan">${fmtOrbs(caps)}</div>
-          <div class="npd-stat-foot">Spend in Shop &amp; Garage</div>
-        </div>
+        <button type="button" class="btn-accent-inline slim" id="dash-open-events-btn">${npdIcon('trophy')} View 30 Tiers &amp; Claim Rewards</button>
       </div>
-
-      <div class="npd-dash-columns">
-        <div class="npd-dash-panel">
-          <div class="npd-panel-head">
-            <h3>${npdIcon('trophy')} Top Circuit Players</h3>
-            <button type="button" class="btn-link" id="dash-view-lb">Full Leaderboard</button>
-          </div>
-          <div id="dash-mini-lb" class="npd-mini-lb">
-            <div class="empty">Loading player standings...</div>
-          </div>
-        </div>
-
-        <div class="npd-dash-panel">
-          <div class="npd-panel-head">
-            <h3>${npdIcon('target')} Daily Racing Quests</h3>
-            <button type="button" class="btn-link" id="dash-view-quests">All Quests</button>
-          </div>
-          <div class="npd-quests-list">
-            ${NPD_DAILY_QUESTS.slice(0, 3).map(q => {
-              const prog = Math.min(q.target, q.metric(myProfile));
-              const pct = Math.round((prog / q.target) * 100);
-              const isClaimed = claimed.includes(q.id);
-              return `
-                <div class="npd-bot-chip" style="justify-content:space-between">
-                  <div style="flex:1;min-width:0">
-                    <div class="npd-bot-name">${esc(q.title)} <span class="npd-quest-reward">+${q.reward} Bottlecaps</span></div>
-                    <div class="npd-quest-bar"><div class="npd-quest-fill" style="width:${pct}%"></div></div>
-                    <div class="npd-bot-wpm">${prog} / ${q.target} ${isClaimed ? '· Claimed' : ''}</div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+        <div><strong style="font-size:13px;">Arcade Mini-Games</strong><div style="font-size:11.5px;color:var(--text-muted);">18 arcade mini-games to earn Bottlecaps</div></div>
+        <button type="button" class="btn-secondary slim" id="dash-open-games-btn">Play Games</button>
       </div>
-    </div>
-  `;
-
-  $('dash-live-race-btn').onclick = () => {
-    navigateToNpdView('race');
-    setTimeout(() => startLiveMatchmakingQueue(), 60);
-  };
-  $('dash-solo-race-btn').onclick = () => {
-    navigateToNpdView('race');
-    setTimeout(() => startInstantBotRace(), 60);
-  };
-  $('dash-locker-btn').onclick = () => navigateToNpdView('locker');
-  $('dash-view-lb').onclick = () => navigateToNpdView('leaderboard');
-  $('dash-view-quests').onclick = () => navigateToNpdView('quests');
+    `;
+    if ($('dash-open-events-btn')) $('dash-open-events-btn').onclick = () => navigateToNpdView('events');
+    if ($('dash-open-games-btn')) $('dash-open-games-btn').onclick = () => navigateToNpdView('games');
+  }
 
   loadMiniLeaderboard();
 }
 
 async function loadMiniLeaderboard() {
-  const box = $('dash-mini-lb');
-  if (!box) return;
+  const wrap = $('dash-leaderboard-preview');
+  if (!wrap) return;
   try {
-    const racers = await fetchCombinedRacers();
-    racers.sort((a, b) => b.bestWpm - a.bestWpm);
-    const top = racers.slice(0, 5);
-    if (!top.length) {
-      box.innerHTML = '<div class="empty">No player races recorded yet. Complete a race to claim #1!</div>';
-      return;
-    }
-    box.innerHTML = top.map((r, idx) => `
-      <div class="npd-lb-row mini" data-user="${esc(r.username)}">
-        ${npdPlaceBadge(idx + 1)}
-        <span class="npd-lb-car">${renderNpdCarSvg(r.car, 38)}</span>
-        <span class="npd-lb-name">${esc(r.username)} ${roleTag(r.raw)}</span>
-        <span class="npd-lb-stat"><strong>${r.bestWpm}</strong> WPM</span>
+    const gamers = await fetchRealPlayersForLeaderboard();
+    const top = gamers.sort((a, b) => b.bestWpm - a.bestWpm).slice(0, 5);
+    wrap.innerHTML = top.length ? top.map((r, idx) => `
+      <div class="npd-mini-lb-row" data-uid="${esc(r.id)}" style="cursor:pointer;">
+        <span class="npd-lb-pos">#${idx + 1}</span>
+        <span class="npd-lb-car">${renderNpdCarSvg(r.car, 42, r.paint)}</span>
+        <span class="npd-lb-name">${esc(r.displayName)}${r.isPrem ? premiumStar({ giveEverything: true }) : ''} <small style="color:var(--text-muted);">LV ${npdFormatLevel(r.level)}</small></span>
+        <span class="npd-lb-wpm">${r.bestWpm} WPM</span>
       </div>
-    `).join('');
-    box.querySelectorAll('[data-user]').forEach(row => {
-      row.onclick = () => openProfileModal(row.dataset.user);
+    `).join('') : '<div class="empty">Finish a race to claim #1 on the board!</div>';
+    wrap.querySelectorAll('[data-uid]').forEach(row => {
+      row.onclick = () => openProfileModal(row.dataset.uid);
     });
-  } catch (_) {
-    box.innerHTML = '<div class="empty">Could not load leaderboard preview.</div>';
+  } catch (e) {
+    wrap.innerHTML = '<div class="empty">Unable to load top racers.</div>';
   }
 }
 
 // ============================================================
-// 2. NPD LIVE RTDB + BOT RACING ENGINE
+// 2. NITRO TYPE STYLE RACING ENGINE (LIVE RTDB + SOLO BOTS)
 // ============================================================
-const MAX_QUEUE_SECONDS = 300; // 5 minutes max queue time before auto-adding bots
+const MAX_QUEUE_SECONDS = 300;
 let npdRaceState = {
-  phase: 'idle', // 'idle' | 'queue' | 'countdown' | 'racing' | 'finished'
-  mode: 'live',  // 'live' | 'solo'
+  phase: 'idle',
+  mode: 'live',
   lobbyId: null,
-  usingRtdb: true,
+  usingRtdb: false,
   isHost: false,
   quote: '',
+  textId: '',
+  textTier: 1,
   queueStartedAt: 0,
   queueInterval: null,
   countdownInterval: null,
@@ -15649,6 +15203,8 @@ let npdRaceState = {
   typed: '',
   errors: 0,
   totalKeystrokes: 0,
+  nitro: 0,
+  nitroActiveUntil: 0,
   startTime: 0,
   finishTime: 0,
   wpm: 0,
@@ -15657,154 +15213,71 @@ let npdRaceState = {
 };
 
 function cleanupNpdRaceTimers() {
-  if (npdRaceState.queueInterval) { clearInterval(npdRaceState.queueInterval); npdRaceState.queueInterval = null; }
-  if (npdRaceState.countdownInterval) { clearInterval(npdRaceState.countdownInterval); npdRaceState.countdownInterval = null; }
-  if (npdRaceState.raceInterval) { clearInterval(npdRaceState.raceInterval); npdRaceState.raceInterval = null; }
+  if (npdRaceState.queueInterval) clearInterval(npdRaceState.queueInterval);
+  if (npdRaceState.countdownInterval) clearInterval(npdRaceState.countdownInterval);
+  if (npdRaceState.raceInterval) clearInterval(npdRaceState.raceInterval);
   if (npdRaceState.syncUnsub) {
-    try { npdRaceState.syncUnsub(); } catch (_) {}
-    npdRaceState.syncUnsub = null;
+    try { npdRaceState.syncUnsub(); } catch (e) {}
   }
+  npdRaceState.queueInterval = null;
+  npdRaceState.countdownInterval = null;
+  npdRaceState.raceInterval = null;
+  npdRaceState.syncUnsub = null;
 }
 
 function getRtdbInstance() {
   try {
-    if (typeof firebase !== 'undefined' && typeof firebase.database === 'function') {
-      return firebase.database();
-    }
-  } catch (_) {}
+    if (typeof rtdb !== 'undefined' && rtdb) return rtdb;
+    if (firebase && firebase.database) return firebase.database();
+  } catch (e) {}
   return null;
-}
-
-function renderNpdRaceView() {
-  const el = $('race-view');
-  if (!el || !myProfile) return;
-  const rs = getMyRaceStats(myProfile);
-  const carMeta = getCarMeta(rs.equippedCar);
-
-  el.innerHTML = `
-    <div class="npd-page-wrap">
-      <div class="npd-race-header">
-        <div>
-          <h2 class="npd-section-title">${npdIcon('flag')} NPD Live Circuit</h2>
-          <p class="npd-section-sub">Real-time multiplayer matchmaking via RTDB. Max queue time is <strong>5:00</strong> — if nobody else joins, official NPD bots (<span class="bot-tag-red">BOT</span>) automatically fill the grid.</p>
-        </div>
-        <div class="npd-race-controls">
-          <button type="button" class="btn-primary" id="race-join-live-btn">${npdIcon('globe')} Join Live Queue (RTDB)</button>
-          <button type="button" class="btn-secondary" id="race-start-bot-btn">${npdIcon('bot')} Practice vs Bots Now</button>
-          <button type="button" class="btn-secondary hidden" id="race-leave-btn">${npdIcon('close')} Leave Track</button>
-        </div>
-      </div>
-
-      <!-- Queue Status Card -->
-      <div id="npd-queue-card" class="npd-queue-card hidden">
-        <div class="npd-queue-top">
-          <div class="npd-queue-pulse"></div>
-          <div class="npd-queue-info">
-            <div class="npd-queue-title" id="npd-queue-title">Searching for live racers...</div>
-            <div class="npd-queue-sub" id="npd-queue-sub">Waiting for players to join lobby. Auto-filling with NPD Bots if no one joins within 5:00.</div>
-          </div>
-          <div class="npd-queue-timer-box">
-            <div class="npd-queue-timer-label">QUEUE TIMER (MAX 05:00)</div>
-            <div class="npd-queue-timer-val" id="npd-queue-timer">00:00 / 05:00</div>
-          </div>
-        </div>
-        <div class="npd-queue-roster" id="npd-queue-roster"></div>
-        <div class="npd-queue-actions">
-          <button type="button" class="btn-accent-inline" id="npd-fill-bots-now-btn">${npdIcon('bolt')} Fill with Bots &amp; Start Now</button>
-          <button type="button" class="btn-secondary" id="npd-cancel-queue-btn">Cancel Queue</button>
-        </div>
-      </div>
-
-      <!-- Live HUD Bar -->
-      <div class="npd-race-hud" id="npd-race-hud">
-        <div class="npd-hud-item">
-          <span class="npd-hud-label">STATUS</span>
-          <span class="npd-hud-val" id="hud-status">READY</span>
-        </div>
-        <div class="npd-hud-item">
-          <span class="npd-hud-label">SPEED</span>
-          <span class="npd-hud-val accent" id="hud-wpm">0 WPM</span>
-        </div>
-        <div class="npd-hud-item">
-          <span class="npd-hud-label">ACCURACY</span>
-          <span class="npd-hud-val" id="hud-acc">100%</span>
-        </div>
-        <div class="npd-hud-item">
-          <span class="npd-hud-label">VEHICLE</span>
-          <span class="npd-hud-val" id="hud-car">${renderNpdCarSvg(rs.equippedCar, 48)} <small style="font-size:0.9rem;color:var(--text-muted)">${esc(carMeta.name)}</small></span>
-        </div>
-      </div>
-
-      <!-- Race Track Lanes -->
-      <div class="npd-track-arena" id="npd-track-arena">
-        <div class="npd-lanes-wrap" id="npd-lanes-wrap">
-          <div class="npd-lane is-me">
-            <div class="npd-lane-meta">
-              <span class="npd-lane-name">${esc(myProfile.username)} ${roleTag(myProfile)}</span>
-              <span class="npd-lane-wpm">0 WPM</span>
-            </div>
-            <div class="npd-lane-road">
-              <div class="npd-lane-car" style="left:0%">${renderNpdCarSvg(rs.equippedCar, 42)}</div>
-              <div class="npd-lane-finish">${npdIcon('flag')}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Typing Prompt & Anti-Cheat Input -->
-      <div class="npd-typing-deck" id="npd-typing-deck">
-        <div class="npd-quote-display" id="npd-quote-display">
-          Click <strong>Join Live Queue (RTDB)</strong> or <strong>Practice vs Bots Now</strong> above to line up on the starting grid.
-        </div>
-        <input
-          type="text"
-          id="npd-race-input"
-          class="npd-race-input"
-          placeholder="Wait for the green light..."
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          disabled
-        >
-        <div class="npd-anticheat-note">${npdIcon('shield')} NPD Anti-Cheat Active: Paste, drop, and macro jumps are blocked. Every keystroke is verified in real time.</div>
-      </div>
-
-      <!-- Post-Race Podium & Results -->
-      <div id="npd-race-results" class="npd-race-results hidden"></div>
-    </div>
-  `;
-
-  $('race-join-live-btn').onclick = () => startLiveMatchmakingQueue();
-  $('race-start-bot-btn').onclick = () => startInstantBotRace();
-  $('race-leave-btn').onclick = () => leaveNpdRace();
-  $('npd-fill-bots-now-btn').onclick = () => fillLobbyWithBotsAndStart();
-  $('npd-cancel-queue-btn').onclick = () => leaveNpdRace();
-
-  bindNpdTypingInput();
 }
 
 function formatMMSS(sec) {
   const s = Math.max(0, Math.floor(sec));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function pickRandomBots(count) {
+function pickRandomBots(count, playerLevel = 1) {
   const pool = [...NPD_RACE_BOTS];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return pool.slice(0, count);
+  // Competitive Nitro Type-like bot pacing scaled gently with track tier
+  const tierBoost = Math.min(24, Math.floor(Math.log10(Math.max(10, playerLevel)) * 4));
+  return pool.slice(0, count).map((b, idx) => {
+    const effWpm = Math.max(66, Math.round(b.wpmBase + tierBoost + (Math.random() * 14 - 5)));
+    const carIdx = Math.floor(Math.random() * Math.min(25, NPD_CARS.length));
+    const paintIdx = Math.floor(Math.random() * Math.min(18, NPD_PAINTS.length));
+    return {
+      key: b.id,
+      username: b.username,
+      displayName: b.username,
+      car: b.car || NPD_CARS[carIdx].id,
+      paint: b.paint || NPD_PAINTS[paintIdx].id,
+      level: Math.max(1, playerLevel + (idx - 1) * 4),
+      isBot: true,
+      wpmTarget: effWpm,
+      accTarget: b.accBase,
+      progress: 0,
+      wpm: 0,
+      acc: b.accBase,
+      finishedAt: 0,
+      place: 0
+    };
+  });
 }
 
 function createMyRacerEntry() {
   const rs = getMyRaceStats(myProfile);
   return {
+    key: myUid,
     username: myUid,
-    car: rs.equippedCar || 'car-apex',
+    displayName: displayNameOf(myProfile),
+    car: rs.equippedCar,
+    paint: rs.equippedPaint || 'paint_stock',
+    level: rs.levelInfo.level,
     isBot: false,
     progress: 0,
     wpm: 0,
@@ -15814,19 +15287,77 @@ function createMyRacerEntry() {
   };
 }
 
+function setTrafficLightState(mode) {
+  const r = $('tl-red'), y = $('tl-yellow'), g = $('tl-green');
+  if (r) { r.classList.toggle('on', mode === 'red'); r.classList.toggle('red-on', mode === 'red'); }
+  if (y) { y.classList.toggle('on', mode === 'amber'); y.classList.toggle('yellow-on', mode === 'amber'); }
+  if (g) { g.classList.toggle('on', mode === 'green'); g.classList.toggle('green-on', mode === 'green'); }
+}
+
+function renderNpdRaceView() {
+  if (!myProfile) return;
+  const rs = getMyRaceStats(myProfile);
+  const caps = npdHasEverything(myProfile) ? 999999999 : ((myProfile.orbs || 0) + pendingOrbs());
+  if ($('race-orb-amt')) $('race-orb-amt').textContent = fmtOrbs(caps);
+  if ($('race-tier-pill')) $('race-tier-pill').textContent = `${rs.tierMeta.name} · LV ${npdFormatLevel(rs.levelInfo.level)}`;
+
+  // Mode toggle tabs
+  document.querySelectorAll('#race-mode-tabs [data-race-mode]').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('#race-mode-tabs [data-race-mode]').forEach(t => t.classList.remove('on'));
+      tab.classList.add('on');
+      const m = tab.dataset.raceMode;
+      if (npdRaceState.phase === 'idle') {
+        if (m === 'solo') startInstantBotRace();
+        else {
+          if ($('race-lobby-title')) $('race-lobby-title').textContent = 'Ready on the Starting Grid';
+        }
+      }
+    };
+  });
+
+  if ($('race-join-queue-btn')) $('race-join-queue-btn').onclick = startLiveMatchmakingQueue;
+  if ($('race-instant-solo-btn')) $('race-instant-solo-btn').onclick = startInstantBotRace;
+  if ($('race-fill-bots-btn')) $('race-fill-bots-btn').onclick = fillLobbyWithBotsAndStart;
+  if ($('race-leave-queue-btn')) $('race-leave-queue-btn').onclick = leaveNpdRace;
+  if ($('race-leave-active-btn')) $('race-leave-active-btn').onclick = leaveNpdRace;
+  if ($('race-play-again-btn')) $('race-play-again-btn').onclick = startLiveMatchmakingQueue;
+  if ($('race-solo-again-btn')) $('race-solo-again-btn').onclick = startInstantBotRace;
+
+  bindNpdTypingInput();
+
+  if (npdRaceState.phase === 'idle') {
+    if ($('race-lobby-card')) $('race-lobby-card').classList.remove('hidden');
+    if ($('race-arena-card')) $('race-arena-card').classList.add('hidden');
+    if ($('race-results-card')) $('race-results-card').classList.add('hidden');
+    if ($('race-queue-timer-box')) $('race-queue-timer-box').classList.add('hidden');
+    if ($('race-queue-bar-wrap')) $('race-queue-bar-wrap').classList.add('hidden');
+    if ($('race-fill-bots-btn')) $('race-fill-bots-btn').classList.add('hidden');
+    if ($('race-leave-queue-btn')) $('race-leave-queue-btn').classList.add('hidden');
+    if ($('race-join-queue-btn')) $('race-join-queue-btn').classList.remove('hidden');
+    if ($('race-instant-solo-btn')) $('race-instant-solo-btn').classList.remove('hidden');
+    if ($('race-lobby-status-pill')) $('race-lobby-status-pill').textContent = 'Ready to Queue';
+    npdRaceState.racers = { [myUid]: createMyRacerEntry() };
+    renderNpdQueueRoster();
+  }
+}
+
 async function startLiveMatchmakingQueue() {
   if (!myUid || !myProfile) return;
   cleanupNpdRaceTimers();
-
-  const quote = NPD_QUOTES[Math.floor(Math.random() * NPD_QUOTES.length)];
+  const rs = getMyRaceStats(myProfile);
+  const pick = getNpdRaceText(rs.levelInfo.level);
   const now = Date.now();
+
   npdRaceState = {
     phase: 'queue',
     mode: 'live',
     lobbyId: null,
     usingRtdb: false,
     isHost: false,
-    quote,
+    quote: pick.text,
+    textId: pick.id,
+    textTier: pick.tier,
     queueStartedAt: now,
     queueInterval: null,
     countdownInterval: null,
@@ -15835,6 +15366,8 @@ async function startLiveMatchmakingQueue() {
     typed: '',
     errors: 0,
     totalKeystrokes: 0,
+    nitro: 0,
+    nitroActiveUntil: 0,
     startTime: 0,
     finishTime: 0,
     wpm: 0,
@@ -15842,29 +15375,34 @@ async function startLiveMatchmakingQueue() {
     racers: { [myUid]: createMyRacerEntry() }
   };
 
-  if ($('npd-queue-card')) $('npd-queue-card').classList.remove('hidden');
-  if ($('npd-race-results')) $('npd-race-results').classList.add('hidden');
-  if ($('race-leave-btn')) $('race-leave-btn').classList.remove('hidden');
-  if ($('hud-status')) $('hud-status').textContent = 'IN QUEUE';
-  if ($('npd-race-input')) { $('npd-race-input').value = ''; $('npd-race-input').disabled = true; }
+  if ($('race-lobby-card')) $('race-lobby-card').classList.remove('hidden');
+  if ($('race-arena-card')) $('race-arena-card').classList.add('hidden');
+  if ($('race-results-card')) $('race-results-card').classList.add('hidden');
+  if ($('race-queue-timer-box')) $('race-queue-timer-box').classList.remove('hidden');
+  if ($('race-queue-bar-wrap')) $('race-queue-bar-wrap').classList.remove('hidden');
+  if ($('race-join-queue-btn')) $('race-join-queue-btn').classList.add('hidden');
+  if ($('race-instant-solo-btn')) $('race-instant-solo-btn').classList.add('hidden');
+  if ($('race-fill-bots-btn')) $('race-fill-bots-btn').classList.remove('hidden');
+  if ($('race-leave-queue-btn')) $('race-leave-queue-btn').classList.remove('hidden');
+  if ($('race-lobby-status-pill')) $('race-lobby-status-pill').textContent = 'Searching Live Lobby';
+  if ($('race-lobby-title')) $('race-lobby-title').textContent = 'Live Multiplayer Matchmaking';
 
-  const rtdb = getRtdbInstance();
+  const rtdbInst = getRtdbInstance();
   let connectedLobby = false;
 
-  if (rtdb) {
+  if (rtdbInst) {
     try {
-      const lobbiesRef = rtdb.ref('races/lobbies');
+      const lobbiesRef = rtdbInst.ref('races/lobbies');
       const snap = await Promise.race([
         lobbiesRef.orderByChild('status').equalTo('waiting').limitToLast(10).once('value'),
         new Promise((_, rej) => setTimeout(() => rej(new Error('RTDB timeout')), 3500))
       ]);
-      let foundId = null;
-      let foundData = null;
+      let foundId = null, foundData = null;
       if (snap && snap.exists()) {
         snap.forEach(child => {
           const val = child.val();
           const pCount = val && val.racers ? Object.keys(val.racers).length : 0;
-          if (val && val.status === 'waiting' && pCount < 6 && (now - (val.createdAt || 0) < MAX_QUEUE_SECONDS * 1000)) {
+          if (val && val.status === 'waiting' && pCount < 5 && (now - (val.createdAt || 0) < MAX_QUEUE_SECONDS * 1000)) {
             foundId = child.key;
             foundData = val;
           }
@@ -15874,9 +15412,10 @@ async function startLiveMatchmakingQueue() {
         npdRaceState.lobbyId = foundId;
         npdRaceState.usingRtdb = true;
         npdRaceState.isHost = false;
-        npdRaceState.quote = foundData.quote || quote;
+        npdRaceState.quote = foundData.quote || pick.text;
+        npdRaceState.textTier = foundData.textTier || pick.tier;
         npdRaceState.queueStartedAt = foundData.createdAt || now;
-        await rtdb.ref(`races/lobbies/${foundId}/racers/${myUid}`).set(createMyRacerEntry());
+        await rtdbInst.ref(`races/lobbies/${foundId}/racers/${myUid}`).set(createMyRacerEntry());
       } else {
         const newRef = lobbiesRef.push();
         npdRaceState.lobbyId = newRef.key;
@@ -15885,195 +15424,176 @@ async function startLiveMatchmakingQueue() {
         await newRef.set({
           host: myUid,
           status: 'waiting',
-          quote,
+          quote: pick.text,
+          textTier: pick.tier,
           createdAt: now,
           startTime: 0,
           racers: { [myUid]: createMyRacerEntry() }
         });
       }
-      const lobbyRef = rtdb.ref(`races/lobbies/${npdRaceState.lobbyId}`);
+      const lobbyRef = rtdbInst.ref(`races/lobbies/${npdRaceState.lobbyId}`);
       const onVal = snapshot => {
         const data = snapshot.val();
-        if (!data) return;
-        handleLobbySnapshotUpdate(data);
+        if (data) handleLobbySnapshotUpdate(data);
       };
       lobbyRef.on('value', onVal);
       npdRaceState.syncUnsub = () => lobbyRef.off('value', onVal);
+      rtdbInst.ref(`races/lobbies/${npdRaceState.lobbyId}/racers/${myUid}`).onDisconnect().remove().catch(() => {});
       connectedLobby = true;
-    } catch (_) {
-      connectedLobby = false;
+    } catch (e) {
+      console.warn('RTDB fallback to Firestore matchmaking:', e);
     }
   }
 
   if (!connectedLobby) {
     try {
-      const snap = await db.collection('raceLobbies').where('status', '==', 'waiting').limit(10).get();
-      let foundDoc = null;
-      snap.forEach(doc => {
-        const d = doc.data();
-        const pCount = d && d.racers ? Object.keys(d.racers).length : 0;
-        if (d && d.status === 'waiting' && pCount < 6 && (now - (d.createdAt || 0) < MAX_QUEUE_SECONDS * 1000)) {
-          foundDoc = { id: doc.id, data: d };
-        }
-      });
-      if (foundDoc) {
-        npdRaceState.lobbyId = foundDoc.id;
-        npdRaceState.usingRtdb = false;
+      const lobbyDocRef = db.collection('raceLobbies').doc('global_live_queue');
+      const dSnap = await lobbyDocRef.get();
+      const d = dSnap.exists ? dSnap.data() : null;
+      const pCount = d && d.racers ? Object.keys(d.racers).length : 0;
+      if (d && d.status === 'waiting' && pCount < 5 && (now - (d.createdAtMs || 0) < MAX_QUEUE_SECONDS * 1000)) {
+        npdRaceState.lobbyId = 'global_live_queue';
         npdRaceState.isHost = false;
-        npdRaceState.quote = foundDoc.data.quote || quote;
-        npdRaceState.queueStartedAt = foundDoc.data.createdAt || now;
-        await db.collection('raceLobbies').doc(foundDoc.id).update({
-          [`racers.${myUid}`]: createMyRacerEntry()
-        });
+        npdRaceState.quote = d.quote || pick.text;
+        npdRaceState.textTier = d.textTier || pick.tier;
+        npdRaceState.queueStartedAt = d.createdAtMs || now;
+        await lobbyDocRef.update({ [`racers.${myUid}`]: createMyRacerEntry() });
       } else {
-        const docRef = db.collection('raceLobbies').doc('lobby_' + now + '_' + genCode(4));
-        npdRaceState.lobbyId = docRef.id;
-        npdRaceState.usingRtdb = false;
+        npdRaceState.lobbyId = 'global_live_queue';
         npdRaceState.isHost = true;
-        await docRef.set({
+        await lobbyDocRef.set({
           host: myUid,
           status: 'waiting',
-          quote,
-          createdAt: now,
+          quote: pick.text,
+          textTier: pick.tier,
+          createdAtMs: now,
           startTime: 0,
           racers: { [myUid]: createMyRacerEntry() }
         });
       }
-      npdRaceState.syncUnsub = db.collection('raceLobbies').doc(npdRaceState.lobbyId).onSnapshot(doc => {
-        if (doc.exists) handleLobbySnapshotUpdate(doc.data());
+      const unsubFs = lobbyDocRef.onSnapshot(s => {
+        if (s.exists) handleLobbySnapshotUpdate(s.data());
       });
-    } catch (_) {}
+      npdRaceState.syncUnsub = unsubFs;
+      connectedLobby = true;
+    } catch (err) {
+      startInstantBotRace();
+      return;
+    }
   }
 
   renderNpdQueueRoster();
-  renderNpdTrackLanes();
-  renderNpdQuoteBox();
 
   npdRaceState.queueInterval = setInterval(() => {
-    if (npdRaceState.phase !== 'queue') return;
     const elapsedSec = Math.floor((Date.now() - npdRaceState.queueStartedAt) / 1000);
-    const remainingSec = Math.max(0, MAX_QUEUE_SECONDS - elapsedSec);
-    if ($('npd-queue-timer')) {
-      $('npd-queue-timer').textContent = `${formatMMSS(elapsedSec)} / 05:00 (${formatMMSS(remainingSec)} left)`;
-    }
-    const humanCount = Object.values(npdRaceState.racers).filter(r => !r.isBot).length;
-    if (humanCount >= 2 && elapsedSec >= 10 && npdRaceState.isHost) {
+    const remSec = Math.max(0, MAX_QUEUE_SECONDS - elapsedSec);
+    if ($('race-queue-timer')) $('race-queue-timer').textContent = formatMMSS(remSec);
+    if ($('race-queue-bar')) $('race-queue-bar').style.width = `${Math.max(0, (remSec / MAX_QUEUE_SECONDS) * 100)}%`;
+
+    const count = Object.keys(npdRaceState.racers).length;
+    if (count >= 5 && npdRaceState.isHost && npdRaceState.phase === 'queue') {
       triggerLobbyRaceStart(false);
-    } else if (elapsedSec >= MAX_QUEUE_SECONDS) {
-      toast('Max 5:00 queue reached — adding official NPD Bots to your race!');
-      fillLobbyWithBotsAndStart();
+    } else if (remSec <= 0 && npdRaceState.phase === 'queue') {
+      if (npdRaceState.isHost || !npdRaceState.usingRtdb) fillLobbyWithBotsAndStart();
     }
   }, 500);
 }
 
 function handleLobbySnapshotUpdate(data) {
-  if (!data) return;
-  if (data.quote) npdRaceState.quote = data.quote;
+  if (!data || npdRaceState.phase === 'idle') return;
   if (data.racers) {
-    const merged = { ...data.racers };
-    if (npdRaceState.phase === 'racing' && npdRaceState.racers[myUid]) {
-      merged[myUid] = npdRaceState.racers[myUid];
+    npdRaceState.racers = { ...data.racers };
+    if (!npdRaceState.racers[myUid] && npdRaceState.phase === 'queue') {
+      npdRaceState.racers[myUid] = createMyRacerEntry();
     }
-    npdRaceState.racers = merged;
   }
+  if (data.quote) npdRaceState.quote = data.quote;
+  if (data.textTier) npdRaceState.textTier = data.textTier;
   renderNpdQueueRoster();
-  renderNpdTrackLanes();
-
-  if (data.status === 'countdown' && npdRaceState.phase === 'queue') {
-    beginRaceCountdown(data.startTime || (Date.now() + 4000));
-  } else if (data.status === 'racing' && (npdRaceState.phase === 'queue' || npdRaceState.phase === 'countdown')) {
-    beginActiveRaceNow();
+  if (npdRaceState.phase === 'racing') renderNpdTrackLanes();
+  if ((data.status === 'countdown' || data.status === 'racing') && npdRaceState.phase === 'queue') {
+    beginRaceCountdown(data.startTime || (Date.now() + 3000));
   }
 }
 
 function renderNpdQueueRoster() {
-  const box = $('npd-queue-roster');
+  const box = $('race-lobby-roster');
   if (!box) return;
   const list = Object.values(npdRaceState.racers || {});
+  if ($('race-roster-title')) $('race-roster-title').textContent = `Lobby Racers (${list.length} / 5)`;
   box.innerHTML = list.map(r => `
-    <div class="npd-queue-player">
-      <span class="npd-qp-car">${renderNpdCarSvg(r.car, 34)}</span>
-      <span class="npd-qp-name">${esc(r.username)}</span>
-      ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : '<span class="npd-qp-human">PLAYER</span>'}
+    <div class="nrc-roster-card ${r.isBot ? 'is-bot' : ''}">
+      <span class="npd-qp-car">${renderNpdCarSvg(r.car, 42, r.paint || 'paint_stock')}</span>
+      <div style="min-width:0;flex:1;">
+        <div style="font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.displayName || r.username)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">LV ${npdFormatLevel(r.level || 1)}</div>
+      </div>
+      ${r.isBot ? '<span class="npd-bot-badge">BOT</span>' : '<span class="npd-human-badge">READY</span>'}
     </div>
   `).join('');
 }
 
 async function fillLobbyWithBotsAndStart() {
   if (npdRaceState.phase !== 'queue') return;
-  const currentNames = new Set(Object.keys(npdRaceState.racers));
-  const needed = Math.max(1, Math.min(5, 6 - currentNames.size));
-  const chosenBots = pickRandomBots(needed);
-  chosenBots.forEach(b => {
-    npdRaceState.racers[b.username] = {
-      username: b.username,
-      car: b.car,
-      isBot: true,
-      wpmBase: b.wpmBase,
-      accBase: b.accBase,
-      progress: 0,
-      wpm: 0,
-      acc: b.accBase,
-      finishedAt: 0,
-      place: 0
-    };
+  const rs = getMyRaceStats(myProfile);
+  const current = Object.keys(npdRaceState.racers).length;
+  const bots = pickRandomBots(Math.max(1, 5 - current), rs.levelInfo.level);
+  const updates = {};
+  bots.forEach(b => {
+    npdRaceState.racers[b.key] = b;
+    updates[b.key] = b;
   });
-  await triggerLobbyRaceStart(true);
+  const startAt = Date.now() + 3000;
+  try {
+    if (npdRaceState.usingRtdb) {
+      await getRtdbInstance().ref(`races/lobbies/${npdRaceState.lobbyId}`).update({
+        status: 'countdown',
+        startTime: startAt,
+        racers: npdRaceState.racers
+      });
+    } else if (npdRaceState.lobbyId) {
+      await db.collection('raceLobbies').doc(npdRaceState.lobbyId).update({
+        status: 'countdown',
+        startTime: startAt,
+        racers: npdRaceState.racers
+      });
+    }
+  } catch (e) {}
+  beginRaceCountdown(startAt);
 }
 
 async function triggerLobbyRaceStart(withBots) {
   if (npdRaceState.phase !== 'queue') return;
-  const startTime = Date.now() + 3500;
-  if (npdRaceState.lobbyId) {
-    const rtdb = getRtdbInstance();
-    if (npdRaceState.usingRtdb && rtdb) {
-      try {
-        await rtdb.ref(`races/lobbies/${npdRaceState.lobbyId}`).update({
-          status: 'countdown',
-          startTime,
-          racers: npdRaceState.racers
-        });
-      } catch (_) {}
-    } else {
-      try {
-        await db.collection('raceLobbies').doc(npdRaceState.lobbyId).update({
-          status: 'countdown',
-          startTime,
-          racers: npdRaceState.racers
-        });
-      } catch (_) {}
+  if (withBots) { await fillLobbyWithBotsAndStart(); return; }
+  const startAt = Date.now() + 3000;
+  try {
+    if (npdRaceState.usingRtdb) {
+      await getRtdbInstance().ref(`races/lobbies/${npdRaceState.lobbyId}`).update({ status: 'countdown', startTime: startAt });
+    } else if (npdRaceState.lobbyId) {
+      await db.collection('raceLobbies').doc(npdRaceState.lobbyId).update({ status: 'countdown', startTime: startAt });
     }
-  }
-  beginRaceCountdown(startTime);
+  } catch (e) {}
+  beginRaceCountdown(startAt);
 }
 
 function startInstantBotRace() {
   if (!myUid || !myProfile) return;
   cleanupNpdRaceTimers();
-  const quote = NPD_QUOTES[Math.floor(Math.random() * NPD_QUOTES.length)];
+  const rs = getMyRaceStats(myProfile);
+  const pick = getNpdRaceText(rs.levelInfo.level);
+  const bots = pickRandomBots(4, rs.levelInfo.level);
   const racers = { [myUid]: createMyRacerEntry() };
-  pickRandomBots(5).forEach(b => {
-    racers[b.username] = {
-      username: b.username,
-      car: b.car,
-      isBot: true,
-      wpmBase: b.wpmBase,
-      accBase: b.accBase,
-      progress: 0,
-      wpm: 0,
-      acc: b.accBase,
-      finishedAt: 0,
-      place: 0
-    };
-  });
+  bots.forEach(b => { racers[b.key] = b; });
 
   npdRaceState = {
     phase: 'queue',
-    mode: 'solo',
+    mode: 'bots',
     lobbyId: null,
     usingRtdb: false,
     isHost: true,
-    quote,
+    quote: pick.text,
+    textId: pick.id,
+    textTier: pick.tier,
     queueStartedAt: Date.now(),
     queueInterval: null,
     countdownInterval: null,
@@ -16082,236 +15602,303 @@ function startInstantBotRace() {
     typed: '',
     errors: 0,
     totalKeystrokes: 0,
+    nitro: 0,
+    nitroActiveUntil: 0,
     startTime: 0,
     finishTime: 0,
     wpm: 0,
     acc: 100,
     racers
   };
-
-  if ($('npd-queue-card')) $('npd-queue-card').classList.add('hidden');
-  if ($('npd-race-results')) $('npd-race-results').classList.add('hidden');
-  if ($('race-leave-btn')) $('race-leave-btn').classList.remove('hidden');
-
-  renderNpdTrackLanes();
-  renderNpdQuoteBox();
-  beginRaceCountdown(Date.now() + 3200);
+  beginRaceCountdown(Date.now() + 2600);
 }
 
 function beginRaceCountdown(targetStartMs) {
+  if (npdRaceState.phase === 'countdown' || npdRaceState.phase === 'racing') return;
   if (npdRaceState.queueInterval) { clearInterval(npdRaceState.queueInterval); npdRaceState.queueInterval = null; }
   npdRaceState.phase = 'countdown';
-  if ($('npd-queue-card')) $('npd-queue-card').classList.add('hidden');
-  const input = $('npd-race-input');
-  if (input) {
-    input.value = '';
-    input.disabled = true;
-    input.placeholder = 'Get ready to type...';
-  }
+
+  if ($('race-lobby-card')) $('race-lobby-card').classList.add('hidden');
+  if ($('race-results-card')) $('race-results-card').classList.add('hidden');
+  if ($('race-arena-card')) $('race-arena-card').classList.remove('hidden');
+
+  const rs = getMyRaceStats(myProfile);
+  const tierMeta = getNpdTierMeta(rs.levelInfo.level);
+  if ($('race-tier-pill')) $('race-tier-pill').textContent = `Tier ${npdRaceState.textTier || tierMeta.tier} · LV ${npdFormatLevel(rs.levelInfo.level)}`;
+  if ($('race-input')) { $('race-input').value = ''; $('race-input').disabled = true; }
+  if ($('race-nitro-fill')) $('race-nitro-fill').style.width = '0%';
+  if ($('race-nitro-pct')) $('race-nitro-pct').textContent = '0%';
+
   renderNpdTrackLanes();
-  renderNpdQuoteBox();
+  renderNpdQuoteBox('');
 
   const tick = () => {
-    const left = Math.ceil((targetStartMs - Date.now()) / 1000);
-    if (left > 0) {
-      if ($('hud-status')) $('hud-status').textContent = `STARTING IN ${left}...`;
-    } else {
-      if (npdRaceState.countdownInterval) { clearInterval(npdRaceState.countdownInterval); npdRaceState.countdownInterval = null; }
+    const leftMs = targetStartMs - Date.now();
+    if (leftMs <= 0) {
+      clearInterval(npdRaceState.countdownInterval);
+      npdRaceState.countdownInterval = null;
       beginActiveRaceNow();
+      return;
     }
+    const sec = Math.ceil(leftMs / 1000);
+    setTrafficLightState(sec >= 2 ? 'red' : 'amber');
+    if ($('race-arena-status')) $('race-arena-status').textContent = sec >= 2 ? `Get Ready... ${sec}` : 'Set... 1';
   };
   tick();
-  npdRaceState.countdownInterval = setInterval(tick, 200);
+  npdRaceState.countdownInterval = setInterval(tick, 120);
 }
 
 function beginActiveRaceNow() {
-  if (npdRaceState.phase === 'racing') return;
   npdRaceState.phase = 'racing';
   npdRaceState.startTime = Date.now();
-  npdRaceState.typed = '';
-  npdRaceState.errors = 0;
-  npdRaceState.totalKeystrokes = 0;
+  setTrafficLightState('green');
+  if ($('race-arena-status')) $('race-arena-status').textContent = 'GO! TYPE NOW!';
 
-  if ($('hud-status')) $('hud-status').textContent = 'GREEN FLAG — GO!';
-  const input = $('npd-race-input');
-  if (input) {
-    input.disabled = false;
-    input.value = '';
-    input.placeholder = 'Type the highlighted passage here...';
-    input.focus();
+  const inp = $('race-input');
+  if (inp) {
+    inp.disabled = false;
+    inp.value = '';
+    inp.placeholder = 'Type the highlighted passage — press ENTER when Nitro reaches 100%!';
+    inp.focus();
   }
-  renderNpdQuoteBox();
   renderNpdTrackLanes();
+  renderNpdQuoteBox('');
 
-  let syncTick = 0;
   npdRaceState.raceInterval = setInterval(() => {
     if (npdRaceState.phase !== 'racing') return;
-    const elapsedMin = Math.max(0.01, (Date.now() - npdRaceState.startTime) / 60000);
-    const quoteLen = Math.max(1, npdRaceState.quote.length);
+    const now = Date.now();
+    const elapsedMs = Math.max(250, now - npdRaceState.startTime);
+    const totalChars = Math.max(1, npdRaceState.quote.length);
 
-    const me = npdRaceState.racers[myUid];
-    if (me && !me.finishedAt) {
-      const words = npdRaceState.typed.length / 5;
-      me.wpm = Math.round(words / elapsedMin);
-      me.progress = Math.min(100, Math.round((npdRaceState.typed.length / quoteLen) * 100));
-      if ($('hud-wpm')) $('hud-wpm').textContent = `${me.wpm} WPM`;
-    }
+    // Update live timer & player WPM
+    if ($('hud-time')) $('hud-time').textContent = `${(elapsedMs / 1000).toFixed(1)}s`;
 
+    // Advance competitive AI bots smoothly (and fast enough to finish ahead of slower/paused typists!)
     Object.values(npdRaceState.racers).forEach(r => {
       if (!r.isBot || r.finishedAt) return;
-      const base = r.wpmBase || 80;
-      const jitter = (Math.sin(Date.now() / 600 + r.username.length) * 5) + ((Math.random() - 0.48) * 4);
-      const currentWpm = Math.max(35, Math.round(base + jitter));
-      r.wpm = currentWpm;
-      const charsPerSec = (currentWpm * 5) / 60;
-      const stepPct = ((charsPerSec * 0.25) / quoteLen) * 100;
-      r.progress = Math.min(100, (r.progress || 0) + stepPct);
-      if (r.progress >= 100 && !r.finishedAt) {
+      const charsPerSec = (r.wpmTarget * 5) / 60;
+      const variance = 0.88 + 0.24 * Math.sin((now / 900) + r.username.length);
+      const stepChars = charsPerSec * variance * 0.2;
+      const prevChars = (r.progress / 100) * totalChars;
+      const nextChars = Math.min(totalChars, prevChars + stepChars);
+      r.progress = Math.min(100, (nextChars / totalChars) * 100);
+      r.wpm = Math.max(0, Math.round((nextChars / 5) / (elapsedMs / 60000)));
+      if (r.progress >= 100) {
         r.progress = 100;
-        r.finishedAt = Date.now();
+        r.finishedAt = now;
         assignFinishPlace(r);
       }
     });
 
-    renderNpdTrackLanes();
-
-    syncTick++;
-    if (syncTick % 2 === 0 && npdRaceState.lobbyId) {
-      syncMyProgressToLobby();
+    const me = npdRaceState.racers[myUid];
+    if (me && !me.finishedAt && npdRaceState.typed.length > 0) {
+      me.wpm = Math.min(260, Math.round((npdRaceState.typed.length / 5) / (elapsedMs / 60000)));
+      if ($('hud-wpm')) $('hud-wpm').textContent = `${me.wpm} WPM`;
     }
-  }, 250);
+    const sorted = Object.values(npdRaceState.racers).sort((a, b) => {
+      if (a.finishedAt && b.finishedAt) return a.finishedAt - b.finishedAt;
+      if (a.finishedAt) return -1;
+      if (b.finishedAt) return 1;
+      return b.progress - a.progress;
+    });
+    const myRank = Math.max(1, sorted.findIndex(r => r.key === myUid || r.username === myUid) + 1);
+    if ($('hud-place')) $('hud-place').textContent = npdOrdinal(myRank);
+
+    renderNpdTrackLanes();
+    if (npdRaceState.mode === 'live' && Math.random() < 0.35) syncMyProgressToLobby();
+  }, 200);
 }
 
 function assignFinishPlace(racer) {
-  const finishedCount = Object.values(npdRaceState.racers).filter(x => x.finishedAt && x.place > 0).length;
+  if (racer.place > 0) return;
+  const finishedCount = Object.values(npdRaceState.racers).filter(r => r.finishedAt && r.place > 0).length;
   racer.place = finishedCount + 1;
 }
 
+let _lastRtdbSyncAt = 0;
 async function syncMyProgressToLobby() {
-  if (!npdRaceState.lobbyId || !myUid) return;
+  if (!npdRaceState.lobbyId || Date.now() - _lastRtdbSyncAt < 380) return;
+  _lastRtdbSyncAt = Date.now();
   const me = npdRaceState.racers[myUid];
   if (!me) return;
-  const rtdb = getRtdbInstance();
-  if (npdRaceState.usingRtdb && rtdb) {
-    try {
-      if (npdRaceState.isHost) {
-        await rtdb.ref(`races/lobbies/${npdRaceState.lobbyId}/racers`).update(npdRaceState.racers);
-      } else {
-        await rtdb.ref(`races/lobbies/${npdRaceState.lobbyId}/racers/${myUid}`).update(me);
-      }
-    } catch (_) {}
-  } else {
-    try {
+  try {
+    if (npdRaceState.usingRtdb) {
+      await getRtdbInstance().ref(`races/lobbies/${npdRaceState.lobbyId}/racers/${myUid}`).update({
+        progress: me.progress,
+        wpm: me.wpm,
+        acc: me.acc,
+        finishedAt: me.finishedAt || 0,
+        place: me.place || 0
+      });
+    } else {
       await db.collection('raceLobbies').doc(npdRaceState.lobbyId).update({
         [`racers.${myUid}`]: me
       });
-    } catch (_) {}
-  }
+    }
+  } catch (e) {}
 }
 
+let _lastRaceInputTs = 0;
 function bindNpdTypingInput() {
-  const input = $('npd-race-input');
-  if (!input) return;
+  const inp = $('race-input');
+  if (!inp || inp.dataset.bound) return;
+  inp.dataset.bound = '1';
 
-  ['paste', 'drop', 'contextmenu'].forEach(evt => {
-    input.addEventListener(evt, e => {
+  ['paste', 'drop', 'copy', 'cut'].forEach(ev => {
+    inp.addEventListener(ev, e => {
       e.preventDefault();
-      toast('Anti-Cheat: Copy/paste is disabled on the NPD track.', 'error');
+      toast('Paste and drag-drop are disabled in NPD Racing.', 'error');
     });
   });
 
-  input.addEventListener('input', () => {
-    if (npdRaceState.phase !== 'racing') return;
-    const val = input.value;
-    const prev = npdRaceState.typed;
-
-    if (val.length - prev.length > 2) {
-      input.value = prev;
-      toast('Anti-Cheat: Sudden multi-character input rejected.', 'error');
+  inp.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && ['v', 'c', 'x'].includes(e.key.toLowerCase())) {
+      e.preventDefault();
       return;
     }
+    if (e.key === 'Enter' && npdRaceState.phase === 'racing' && npdRaceState.nitro >= 100) {
+      e.preventDefault();
+      triggerRaceNitroBoost();
+    }
+  });
 
-    npdRaceState.totalKeystrokes++;
+  inp.addEventListener('input', () => {
+    if (npdRaceState.phase !== 'racing') { inp.value = ''; return; }
+    const val = inp.value;
+    const prev = npdRaceState.typed;
+    const now = Date.now();
+
+    if (val.length - prev.length > 4 && (now - _lastRaceInputTs) < 40) {
+      inp.value = prev;
+      toast('Macro / auto-type burst rejected.', 'error');
+      return;
+    }
+    _lastRaceInputTs = now;
+
+    // Require sequential accuracy matching (classic strict typing)
     const quote = npdRaceState.quote;
+    let commonLen = 0;
+    const maxCheck = Math.min(val.length, quote.length);
+    while (commonLen < maxCheck && val[commonLen] === quote[commonLen]) commonLen++;
 
-    if (quote.startsWith(val)) {
-      npdRaceState.typed = val;
-      input.classList.remove('input-err');
-    } else {
-      npdRaceState.errors++;
-      input.classList.add('input-err');
-      let validLen = 0;
-      while (validLen < val.length && val[validLen] === quote[validLen]) validLen++;
-      npdRaceState.typed = val.slice(0, validLen);
+    if (val.length > prev.length) {
+      npdRaceState.totalKeystrokes++;
+      const lastTypedIdx = val.length - 1;
+      if (lastTypedIdx < quote.length && val[lastTypedIdx] === quote[lastTypedIdx] && commonLen === val.length) {
+        npdRaceState.nitro = Math.min(100, npdRaceState.nitro + 2.8);
+      } else {
+        npdRaceState.errors++;
+        npdRaceState.nitro = Math.max(0, npdRaceState.nitro - 1.5);
+      }
     }
 
-    const total = Math.max(1, npdRaceState.totalKeystrokes);
-    const acc = Math.max(0, Math.min(100, ((total - npdRaceState.errors) / total) * 100));
+    // Clamp typed to valid prefix so wrong keystrokes highlight red in input/prompt without falsely advancing car
+    npdRaceState.typed = val;
+    const validTypedLen = commonLen;
+
+    const pct = Math.min(100, (validTypedLen / Math.max(1, quote.length)) * 100);
+    const elapsedMs = Math.max(300, now - npdRaceState.startTime);
+    const wpm = Math.min(260, Math.round((validTypedLen / 5) / (elapsedMs / 60000)));
+    const acc = npdRaceState.totalKeystrokes > 0
+      ? Math.max(0, Math.min(100, Math.round(((npdRaceState.totalKeystrokes - npdRaceState.errors) / npdRaceState.totalKeystrokes) * 1000) / 10))
+      : 100;
+
+    npdRaceState.wpm = wpm;
     npdRaceState.acc = acc;
-    if ($('hud-acc')) $('hud-acc').textContent = `${acc.toFixed(1)}%`;
 
-    const me = npdRaceState.racers[myUid];
-    if (me) {
-      const elapsedMin = Math.max(0.005, (Date.now() - npdRaceState.startTime) / 60000);
-      me.wpm = Math.round((npdRaceState.typed.length / 5) / elapsedMin);
-      me.acc = Number(acc.toFixed(1));
-      me.progress = Math.min(100, Math.round((npdRaceState.typed.length / quote.length) * 100));
-      if ($('hud-wpm')) $('hud-wpm').textContent = `${me.wpm} WPM`;
+    if (npdRaceState.racers[myUid]) {
+      npdRaceState.racers[myUid].progress = pct;
+      npdRaceState.racers[myUid].wpm = wpm;
+      npdRaceState.racers[myUid].acc = acc;
     }
+
+    if ($('hud-wpm')) $('hud-wpm').textContent = `${wpm} WPM`;
+    if ($('hud-acc')) $('hud-acc').textContent = `${acc}%`;
+    if ($('race-nitro-fill')) $('race-nitro-fill').style.width = `${Math.round(npdRaceState.nitro)}%`;
+    if ($('race-nitro-pct')) $('race-nitro-pct').textContent = npdRaceState.nitro >= 100 ? 'READY [ENTER]' : `${Math.round(npdRaceState.nitro)}%`;
 
     renderNpdQuoteBox(val);
     renderNpdTrackLanes();
 
-    if (npdRaceState.typed.length >= quote.length) {
+    if (validTypedLen >= quote.length) {
       completeMyNpdRace();
     }
   });
 }
 
-function renderNpdQuoteBox(rawVal = npdRaceState.typed) {
-  const box = $('npd-quote-display');
-  if (!box) return;
+function triggerRaceNitroBoost() {
+  if (npdRaceState.phase !== 'racing' || npdRaceState.nitro < 100) return;
   const quote = npdRaceState.quote;
-  if (!quote) return;
+  let curLen = 0;
+  while (curLen < npdRaceState.typed.length && npdRaceState.typed[curLen] === quote[curLen]) curLen++;
+  if (curLen >= quote.length) return;
 
-  const validLen = npdRaceState.typed.length;
-  const hasErr = rawVal.length > validLen;
-  const donePart = esc(quote.slice(0, validLen));
-  const errPart = hasErr ? `<span class="rc-err">${esc(quote.slice(validLen, rawVal.length))}</span>` : '';
-  const curIdx = hasErr ? rawVal.length : validLen;
-  const curChar = curIdx < quote.length ? `<span class="rc-cur">${esc(quote[curIdx])}</span>` : '';
-  const restPart = curIdx + 1 <= quote.length ? esc(quote.slice(curIdx + 1)) : '';
+  // Advance cleanly past the current word + one space
+  let jumpTo = quote.indexOf(' ', curLen + 1);
+  if (jumpTo === -1) jumpTo = quote.length;
+  else jumpTo = Math.min(quote.length, jumpTo + 1);
 
-  box.innerHTML = `<span class="rc-done">${donePart}</span>${errPart}${curChar}<span class="rc-todo">${restPart}</span>`;
+  npdRaceState.nitro = 0;
+  npdRaceState.nitroActiveUntil = Date.now() + 1400;
+  npdRaceState.typed = quote.slice(0, jumpTo);
+  const inp = $('race-input');
+  if (inp) inp.value = npdRaceState.typed;
+
+  if ($('race-nitro-fill')) $('race-nitro-fill').style.width = '0%';
+  if ($('race-nitro-pct')) $('race-nitro-pct').textContent = 'BOOST!';
+  const me = npdRaceState.racers[myUid];
+  if (me) me.progress = Math.min(100, (jumpTo / Math.max(1, quote.length)) * 100);
+  renderNpdQuoteBox(npdRaceState.typed);
+  renderNpdTrackLanes();
+  if (jumpTo >= quote.length) completeMyNpdRace();
+}
+
+function renderNpdQuoteBox(rawVal = npdRaceState.typed) {
+  const box = $('race-prompt-box');
+  if (!box) return;
+  const quote = npdRaceState.quote || '';
+  let commonLen = 0;
+  const lim = Math.min(rawVal.length, quote.length);
+  while (commonLen < lim && rawVal[commonLen] === quote[commonLen]) commonLen++;
+  const hasErr = rawVal.length > commonLen;
+
+  let html = '';
+  if (commonLen > 0) html += `<span class="nt-char done">${esc(quote.slice(0, commonLen))}</span>`;
+  if (commonLen < quote.length) {
+    html += `<span class="nt-char ${hasErr ? 'err' : 'cur'}">${esc(quote[commonLen])}</span>`;
+    html += `<span class="nt-todo">${esc(quote.slice(commonLen + 1))}</span>`;
+  }
+  box.innerHTML = html;
 }
 
 function renderNpdTrackLanes() {
-  const wrap = $('npd-lanes-wrap');
+  const wrap = $('race-lanes-wrap');
   if (!wrap) return;
-  const list = Object.values(npdRaceState.racers || {});
-  list.sort((a, b) => {
-    if (a.username === myUid) return -1;
-    if (b.username === myUid) return 1;
-    return (b.progress || 0) - (a.progress || 0);
+  const racers = Object.values(npdRaceState.racers || {}).sort((a, b) => {
+    if (a.key === myUid || a.username === myUid) return -1;
+    if (b.key === myUid || b.username === myUid) return 1;
+    return b.progress - a.progress;
   });
+  const now = Date.now();
+  const meNitro = now < (npdRaceState.nitroActiveUntil || 0);
 
-  wrap.innerHTML = list.map(r => {
+  wrap.innerHTML = `<div class="nt-finish-strip" aria-hidden="true"></div>` + racers.map(r => {
+    const isMe = r.key === myUid || r.username === myUid;
     const pct = Math.max(0, Math.min(100, Number(r.progress) || 0));
-    const badge = r.isBot
-      ? '<span class="bot-tag-red">BOT</span>'
-      : (r.username === myUid ? roleTag(myProfile) : roleTag(profileCache[r.username]));
-    const placeTag = r.place ? npdPlaceBadge(r.place) : '';
+    const showBotTag = r.isBot === true;
+    const spriteLeft = Math.min(89, Math.max(0, pct * 0.89));
     return `
-      <div class="npd-lane ${r.username === myUid ? 'is-me' : ''}">
-        <div class="npd-lane-meta">
-          <span class="npd-lane-name">${esc(r.username)} ${badge} ${placeTag}</span>
-          <span class="npd-lane-wpm">${r.wpm || 0} WPM</span>
+      <div class="nt-lane ${isMe ? 'me-lane' : ''}">
+        <div class="nt-lane-tag">
+          <span class="nt-lane-name">${esc(r.displayName || r.username)}</span>
+          ${showBotTag ? '<span class="npd-bot-badge">BOT</span>' : ''}
         </div>
-        <div class="npd-lane-road">
-          <div class="npd-lane-fill" style="width:${pct}%"></div>
-          <div class="npd-lane-car" style="left:calc(${pct}% - 22px)">${renderNpdCarSvg(r.car, 42)}</div>
-          <div class="npd-lane-finish">${npdIcon('flag')}</div>
+        <div class="nt-lane-road">
+          <div class="nt-car-sprite" style="left:${spriteLeft.toFixed(2)}%;">
+            ${renderNpdCarSvg(r.car, 68, r.paint || 'paint_stock', { raceActive: npdRaceState.phase === 'racing', nitroActive: isMe && meNitro })}
+          </div>
         </div>
+        <div class="nt-lane-stats">${r.place ? npdPlaceBadge(r.place) : `${r.wpm || 0} WPM`}</div>
       </div>
     `;
   }).join('');
@@ -16320,481 +15907,851 @@ function renderNpdTrackLanes() {
 async function completeMyNpdRace() {
   if (npdRaceState.phase !== 'racing') return;
   npdRaceState.phase = 'finished';
-  npdRaceState.finishTime = Date.now();
+  const finishNow = Date.now();
+  npdRaceState.finishTime = finishNow;
+  if (npdRaceState.raceInterval) { clearInterval(npdRaceState.raceInterval); npdRaceState.raceInterval = null; }
 
-  const input = $('npd-race-input');
-  if (input) {
-    input.value = npdRaceState.quote;
-    input.disabled = true;
-  }
+  const inp = $('race-input');
+  if (inp) inp.disabled = true;
 
   const me = npdRaceState.racers[myUid];
-  const elapsedMin = Math.max(0.01, (npdRaceState.finishTime - npdRaceState.startTime) / 60000);
-  const finalWpm = Math.min(350, Math.max(5, Math.round((npdRaceState.quote.length / 5) / elapsedMin)));
-  const finalAcc = Number(npdRaceState.acc.toFixed(1));
-
   if (me) {
     me.progress = 100;
-    me.wpm = finalWpm;
-    me.acc = finalAcc;
-    me.finishedAt = npdRaceState.finishTime;
+    me.finishedAt = finishNow;
     assignFinishPlace(me);
   }
-
-  Object.values(npdRaceState.racers).forEach(r => {
-    if (!r.finishedAt) {
-      r.wpm = r.wpm || r.wpmBase || 72;
-      r.finishedAt = Date.now() + Math.round((100 - (r.progress || 0)) * 100);
-    }
-  });
-  const ordered = Object.values(npdRaceState.racers).sort((a, b) => (a.finishedAt || 9e15) - (b.finishedAt || 9e15));
-  ordered.forEach((r, idx) => { r.place = idx + 1; });
-
-  cleanupNpdRaceTimers();
-  renderNpdTrackLanes();
-  syncMyProgressToLobby();
-
   const myPlace = (me && me.place) || 1;
-  const baseCaps = myPlace === 1 ? 120 : myPlace === 2 ? 85 : myPlace === 3 ? 60 : 40;
-  const mult = isPremium(myProfile) ? 1.5 : 1;
-  const capsEarned = Math.round(baseCaps * mult);
+  const elapsedSec = Math.max(0.5, (finishNow - npdRaceState.startTime) / 1000);
+  const wpm = npdRaceState.wpm || 1;
+  const acc = npdRaceState.acc || 100;
 
-  if ($('hud-status')) $('hud-status').textContent = `FINISHED #${myPlace}!`;
-  if ($('hud-wpm')) $('hud-wpm').textContent = `${finalWpm} WPM`;
+  if (npdRaceState.mode === 'live') syncMyProgressToLobby();
 
+  // Compute Bottlecaps + hard Level 1..1,000,000 XP + Battlepass XP
+  const cur = getMyRaceStats(myProfile);
+  const rew = npdRaceRewards({
+    wpm,
+    acc,
+    place: myPlace,
+    level: cur.levelInfo.level,
+    isPrem: isPremium(myProfile),
+    prevXp: cur.xp
+  });
+
+  if ($('race-arena-card')) $('race-arena-card').classList.add('hidden');
+  if ($('race-results-card')) $('race-results-card').classList.remove('hidden');
+  if ($('race-results-title')) $('race-results-title').textContent = `${npdOrdinal(myPlace)} Place Finish${myPlace === 1 ? ' — Victory!' : '!'}`;
+  if ($('race-results-reward')) {
+    $('race-results-reward').innerHTML = `+${rew.caps.toLocaleString()} Caps · +${rew.xp.toLocaleString()} XP · +${rew.bpXp} BP XP${rew.leveledUp ? ` · LEVEL UP ${npdFormatLevel(rew.newLevel)}!` : ''}`;
+  }
+  if ($('res-wpm')) $('res-wpm').textContent = `${wpm} WPM`;
+  if ($('res-acc')) $('res-acc').textContent = `${acc}%`;
+  if ($('res-place')) $('res-place').textContent = npdOrdinal(myPlace);
+  if ($('res-time')) $('res-time').textContent = `${elapsedSec.toFixed(1)}s`;
+
+  const standings = Object.values(npdRaceState.racers).sort((a, b) => {
+    if (a.place && b.place) return a.place - b.place;
+    if (a.place) return -1;
+    if (b.place) return 1;
+    return b.progress - a.progress;
+  });
+  if ($('race-results-standings')) {
+    $('race-results-standings').innerHTML = standings.map((r, idx) => `
+      <div class="rrc-row ${r.key === myUid ? 'is-me' : ''}">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+          ${npdPlaceBadge(r.place || (idx + 1))}
+          ${renderNpdCarSvg(r.car, 42, r.paint || 'paint_stock')}
+          <strong>${esc(r.displayName || r.username)}</strong>
+          ${r.isBot === true ? '<span class="npd-bot-badge">BOT</span>' : ''}
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;">${r.wpm || 0} WPM · ${Math.round(r.progress)}%</span>
+      </div>
+    `).join('');
+  }
+
+  // Persist stats & rewards cleanly
   try {
-    queueEarn(capsEarned);
-    const cur = getMyRaceStats(myProfile);
+    queueEarn(rew.caps);
+    flushEarn();
     const newRaces = cur.races + 1;
     const newWins = cur.wins + (myPlace === 1 ? 1 : 0);
-    const newBest = Math.max(cur.bestWpm, finalWpm);
-    const newAvgWpm = Math.round(((cur.avgWpm * cur.races) + finalWpm) / newRaces);
-    const newAvgAcc = Number((((cur.avgAcc * cur.races) + finalAcc) / newRaces).toFixed(1));
-    const histEntry = {
-      at: Date.now(),
-      wpm: finalWpm,
-      acc: finalAcc,
-      place: myPlace,
-      orbs: capsEarned,
-      mode: npdRaceState.mode
-    };
-    const newHistory = [histEntry, ...(cur.history || [])].slice(0, 20);
-    const updatedRaceStats = {
-      ...cur,
-      races: newRaces,
-      wins: newWins,
-      bestWpm: newBest,
-      avgWpm: newAvgWpm,
-      avgAcc: newAvgAcc,
-      history: newHistory
-    };
-    myProfile.raceStats = updatedRaceStats;
-    await db.collection('users').doc(myUid).update({
-      raceStats: updatedRaceStats,
-      'dailyStats.racesCompleted': FieldValue.increment(1),
-      ...(myPlace === 1 ? { 'dailyStats.racesWon': FieldValue.increment(1) } : {})
-    });
-  } catch (_) {}
+    const newBest = Math.max(cur.bestWpm, wpm);
+    const newAvgWpm = Math.round(((cur.avgWpm * cur.races) + wpm) / newRaces);
+    const newAvgAcc = Math.round((((cur.avgAcc * cur.races) + acc) / newRaces) * 10) / 10;
+    const histEntry = { at: finishNow, wpm, acc, place: myPlace, caps: rew.caps, xp: rew.xp, mode: npdRaceState.mode, tier: npdRaceState.textTier };
+    const nextHist = [histEntry, ...cur.history].slice(0, 30);
 
-  const resBox = $('npd-race-results');
-  if (resBox) {
-    resBox.classList.remove('hidden');
-    resBox.innerHTML = `
-      <div class="npd-results-head">
-        <div>
-          <h3>${npdIcon('trophy')} Race Complete — You Placed #${myPlace}</h3>
-          <p>Speed: <strong>${finalWpm} WPM</strong> · Accuracy: <strong>${finalAcc}%</strong> · Reward: <strong>+${capsEarned} Bottlecaps</strong>${isPremium(myProfile) ? ' (1.5x NPD Premium Boost)' : ''}</p>
-        </div>
-        <div class="npd-results-btns">
-          <button type="button" class="btn-primary" id="res-race-again-live">${npdIcon('globe')} Queue Live Race</button>
-          <button type="button" class="btn-secondary" id="res-race-again-bots">${npdIcon('bot')} Race Bots Again</button>
-        </div>
-      </div>
-      <div class="npd-results-table">
-        ${ordered.map(r => `
-          <div class="npd-res-row ${r.username === myUid ? 'is-me' : ''}">
-            ${npdPlaceBadge(r.place)}
-            <span class="npd-res-car">${renderNpdCarSvg(r.car, 38)}</span>
-            <span class="npd-res-name">${esc(r.username)} ${r.isBot ? '<span class="bot-tag-red">BOT</span>' : ''}</span>
-            <span class="npd-res-wpm"><strong>${r.wpm}</strong> WPM</span>
-            <span class="npd-res-acc">${(r.acc || 97).toFixed ? (r.acc || 97).toFixed(1) : r.acc}% ACC</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    $('res-race-again-live').onclick = () => startLiveMatchmakingQueue();
-    $('res-race-again-bots').onclick = () => startInstantBotRace();
+    await db.collection('users').doc(myUid).update({
+      xp: Math.max(cur.xp, rew.newTotalXp),
+      bpXp: cur.bpXp + rew.bpXp,
+      'raceStats.races': newRaces,
+      'raceStats.wins': newWins,
+      'raceStats.bestWpm': newBest,
+      'raceStats.avgWpm': newAvgWpm,
+      'raceStats.avgAcc': newAvgAcc,
+      'raceStats.equippedCar': cur.equippedCar,
+      'raceStats.equippedPaint': cur.equippedPaint,
+      'raceStats.history': nextHist
+    });
+    if (rew.leveledUp) toast(`LEVEL UP! You reached Level ${npdFormatLevel(rew.newLevel)}!`, 'success');
+  } catch (e) {
+    console.warn('Could not save race stats:', e);
   }
 }
 
 function leaveNpdRace() {
   cleanupNpdRaceTimers();
+  if (npdRaceState.usingRtdb && npdRaceState.lobbyId && myUid) {
+    try { getRtdbInstance().ref(`races/lobbies/${npdRaceState.lobbyId}/racers/${myUid}`).remove(); } catch (e) {}
+  }
   npdRaceState.phase = 'idle';
   renderNpdRaceView();
 }
 
 // ============================================================
-// 3. NPD LEADERBOARD (REAL PLAYERS ONLY — NO BOTS)
+// 3. GLOBAL CHAT (NO SERVERS — REAL-TIME COMMUNITY FEED)
 // ============================================================
-let currentLbSort = 'wpm'; // 'wpm' | 'wins' | 'races' | 'orbs'
+let _gcMsgUnsub = null;
+let _gcOnlineUnsub = null;
+let _gcOnlineTimer = 0;
+let _gcLastMessages = [];
+let _gcRtdbOnlineCount = 0;
 
-async function fetchCombinedRacers() {
-  const map = new Map();
-  const botNames = new Set(NPD_RACE_BOTS.map(b => b.username.toLowerCase()));
-  try {
-    const snap = await db.collection('users').limit(200).get();
-    snap.forEach(doc => {
-      const u = doc.data();
-      if (!u || !u.username || u.bot || u.raceBot) return;
-      if (botNames.has(String(u.username).toLowerCase()) && u.raceBot) return;
-      const rs = getMyRaceStats(u);
-      map.set(u.username, {
-        username: u.username,
-        isBot: false,
-        car: rs.equippedCar || 'car-apex',
-        bestWpm: rs.bestWpm || 0,
-        avgWpm: rs.avgWpm || 0,
-        wins: rs.wins || 0,
-        races: rs.races || 0,
-        orbs: Number(u.orbs) || 0,
-        raw: u
-      });
-    });
-  } catch (_) {}
-
-  // Ensure current logged-in user is always included
-  if (myProfile && myUid && !map.has(myUid)) {
-    const rs = getMyRaceStats(myProfile);
-    map.set(myUid, {
-      username: myUid,
-      isBot: false,
-      car: rs.equippedCar || 'car-apex',
-      bestWpm: rs.bestWpm || 0,
-      avgWpm: rs.avgWpm || 0,
-      wins: rs.wins || 0,
-      races: rs.races || 0,
-      orbs: Number(myProfile.orbs) || 0,
-      raw: myProfile
-    });
-  }
-
-  return Array.from(map.values());
+function updateGlobalOnlineBadge() {
+  const el = $('global-online-count');
+  if (!el) return;
+  const presenceOnline = Object.values(presenceCache || {}).filter(Boolean).length;
+  const count = Math.max(1, _gcRtdbOnlineCount, presenceOnline);
+  el.textContent = `${count.toLocaleString()} Online`;
 }
 
-async function renderNpdLeaderboard() {
-  const el = $('leaderboard-view');
-  if (!el) return;
+function initGlobalChat() {
+  if (!myUid || !myProfile) return;
+  const rtdbInst = getRtdbInstance();
 
-  el.innerHTML = `
-    <div class="npd-page-wrap">
-      <div class="npd-section-head-row">
-        <div>
-          <h2 class="npd-section-title">${npdIcon('trophy')} NPD Global Leaderboard</h2>
-          <p class="npd-section-sub">Verified rankings across real NPD players.</p>
-        </div>
-        <div class="npd-lb-tabs">
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'wpm' ? 'active' : ''}" data-lbsort="wpm">${npdIcon('bolt')} Top WPM</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'wins' ? 'active' : ''}" data-lbsort="wins">${npdIcon('trophy')} Most Wins</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'races' ? 'active' : ''}" data-lbsort="races">${npdIcon('flag')} Total Races</button>
-          <button type="button" class="npd-pill-tab ${currentLbSort === 'orbs' ? 'active' : ''}" data-lbsort="orbs">${npdIcon('cap')} Most Bottlecaps</button>
+  // Bind composer form
+  const form = $('global-chat-form');
+  const inp = $('global-chat-input');
+  if (form && !form.dataset.bound) {
+    form.dataset.bound = '1';
+    form.onsubmit = async e => {
+      e.preventDefault();
+      if (!inp) return;
+      const raw = inp.value.trim();
+      if (!raw) return;
+      if (isSiteMuted()) { toast(siteMuteText(), 'error'); return; }
+      const tooLong = messageTooLong(raw);
+      if (tooLong) { toast(tooLong, 'error'); return; }
+      inp.value = '';
+      const clean = applyMessageFilter(raw);
+      const msgObj = {
+        uid: myUid,
+        username: myUid,
+        displayName: displayNameOf(myProfile),
+        color: myProfile.avatarColor || '#ef4444',
+        avatarUrl: myProfile.avatarUrl || '',
+        deco: myProfile.equippedDecoration || null,
+        mask: myProfile.equippedMask || null,
+        prem: isPremium(myProfile),
+        role: platformRank(myProfile),
+        text: clean,
+        at: Date.now()
+      };
+      try {
+        if (rtdbInst) {
+          await rtdbInst.ref('races/lobbies/npd_global_chat_v1/messages').push(msgObj);
+        } else {
+          await db.collection('raceLobbies').doc('global_chat').collection('messages').add({
+            ...msgObj,
+            createdAt: FieldValue.serverTimestamp()
+          });
+        }
+      } catch (err) {
+        inp.value = raw;
+        toast('Could not send message: ' + (err.message || 'Check connection.'), 'error');
+      }
+    };
+  }
+
+  // Live online presence inside Global Chat (using allowed RTDB path + presenceCache)
+  if (rtdbInst && !_gcOnlineUnsub) {
+    const myOnlineRef = rtdbInst.ref(`races/lobbies/npd_global_online_v1/users/${myUid}`);
+    const ping = () => myOnlineRef.set({ at: Date.now(), username: myUid }).catch(() => {});
+    ping();
+    myOnlineRef.onDisconnect().remove().catch(() => {});
+    _gcOnlineTimer = setInterval(ping, 25000);
+    const listRef = rtdbInst.ref('races/lobbies/npd_global_online_v1/users');
+    const cb = snap => {
+      const val = snap.val() || {};
+      const cutoff = Date.now() - 90000;
+      _gcRtdbOnlineCount = Object.values(val).filter(u => u && (u.at || 0) > cutoff).length;
+      updateGlobalOnlineBadge();
+    };
+    listRef.on('value', cb);
+    _gcOnlineUnsub = () => { listRef.off('value', cb); clearInterval(_gcOnlineTimer); };
+  }
+  updateGlobalOnlineBadge();
+
+  if (!_gcMsgUnsub) {
+    if (rtdbInst) {
+      const msgsRef = rtdbInst.ref('races/lobbies/npd_global_chat_v1/messages').limitToLast(80);
+      const cb = snap => {
+        const arr = [];
+        snap.forEach(c => { const v = c.val(); if (v) arr.push({ id: c.key, ...v }); });
+        arr.sort((a, b) => (a.at || 0) - (b.at || 0));
+        _gcLastMessages = arr;
+        renderGlobalChatFeed();
+      };
+      msgsRef.on('value', cb, () => loadGlobalChatFirestoreFallback());
+      _gcMsgUnsub = () => msgsRef.off('value', cb);
+    } else {
+      loadGlobalChatFirestoreFallback();
+    }
+  } else {
+    renderGlobalChatFeed();
+  }
+}
+
+function loadGlobalChatFirestoreFallback() {
+  if (_gcMsgUnsub) { try { _gcMsgUnsub(); } catch (e) {} }
+  _gcMsgUnsub = db.collection('raceLobbies').doc('global_chat').collection('messages')
+    .orderBy('createdAt', 'desc').limit(75)
+    .onSnapshot(snap => {
+      const arr = [];
+      snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+      arr.reverse();
+      _gcLastMessages = arr;
+      renderGlobalChatFeed();
+    }, () => {});
+}
+
+function renderGlobalChatFeed() {
+  const feed = $('global-chat-feed');
+  if (!feed) return;
+  if (!_gcLastMessages.length) {
+    feed.innerHTML = '<div class="empty">No Global Chat messages yet — say hello!</div>';
+    return;
+  }
+  const nearBottom = (feed.scrollHeight - feed.scrollTop - feed.clientHeight) < 120;
+  feed.innerHTML = _gcLastMessages.map(m => {
+    const t = m.at ? new Date(m.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    const rTag = m.role === 3 ? '<span class="role-tag owner">OWNER</span>'
+      : m.role === 2 ? '<span class="role-tag coowner">CO-OWNER</span>'
+      : m.role === 1 ? '<span class="role-tag admin">ADMIN</span>' : '';
+    return `
+      <div class="npd-gc-msg">
+        ${avatarHTML(36, m.color || '#ef4444', initials(m.username || '?'), null, m.avatarUrl || '', m.deco || null, m.uid, m.mask || null)}
+        <div class="npd-gc-body">
+          <div class="npd-gc-meta">
+            <span class="npd-gc-author" data-gc-uid="${esc(m.uid || m.username)}">${esc(m.displayName || m.username || 'Player')}</span>
+            ${m.prem ? '<span class="prem-star" title="NPD Premium">★</span>' : ''}${rTag}
+            <span class="npd-gc-time">${esc(t)}</span>
+          </div>
+          <div class="npd-gc-text">${esc(m.text || '')}</div>
         </div>
       </div>
-      <div id="npd-lb-table" class="npd-lb-table">
-        <div class="empty">Loading global player standings...</div>
+    `;
+  }).join('');
+  feed.querySelectorAll('[data-gc-uid]').forEach(el => {
+    el.onclick = () => { if (el.dataset.gcUid) openProfileModal(el.dataset.gcUid); };
+  });
+  if (nearBottom || _gcLastMessages.length <= 20) feed.scrollTop = feed.scrollHeight;
+}
+
+// ============================================================
+// 4. EVENTS VIEW — SEASON 1 BATTLEPASS (THANKSGIVING LIMITED)
+// ============================================================
+function renderNpdEventsView() {
+  const mount = $('events-mount');
+  if (!mount || !myProfile) return;
+  const bp = NPD_BATTLEPASS_S1;
+  const rs = getMyRaceStats(myProfile);
+  const allOn = npdHasEverything(myProfile);
+  const prog = calcBattlepassProgress(rs.bpXp);
+  const claimedSet = new Set(rs.bpClaimed || []);
+
+  mount.innerHTML = `
+    <div class="npd-page-wrap">
+      <div class="bp-hero">
+        <div style="flex:1;min-width:260px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="bp-urgency-pill">${npdIcon('clock')} ${esc(bp.endLabel)}</span>
+            <span style="font-size:11.5px;font-weight:800;letter-spacing:1.2px;color:#fbbf24;">${esc(bp.themeLabel)}</span>
+          </div>
+          <h1 style="margin:0 0 6px;font-family:'Bebas Neue',cursive;font-size:clamp(2rem,3.4vw,3rem);letter-spacing:1.5px;">SEASON 1: ${esc(bp.name)}</h1>
+          <p style="margin:0 0 12px;color:#fed7aa;font-size:13.5px;max-width:680px;">${esc(bp.subtitle)} — Earn Battlepass XP every time you complete a Typing Race. Unlock limited Harvest Drift vehicles, paints, nitro trails, banners, frames, and titles before Season 2 arrives!</p>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="min-width:220px;flex:1;max-width:380px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:4px;">
+                <span>Tier ${prog.tier} / ${bp.totalTiers}</span>
+                <span>${prog.isMax ? 'MAX TIER' : `${fmtNum(prog.into)} / ${fmtNum(prog.needed)} BP XP`}</span>
+              </div>
+              <div style="height:10px;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden;border:1px solid rgba(255,255,255,.15);">
+                <div style="width:${prog.pct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,#f97316,#facc15);"></div>
+              </div>
+            </div>
+            ${rs.bpPremium
+              ? `<span class="npd-place-pill p-1">${npdIcon('check')} PREMIUM PASS ACTIVE</span>`
+              : `<button type="button" class="btn-accent-inline" id="bp-unlock-prem-btn">${npdIcon('bolt')} Unlock Premium Pass (${bp.premiumPriceCaps.toLocaleString()} Caps)</button>`}
+            <button type="button" class="btn-secondary" id="bp-claim-all-btn">${npdIcon('trophy')} Claim All Unlocked</button>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin:18px 0 10px;">All 30 Season Tiers (Free + Premium Limited Track)</h3>
+      <div class="bp-track-scroll">
+        ${bp.tiers.map(t => {
+          const unlocked = prog.tier >= t.tier;
+          const freeDone = allOn || claimedSet.has('free:' + t.tier);
+          const premDone = allOn || claimedSet.has('prem:' + t.tier);
+          return `
+            <div class="bp-tier-card ${unlocked ? 'reached' : ''}">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong style="font-size:14px;color:${unlocked ? '#fbbf24' : '#e2e8f0'};">TIER ${t.tier}</strong>
+                <small style="color:var(--text-muted);">${t.xpReq} XP</small>
+              </div>
+              <div class="bp-slot">
+                <div style="font-size:10px;font-weight:800;letter-spacing:.7px;color:#94a3b8;">FREE REWARD</div>
+                <div style="font-size:12.5px;font-weight:700;">${esc(t.free.label)}</div>
+                ${freeDone
+                  ? '<button type="button" class="btn-secondary slim" disabled>Claimed</button>'
+                  : unlocked
+                    ? `<button type="button" class="btn-accent-inline slim" data-bp-claim="free:${t.tier}">Claim</button>`
+                    : '<button type="button" class="btn-secondary slim" disabled>Locked</button>'}
+              </div>
+              <div class="bp-slot prem">
+                <div style="font-size:10px;font-weight:800;letter-spacing:.7px;color:#fbbf24;">PREMIUM LIMITED</div>
+                <div style="font-size:12.5px;font-weight:700;color:#fed7aa;">${esc(t.prem.label)}</div>
+                ${premDone
+                  ? '<button type="button" class="btn-secondary slim" disabled>Claimed</button>'
+                  : (unlocked && rs.bpPremium)
+                    ? `<button type="button" class="btn-accent-inline slim" data-bp-claim="prem:${t.tier}">Claim</button>`
+                    : `<button type="button" class="btn-secondary slim" disabled>${rs.bpPremium ? 'Locked' : 'Pass Req.'}</button>`}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <h3 style="margin:22px 0 10px;">Upcoming Battlepass Roadmap</h3>
+      <div class="bp-upcoming-grid">
+        ${bp.upcomingSeasons.map(s => `
+          <div class="bp-tier-card" style="padding:16px;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#38bdf8;">SEASON ${s.season} · ${esc(s.month.toUpperCase())} (${esc(s.starts)})</div>
+            <h4 style="margin:6px 0 4px;font-size:18px;">${esc(s.name)} — ${esc(s.theme)}</h4>
+            <p style="margin:0;font-size:12.5px;color:var(--text-muted);">${esc(s.desc)}</p>
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
 
-  el.querySelectorAll('[data-lbsort]').forEach(btn => {
-    btn.onclick = () => {
-      currentLbSort = btn.dataset.lbsort;
+  if ($('bp-unlock-prem-btn')) {
+    $('bp-unlock-prem-btn').onclick = async () => {
+      const price = bp.premiumPriceCaps;
+      if ((myProfile.orbs || 0) < price && !allOn) {
+        toast(`You need ${price.toLocaleString()} Bottlecaps to unlock the Harvest Drift Premium Pass.`, 'error');
+        return;
+      }
+      try {
+        await db.runTransaction(async tx => {
+          const ref = db.collection('users').doc(myUid);
+          const snap = await tx.get(ref);
+          const u = snap.data() || {};
+          if (u.bpPremium) return;
+          if (!allOn && (u.orbs || 0) < price) throw new Error('Not enough Bottlecaps.');
+          tx.update(ref, {
+            orbs: allOn ? (u.orbs || 0) : (u.orbs || 0) - price,
+            bpPremium: true
+          });
+        });
+        toast('Season 1 Harvest Drift Premium Pass Unlocked!', 'success');
+        renderNpdEventsView();
+      } catch (e) {
+        toast(e.message || 'Could not unlock pass.', 'error');
+      }
+    };
+  }
+
+  mount.querySelectorAll('[data-bp-claim]').forEach(btn => {
+    btn.onclick = () => claimBattlepassRewards([btn.dataset.bpClaim]);
+  });
+
+  if ($('bp-claim-all-btn')) {
+    $('bp-claim-all-btn').onclick = () => {
+      const keys = [];
+      bp.tiers.forEach(t => {
+        if (prog.tier >= t.tier) {
+          if (!claimedSet.has('free:' + t.tier)) keys.push('free:' + t.tier);
+          if (rs.bpPremium && !claimedSet.has('prem:' + t.tier)) keys.push('prem:' + t.tier);
+        }
+      });
+      if (!keys.length) { toast('No unclaimed Battlepass rewards available yet.'); return; }
+      claimBattlepassRewards(keys);
+    };
+  }
+}
+
+async function claimBattlepassRewards(keys) {
+  if (!myUid || !myProfile || !keys.length) return;
+  const rs = getMyRaceStats(myProfile);
+  const newCars = [], newPaints = [], claimsToAdd = [];
+  let capsTotal = 0, xpTotal = 0;
+
+  keys.forEach(k => {
+    const [track, tierStr] = k.split(':');
+    const tierObj = NPD_BATTLEPASS_S1.tiers.find(t => t.tier === Number(tierStr));
+    if (!tierObj) return;
+    const reward = track === 'prem' ? tierObj.prem : tierObj.free;
+    if (!reward) return;
+    claimsToAdd.push(k);
+    if (reward.type === 'caps') capsTotal += Number(reward.amount) || 0;
+    else if (reward.type === 'xp_boost') xpTotal += Number(reward.amount) || 0;
+    else if (reward.type === 'car' && reward.id) newCars.push(normalizeCarId(reward.id));
+    else if (reward.type === 'paint' && reward.id) newPaints.push(reward.id);
+  });
+
+  try {
+    const upd = { bpClaimed: FieldValue.arrayUnion(...claimsToAdd) };
+    if (xpTotal > 0) upd.xp = (Number(myProfile.xp) || 0) + xpTotal;
+    if (newCars.length) upd['raceStats.ownedCars'] = FieldValue.arrayUnion(...newCars);
+    if (newPaints.length) upd['raceStats.ownedPaints'] = FieldValue.arrayUnion(...newPaints);
+    await db.collection('users').doc(myUid).update(upd);
+    if (capsTotal > 0) {
+      queueEarn(capsTotal);
+      flushEarn();
+    }
+    toast(`Claimed ${claimsToAdd.length} Battlepass reward${claimsToAdd.length === 1 ? '' : 's'}!`, 'success');
+    renderNpdEventsView();
+  } catch (e) {
+    toast('Could not claim Battlepass reward: ' + (e.message || 'Error'), 'error');
+  }
+}
+
+// ============================================================
+// 5. LEADERBOARD (HUMAN PLAYERS ONLY — ZERO BOTS) & STATS
+// ============================================================
+let currentLbSort = 'wpm';
+async function fetchRealPlayersForLeaderboard() {
+  const snap = await db.collection('users').get();
+  const rows = [];
+  const botIdSet = new Set(NPD_RACE_BOTS.map(b => b.id.toLowerCase()));
+  snap.forEach(doc => {
+    const u = doc.data();
+    const id = doc.id;
+    if (!u || u.terminated || u.banned || u.bot === true || u.raceBot === true || u.isBot === true) return;
+    if (/^bot[_-]/i.test(id) || botIdSet.has(id.toLowerCase())) return;
+    const rs = getMyRaceStats(u);
+    rows.push({
+      id,
+      displayName: displayNameOf(u),
+      username: u.username || id,
+      avatarColor: u.avatarColor || '#ef4444',
+      avatarUrl: u.avatarUrl || '',
+      equippedDecoration: u.equippedDecoration || null,
+      equippedMask: u.equippedMask || null,
+      isPrem: isPremium(u),
+      role: platformRank(u),
+      bestWpm: rs.bestWpm,
+      avgWpm: rs.avgWpm,
+      wins: rs.wins,
+      races: rs.races,
+      orbs: npdHasEverything(u) ? 999999999 : (Number(u.orbs) || 0),
+      level: rs.levelInfo.level,
+      xp: rs.xp,
+      car: rs.equippedCar,
+      paint: rs.equippedPaint
+    });
+  });
+  return rows;
+}
+
+async function renderNpdLeaderboard() {
+  const wrap = $('leaderboard-content');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="empty">Loading racers...</div>';
+
+  document.querySelectorAll('#leaderboard-tabs [data-lb-tab]').forEach(tab => {
+    tab.classList.toggle('on', (tab.dataset.lbTab === 'bestWpm' && currentLbSort === 'wpm') || tab.dataset.lbTab === currentLbSort);
+    tab.onclick = () => {
+      currentLbSort = tab.dataset.lbTab === 'bestWpm' ? 'wpm' : tab.dataset.lbTab;
       renderNpdLeaderboard();
     };
   });
 
-  const racers = await fetchCombinedRacers();
-  if (currentLbSort === 'wpm') racers.sort((a, b) => b.bestWpm - a.bestWpm);
-  else if (currentLbSort === 'wins') racers.sort((a, b) => b.wins - a.wins);
-  else if (currentLbSort === 'races') racers.sort((a, b) => b.races - a.races);
-  else if (currentLbSort === 'orbs') racers.sort((a, b) => b.orbs - a.orbs);
+  try {
+    const rows = await fetchRealPlayersForLeaderboard();
+    rows.sort((a, b) => {
+      if (currentLbSort === 'avgWpm') return b.avgWpm - a.avgWpm || b.bestWpm - a.bestWpm;
+      if (currentLbSort === 'wins') return b.wins - a.wins || b.bestWpm - a.bestWpm;
+      if (currentLbSort === 'races') return b.races - a.races || b.bestWpm - a.bestWpm;
+      if (currentLbSort === 'orbs') return b.orbs - a.orbs || b.level - a.level;
+      return b.bestWpm - a.bestWpm || b.level - a.level;
+    });
 
-  const tbl = $('npd-lb-table');
-  if (!tbl) return;
-  if (!racers.length) {
-    tbl.innerHTML = '<div class="empty">No players found yet.</div>';
-    return;
+    const metricLabel = r => {
+      if (currentLbSort === 'avgWpm') return `${r.avgWpm} Avg WPM`;
+      if (currentLbSort === 'wins') return `${r.wins} Wins`;
+      if (currentLbSort === 'races') return `${r.races} Races`;
+      if (currentLbSort === 'orbs') return `${fmtOrbs(r.orbs)} Caps`;
+      return `${r.bestWpm} WPM`;
+    };
+
+    wrap.innerHTML = rows.length ? rows.slice(0, 100).map((r, idx) => `
+      <div class="npd-lb-row" data-lb-uid="${esc(r.id)}">
+        <div class="npd-lb-who">
+          <div class="npd-lb-rank ${idx < 3 ? 'r' + (idx + 1) : ''}">${idx + 1}</div>
+          ${avatarHTML(36, r.avatarColor, initials(r.username), computeDisplayStatus(r.id), r.avatarUrl, r.equippedDecoration, r.id, r.equippedMask)}
+          ${renderNpdCarSvg(r.car, 54, r.paint)}
+          <div style="min-width:0;">
+            <div style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span>${esc(r.displayName)}</span>${r.isPrem ? '<span class="prem-star" title="NPD Premium">★</span>' : ''}
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted);">LV ${npdFormatLevel(r.level)} · ${r.races} Races · ${r.wins} Wins</div>
+          </div>
+        </div>
+        <div class="npd-lb-metric">${metricLabel(r)}</div>
+      </div>
+    `).join('') : '<div class="empty">No human racers on the leaderboard yet. Finish a race!</div>';
+
+    wrap.querySelectorAll('[data-lb-uid]').forEach(row => {
+      row.onclick = () => openProfileModal(row.dataset.lbUid);
+    });
+  } catch (e) {
+    wrap.innerHTML = '<div class="empty">Could not load leaderboard.</div>';
   }
-  tbl.innerHTML = racers.slice(0, 50).map((r, i) => `
-    <div class="npd-lb-row ${r.username === myUid ? 'is-me' : ''}" data-lbuser="${esc(r.username)}">
-      ${npdPlaceBadge(i + 1)}
-      <span class="npd-lb-car">${renderNpdCarSvg(r.car, 42)}</span>
-      <span class="npd-lb-name">
-        ${esc(r.username)}
-        ${r.raw ? premiumStar(r.raw) + roleTag(r.raw) : ''}
-      </span>
-      <span class="npd-lb-metric">${r.bestWpm} <small>Best WPM</small></span>
-      <span class="npd-lb-metric">${r.wins} <small>Wins</small></span>
-      <span class="npd-lb-metric">${r.races} <small>Races</small></span>
-      <span class="npd-lb-metric">${fmtOrbs(r.orbs)} <small>Bottlecaps</small></span>
-    </div>
-  `).join('');
-
-  tbl.querySelectorAll('[data-lbuser]').forEach(row => {
-    row.onclick = () => openProfileModal(row.dataset.lbuser);
-  });
 }
 
-// ============================================================
-// 4. NPD MY STATS
-// ============================================================
 function renderNpdStats() {
-  const el = $('stats-view');
-  if (!el || !myProfile) return;
+  const box = $('stats-content');
+  if (!box || !myProfile) return;
   const rs = getMyRaceStats(myProfile);
-  const winRate = rs.races > 0 ? ((rs.wins / rs.races) * 100).toFixed(1) : '0.0';
+  const carMeta = getCarMeta(rs.equippedCar);
+  const paintMeta = getPaintMeta(rs.equippedPaint);
+  const winRate = rs.races > 0 ? Math.round((rs.wins / rs.races) * 100) : 0;
 
-  el.innerHTML = `
+  box.innerHTML = `
     <div class="npd-page-wrap">
-      <div class="npd-section-head-row">
-        <div>
-          <h2 class="npd-section-title">${npdIcon('chart')} Career Telemetry &amp; Stats</h2>
-          <p class="npd-section-sub">Your verified typing performance and recent race history on NPD.</p>
+      <div class="npd-hero-card" style="margin-bottom:18px;">
+        <div class="npd-hero-content">
+          <div class="npd-hero-kicker">${esc(rs.tierMeta.name)} · LEVEL ${npdFormatLevel(rs.levelInfo.level)} / 1,000,000</div>
+          <h2 style="margin:4px 0 8px;font-size:28px;">${esc(displayNameOf(myProfile))} — Career Telemetry</h2>
+          <div style="max-width:460px;height:10px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:6px;">
+            <div style="width:${rs.levelInfo.pct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,#ef4444,#fbbf24);"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">${fmtNum(rs.levelInfo.into)} / ${fmtNum(rs.levelInfo.needed)} XP (${fmtNum(rs.xp)} Total XP)</div>
+          <div style="margin-top:12px;"><button type="button" class="btn-accent-inline" id="stats-go-race-btn">${npdIcon('flag')} Enter Racing</button></div>
         </div>
-        <button type="button" class="btn-primary" id="stats-go-race-btn">${npdIcon('flag')} Race Now</button>
+        <div class="npd-hero-badge-box" style="text-align:center;">
+          ${renderNpdCarSvg(rs.equippedCar, 130, rs.equippedPaint)}
+          <div style="font-weight:800;margin-top:6px;">${esc(carMeta.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${esc(paintMeta.name)}</div>
+        </div>
       </div>
 
       <div class="npd-stats-grid">
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Best WPM</div>
-          <div class="npd-stat-val accent">${rs.bestWpm}</div>
-          <div class="npd-stat-foot">Top Recorded Speed</div>
-        </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Average WPM</div>
-          <div class="npd-stat-val">${rs.avgWpm}</div>
-          <div class="npd-stat-foot">Career Pace</div>
-        </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Average Accuracy</div>
-          <div class="npd-stat-val cyan">${rs.avgAcc.toFixed(1)}%</div>
-          <div class="npd-stat-foot">Anti-Cheat Verified</div>
-        </div>
-        <div class="npd-stat-card">
-          <div class="npd-stat-label">Win Ratio</div>
-          <div class="npd-stat-val gold">${winRate}%</div>
-          <div class="npd-stat-foot">${rs.wins} Wins / ${rs.races} Races</div>
-        </div>
+        <div class="npd-stat-card"><div class="nsc-label">Top WPM</div><div class="nsc-val accent">${rs.bestWpm}</div><div class="nsc-sub">Personal best</div></div>
+        <div class="npd-stat-card"><div class="nsc-label">Average WPM</div><div class="nsc-val">${rs.avgWpm}</div><div class="nsc-sub">${rs.avgAcc.toFixed(1)}% accuracy</div></div>
+        <div class="npd-stat-card"><div class="nsc-label">Win Rate</div><div class="nsc-val green">${winRate}%</div><div class="nsc-sub">${rs.wins} wins / ${rs.races} races</div></div>
+        <div class="npd-stat-card"><div class="nsc-label">Garage Progress</div><div class="nsc-val gold">${rs.ownedCars.length} / ${NPD_CARS.length}</div><div class="nsc-sub">${rs.ownedPaints.length} / ${NPD_PAINTS.length} paints</div></div>
       </div>
 
-      <div class="npd-dash-panel" style="margin-top:20px">
-        <div class="npd-panel-head">
-          <h3>${npdIcon('clock')} Recent Race Log</h3>
-          <span class="npd-panel-sub">Last ${rs.history.length} completed races</span>
-        </div>
-        ${rs.history.length ? `
-          <div class="npd-results-table">
-            ${rs.history.map(h => `
-              <div class="npd-res-row">
-                ${npdPlaceBadge(h.place)}
-                <span class="npd-res-name">${h.mode === 'live' ? 'Live Circuit' : 'Bot Circuit'}</span>
-                <span class="npd-res-wpm"><strong>${h.wpm}</strong> WPM</span>
-                <span class="npd-res-acc">${h.acc}% ACC</span>
-                <span class="npd-res-orbs">+${h.orbs || 0} Bottlecaps</span>
-              </div>
-            `).join('')}
+      <h3 style="margin:20px 0 10px;">Recent Race History</h3>
+      <div class="rrc-standings">
+        ${rs.history.length ? rs.history.map(h => `
+          <div class="rrc-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${npdPlaceBadge(h.place || 1)}
+              <strong>${h.wpm} WPM</strong>
+              <span style="color:var(--text-muted);">${h.acc || 100}% Acc · Tier ${h.tier || 1}</span>
+            </div>
+            <span style="color:#fbbf24;font-weight:700;">+${h.caps || 0} Caps · +${h.xp || 0} XP</span>
           </div>
-        ` : '<div class="empty">No races completed yet. Hit the track to record your first telemetry!</div>'}
+        `).join('') : '<div class="empty">Complete a typing race to record telemetry!</div>'}
       </div>
     </div>
   `;
-
-  $('stats-go-race-btn').onclick = () => navigateToNpdView('race');
+  if ($('stats-go-race-btn')) $('stats-go-race-btn').onclick = () => navigateToNpdView('race');
 }
 
 // ============================================================
-// 5. NPD LOCKER (GARAGE & COSMETICS)
+// 6. GARAGE & LOCKER — 3D STUDIO, 80 CAR MODELS & 36 PAINTS
 // ============================================================
+let _garage3dInstance = null;
+let _garagePreviewCarId = null;
+let _garagePreviewPaintId = null;
+let _garageClassFilter = 'All';
+let _lockerCosmeticFilter = 'all';
+
 function renderNpdLocker() {
-  const el = $('locker-view');
-  if (!el || !myProfile) return;
+  const mount = $('locker-items-mount');
+  if (!mount || !myProfile) return;
   const rs = getMyRaceStats(myProfile);
-  const caps = (myProfile.orbs || 0) + pendingOrbs();
+  if (!_garagePreviewCarId) _garagePreviewCarId = rs.equippedCar;
+  if (!_garagePreviewPaintId) _garagePreviewPaintId = rs.equippedPaint || 'paint_stock';
 
-  el.innerHTML = `
-    <div class="npd-page-wrap">
-      <div class="npd-section-head-row">
-        <div>
-          <h2 class="npd-section-title">${npdIcon('garage')} NPD Garage &amp; Locker</h2>
-          <p class="npd-section-sub">Unlock and equip vehicles for the race track, upload your custom PFP, or equip your owned cosmetics.</p>
-        </div>
-        <div class="npd-locker-head-right" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span class="npd-hero-orbs">${icon('orb', 'orb-inline')} ${fmtOrbs(caps)} Bottlecaps</span>
-          <button type="button" class="btn-primary slim" id="locker-edit-pfp-btn">${npdIcon('image')} Upload Custom PFP</button>
-          <button type="button" class="btn-secondary slim" id="locker-open-shop-btn">${npdIcon('cart')} Open Item Shop</button>
-        </div>
-      </div>
+  const selfAv = $('locker-self-avatar');
+  if (selfAv) selfAv.innerHTML = avatarHTML(52, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask);
+  if ($('locker-edit-profile-btn')) $('locker-edit-profile-btn').onclick = () => openProfileModal(myUid);
+  if ($('locker-go-shop-btn')) $('locker-go-shop-btn').onclick = () => navigateToNpdView('shop');
 
-      <div class="locker-pfp-banner" style="background:linear-gradient(135deg,rgba(230,0,0,0.18),rgba(14,0,0,0.92));border:1px solid rgba(230,0,0,0.35)">
-        <div class="lpb-left">
-          ${avatarHTML(54, myProfile.avatarColor, initials(myProfile.username), computeDisplayStatus(myUid), myProfile.avatarUrl, myProfile.equippedDecoration, myUid, myProfile.equippedMask)}
+  document.querySelectorAll('#locker-tabs [data-locker-tab]').forEach(t => {
+    t.classList.toggle('on', t.dataset.lockerTab === _lockerCosmeticFilter);
+    t.onclick = () => {
+      _lockerCosmeticFilter = t.dataset.lockerTab;
+      renderNpdLocker();
+    };
+  });
+
+  if (_lockerCosmeticFilter !== 'all') {
+    mount.innerHTML = renderOwnedCosmeticsHTML(_lockerCosmeticFilter);
+    bindOwnedCosmeticsButtons(mount);
+    return;
+  }
+
+  const prevCar = getCarMeta(_garagePreviewCarId);
+  const prevPaint = getPaintMeta(_garagePreviewPaintId);
+  const carOwned = npdOwnsCar(myProfile, prevCar.id);
+  const paintOwned = npdOwnsPaint(myProfile, prevPaint.id);
+  const classes = ['All', ...new Set(NPD_CARS.map(c => c.cls))];
+  const filteredCars = _garageClassFilter === 'All' ? NPD_CARS : NPD_CARS.filter(c => c.cls === _garageClassFilter);
+
+  if (_garage3dInstance) { try { _garage3dInstance.destroy(); } catch (e) {} _garage3dInstance = null; }
+
+  mount.innerHTML = `
+    <div class="npd-studio-split">
+      <div class="npd-3d-panel">
+        <canvas id="garage-3d-canvas" class="npd-3d-canvas"></canvas>
+        <div class="npd-3d-toolbar">
           <div>
-            <div class="lpb-title">Custom Profile Picture &amp; Identity</div>
-            <div class="lpb-sub">Everyone starts with the default avatar and can upload their own custom PFP or GIF anytime — no PFP shop required.</div>
+            <strong style="font-size:15px;">${esc(prevCar.name)}</strong>
+            <div style="font-size:12px;color:var(--text-muted);">${esc(prevCar.cls)} · Paint: ${esc(prevPaint.name)}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button type="button" class="btn-secondary slim" id="g3d-spin-btn">Auto-Spin</button>
+            <button type="button" class="btn-secondary slim" id="g3d-lights-btn">Headlights</button>
+            <button type="button" class="btn-secondary slim" id="g3d-underglow-btn">Underglow</button>
+            <button type="button" class="btn-secondary slim" id="g3d-reset-btn">Reset View</button>
           </div>
         </div>
-        <div class="lpb-actions">
-          <button type="button" class="btn-primary slim" id="locker-open-profile-btn">Edit Profile &amp; PFP</button>
-          <button type="button" class="btn-secondary slim" id="locker-open-themes-btn">Change Theme</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(0,0,0,.35);border-top:1px solid rgba(255,255,255,.07);">
+          <small style="color:var(--text-muted);">Drag model to rotate 360° · Scroll to zoom · Test any Paint on any of the 80 Cars!</small>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${carOwned
+              ? (rs.equippedCar === prevCar.id ? '<button type="button" class="btn-secondary slim" disabled>Car Equipped</button>' : `<button type="button" class="btn-accent-inline slim" data-equip-car="${esc(prevCar.id)}">Equip Car</button>`)
+              : ((prevCar.bpLimited || prevCar.limited)
+                ? '<button type="button" class="btn-secondary slim" disabled>S1 Battlepass</button>'
+                : (prevCar.premiumOnly && !isPremium(myProfile) ? '<button type="button" class="btn-secondary slim" disabled>Premium Only</button>' : `<button type="button" class="btn-accent-inline slim" data-buy-car="${esc(prevCar.id)}">Buy Car (${prevCar.price.toLocaleString()} Caps)</button>`))}
+            ${paintOwned
+              ? (rs.equippedPaint === prevPaint.id ? '<button type="button" class="btn-secondary slim" disabled>Paint Active</button>' : `<button type="button" class="btn-accent-inline slim" data-equip-paint="${esc(prevPaint.id)}">Apply Paint</button>`)
+              : ((prevPaint.bpLimited || prevPaint.limited)
+                ? '<button type="button" class="btn-secondary slim" disabled>S1 Battlepass</button>'
+                : `<button type="button" class="btn-accent-inline slim" data-buy-paint="${esc(prevPaint.id)}">Buy Paint (${prevPaint.price.toLocaleString()} Caps)</button>`)}
+          </div>
         </div>
       </div>
 
-      <div class="npd-garage-grid">
-        ${NPD_CARS.map(c => {
-          const owned = c.price === 0 || rs.ownedCars.includes(c.id) || (c.premiumOnly && (isPremium(myProfile) || isAdmin || isOwner));
-          const equipped = rs.equippedCar === c.id;
-          return `
-            <div class="npd-car-card ${equipped ? 'equipped' : ''}">
-              <div class="npd-car-preview">${renderNpdCarSvg(c.id, 88)}</div>
-              <div class="npd-car-title">${esc(c.name)}</div>
-              <div class="npd-car-desc">${esc(c.desc)}</div>
-              <div class="npd-car-foot">
-                ${equipped
-                  ? `<button type="button" class="btn-secondary slim" disabled>${npdIcon('check')} Equipped</button>`
-                  : owned
-                    ? `<button type="button" class="btn-primary slim" data-equip-car="${esc(c.id)}">Equip Ride</button>`
-                    : c.premiumOnly
-                      ? `<button type="button" class="btn-secondary slim" disabled>NPD Premium Only</button>`
-                      : `<button type="button" class="btn-accent-inline slim" data-buy-car="${esc(c.id)}">Buy (${fmtOrbs(c.price)} Bottlecaps)</button>`
-                }
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <h3 style="margin:0;">${npdIcon('paint')} Universal Paint Shop (${NPD_PAINTS.length} Finishes)</h3>
+          <small style="color:var(--text-muted);">Works on every car</small>
+        </div>
+        <div class="npd-paint-grid">
+          ${NPD_PAINTS.map(pt => {
+            const owned = npdOwnsPaint(myProfile, pt.id);
+            const active = prevPaint.id === pt.id;
+            const swBg = pt.primary ? `linear-gradient(135deg, ${pt.primary}, ${pt.secondary || pt.primary})` : 'linear-gradient(135deg,#334155,#64748b)';
+            const isBpPaint = !!(pt.bpLimited || pt.limited);
+            return `
+              <div class="npd-paint-card ${active ? 'active' : ''}">
+                <div class="npd-paint-swatch" style="background:${esc(swBg)}"></div>
+                <div style="font-weight:700;font-size:12.5px;">${esc(pt.name)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">${owned ? (rs.equippedPaint === pt.id ? 'Equipped' : 'Owned') : (isBpPaint ? 'S1 Battlepass Limited' : `${pt.price.toLocaleString()} Caps`)}</div>
+                <div style="display:flex;gap:6px;margin-top:auto;">
+                  <button type="button" class="btn-secondary slim" style="flex:1;" data-prev-paint="${esc(pt.id)}">Preview</button>
+                  ${owned
+                    ? `<button type="button" class="btn-accent-inline slim" style="flex:1;" data-equip-paint="${esc(pt.id)}" ${rs.equippedPaint === pt.id ? 'disabled' : ''}>${rs.equippedPaint === pt.id ? 'On' : 'Use'}</button>`
+                    : (isBpPaint
+                      ? '<button type="button" class="btn-secondary slim" style="flex:1;" disabled>Pass</button>'
+                      : `<button type="button" class="btn-accent-inline slim" style="flex:1;" data-buy-paint="${esc(pt.id)}">Buy</button>`)}
+                </div>
               </div>
-            </div>
-          `;
-        }).join('')}
+            `;
+          }).join('')}
+        </div>
       </div>
     </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:22px 0 12px;">
+      <h3 style="margin:0;">${npdIcon('garage')} ${NPD_CARS.length} Distinct Car Models</h3>
+      <div class="friends-tabs" style="flex-wrap:wrap;">
+        ${classes.map(c => `<button type="button" class="friends-tab ${_garageClassFilter === c ? 'on' : ''}" data-car-cls="${esc(c)}">${esc(c)}</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px;">
+      ${filteredCars.map(car => {
+        const owned = npdOwnsCar(myProfile, car.id);
+        const equipped = rs.equippedCar === car.id;
+        const isBpCar = !!(car.bpLimited || car.limited);
+        return `
+          <div class="bp-tier-card ${equipped ? 'reached' : ''}" style="padding:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);">
+              <span>#${car.num} · ${esc(car.cls)}</span>
+              ${isBpCar ? '<span style="color:#fbbf24;font-weight:800;">S1 LIMITED</span>' : car.premiumOnly ? '<span style="color:#a855f7;font-weight:800;">PREMIUM</span>' : ''}
+            </div>
+            <div style="text-align:center;padding:8px 0;">${renderNpdCarSvg(car.id, 118, prevPaint.id)}</div>
+            <div style="font-weight:800;font-size:14px;">${esc(car.name)}</div>
+            <div style="font-size:11.5px;color:var(--text-muted);min-height:30px;">${esc(car.desc)}</div>
+            <div style="display:flex;gap:6px;margin-top:auto;">
+              <button type="button" class="btn-secondary slim" data-prev-car="${esc(car.id)}">3D View</button>
+              ${equipped
+                ? '<button type="button" class="btn-secondary slim" style="flex:1;" disabled>Equipped</button>'
+                : owned
+                  ? `<button type="button" class="btn-accent-inline slim" style="flex:1;" data-equip-car="${esc(car.id)}">Equip</button>`
+                  : (isBpCar
+                    ? '<button type="button" class="btn-secondary slim" style="flex:1;" disabled>Battlepass</button>'
+                    : car.premiumOnly && !isPremium(myProfile)
+                      ? '<button type="button" class="btn-secondary slim" style="flex:1;" disabled>Premium</button>'
+                      : `<button type="button" class="btn-accent-inline slim" style="flex:1;" data-buy-car="${esc(car.id)}">${car.price.toLocaleString()} Caps</button>`)}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <h3 style="margin:26px 0 12px;">Owned Profile Cosmetics</h3>
+    ${renderOwnedCosmeticsHTML('all')}
   `;
 
-  $('locker-open-shop-btn').onclick = () => navigateToNpdView('shop');
-  $('locker-edit-pfp-btn').onclick = () => openSettings();
-  $('locker-open-profile-btn').onclick = () => openSettings();
-  $('locker-open-themes-btn').onclick = () => {
-    openSettings();
-    const nav = document.querySelector('#settings-nav .nav-item[data-pane="pane-themes"]');
-    if (nav) nav.click();
+  // Mount live Interactive 3D Car Studio canvas
+  const canvas = $('garage-3d-canvas');
+  if (canvas) {
+    _garage3dInstance = mountCar3DViewer(canvas, { carId: prevCar.id, paintId: prevPaint.id, autoSpin: true, headlights: true, underglow: false });
+    let spin = true, lights = true, underglow = false;
+    if ($('g3d-spin-btn')) $('g3d-spin-btn').onclick = () => { spin = !spin; if (_garage3dInstance) _garage3dInstance.update({ autoSpin: spin }); };
+    if ($('g3d-lights-btn')) $('g3d-lights-btn').onclick = () => { lights = !lights; if (_garage3dInstance) _garage3dInstance.update({ headlights: lights }); };
+    if ($('g3d-underglow-btn')) $('g3d-underglow-btn').onclick = () => { underglow = !underglow; if (_garage3dInstance) _garage3dInstance.update({ underglow }); };
+    if ($('g3d-reset-btn')) $('g3d-reset-btn').onclick = () => { if (_garage3dInstance) _garage3dInstance.update({ yaw: 0.65, pitch: 0.28, zoom: 1.0 }); };
+  }
+
+  mount.querySelectorAll('[data-car-cls]').forEach(b => {
+    b.onclick = () => { _garageClassFilter = b.dataset.carCls; renderNpdLocker(); };
+  });
+  mount.querySelectorAll('[data-prev-car]').forEach(b => {
+    b.onclick = () => { _garagePreviewCarId = b.dataset.prevCar; renderNpdLocker(); };
+  });
+  mount.querySelectorAll('[data-prev-paint]').forEach(b => {
+    b.onclick = () => { _garagePreviewPaintId = b.dataset.prevPaint; renderNpdLocker(); };
+  });
+  mount.querySelectorAll('[data-equip-car]').forEach(b => {
+    b.onclick = async () => {
+      try {
+        await db.collection('users').doc(myUid).update({ 'raceStats.equippedCar': b.dataset.equipCar });
+        _garagePreviewCarId = b.dataset.equipCar;
+        toast('Equipped ' + getCarMeta(b.dataset.equipCar).name + '!');
+        renderNpdLocker();
+      } catch (e) { toast('Could not equip car.', 'error'); }
+    };
+  });
+  mount.querySelectorAll('[data-equip-paint]').forEach(b => {
+    b.onclick = async () => {
+      try {
+        await db.collection('users').doc(myUid).update({ 'raceStats.equippedPaint': b.dataset.equipPaint });
+        _garagePreviewPaintId = b.dataset.equipPaint;
+        toast('Applied ' + getPaintMeta(b.dataset.equipPaint).name + '!');
+        renderNpdLocker();
+      } catch (e) { toast('Could not apply paint.', 'error'); }
+    };
+  });
+  mount.querySelectorAll('[data-buy-car]').forEach(b => {
+    b.onclick = () => buyGarageAsset('car', b.dataset.buyCar);
+  });
+  mount.querySelectorAll('[data-buy-paint]').forEach(b => {
+    b.onclick = () => buyGarageAsset('paint', b.dataset.buyPaint);
+  });
+  bindOwnedCosmeticsButtons(mount);
+}
+
+async function buyGarageAsset(kind, id) {
+  if (!myUid || !myProfile) return;
+  const asset = kind === 'car' ? getCarMeta(id) : getPaintMeta(id);
+  if (!asset) return;
+  const allOn = npdHasEverything(myProfile);
+  if (!allOn && (asset.bpLimited || asset.limited)) {
+    toast(`${asset.name} is Season 1 Battlepass Limited — earn it in Events!`, 'error');
+    return;
+  }
+  if (!allOn && asset.premiumOnly && !isPremium(myProfile)) {
+    toast(`${asset.name} requires NPD Premium.`, 'error');
+    return;
+  }
+  const price = Math.max(0, Number(asset.price) || 0);
+  if (!allOn && ((myProfile.orbs || 0) + pendingOrbs() < price)) {
+    toast(`Need ${price.toLocaleString()} Bottlecaps to purchase ${asset.name}.`, 'error');
+    return;
+  }
+  try {
+    await flushEarn();
+    await db.runTransaction(async tx => {
+      const ref = db.collection('users').doc(myUid);
+      const snap = await tx.get(ref);
+      const u = snap.data() || {};
+      if (!allOn && (u.orbs || 0) < price) throw new Error('Not enough Bottlecaps.');
+      const up = { orbs: allOn ? (u.orbs || 0) : (u.orbs || 0) - price };
+      if (kind === 'car') {
+        up['raceStats.ownedCars'] = FieldValue.arrayUnion(id);
+        up['raceStats.equippedCar'] = id;
+      } else {
+        up['raceStats.ownedPaints'] = FieldValue.arrayUnion(id);
+        up['raceStats.equippedPaint'] = id;
+      }
+      tx.update(ref, up);
+    });
+    if (kind === 'car') _garagePreviewCarId = id;
+    else _garagePreviewPaintId = id;
+    toast(`Purchased & equipped ${asset.name}!`, 'success');
+    renderNpdLocker();
+  } catch (e) {
+    toast(e.message || 'Purchase failed.', 'error');
+  }
+}
+
+function renderOwnedCosmeticsHTML(tabFilter) {
+  const MAP = {
+    decorations: 'decorations', masks: 'masks', themes: 'themes',
+    banners: 'banners', nameplates: 'nameplates', effects: 'profile_effects',
+    frames: 'profile_frames', music: 'music'
   };
-
-  el.querySelectorAll('[data-equip-car]').forEach(btn => {
-    btn.onclick = async () => {
-      const carId = btn.dataset.equipCar;
-      const car = getCarMeta(carId);
-      try {
-        const cur = getMyRaceStats(myProfile);
-        const updated = { ...cur, equippedCar: car.id };
-        myProfile.raceStats = updated;
-        await db.collection('users').doc(myUid).update({ raceStats: updated });
-        toast(`Equipped ${car.name}!`);
-        renderNpdLocker();
-      } catch (e) { toast('Could not equip vehicle.', 'error'); }
-    };
-  });
-
-  el.querySelectorAll('[data-buy-car]').forEach(btn => {
-    btn.onclick = async () => {
-      const car = NPD_CARS.find(x => x.id === btn.dataset.buyCar);
-      if (!car) return;
-      if ((myProfile.orbs || 0) < car.price) {
-        toast('Not enough Bottlecaps! Race more or redeem a code.', 'error');
-        return;
-      }
-      try {
-        const cur = getMyRaceStats(myProfile);
-        const ownedCars = Array.from(new Set([...cur.ownedCars, car.id]));
-        const updated = { ...cur, ownedCars, equippedCar: car.id };
-        myProfile.raceStats = updated;
-        await db.collection('users').doc(myUid).update({
-          orbs: FieldValue.increment(-car.price),
-          raceStats: updated
-        });
-        toast(`Purchased and equipped ${car.name}!`);
-        renderNpdLocker();
-      } catch (e) { toast('Could not complete purchase.', 'error'); }
-    };
-  });
-}
-
-// ============================================================
-// 6. NPD DAILY RACING & SOCIAL QUESTS
-// ============================================================
-const NPD_DAILY_QUESTS = [
-  { id: 'q_race_1', title: 'Warm Up Lap', desc: 'Complete 1 typing race on the NPD circuit.', target: 1, reward: 75, metric: p => (p.dailyStats && p.dailyStats.racesCompleted) || 0 },
-  { id: 'q_race_3', title: 'Circuit Regular', desc: 'Complete 3 typing races today.', target: 3, reward: 200, metric: p => (p.dailyStats && p.dailyStats.racesCompleted) || 0 },
-  { id: 'q_win_1', title: 'Checkered Flag', desc: 'Take 1st place in a race.', target: 1, reward: 150, metric: p => (p.dailyStats && p.dailyStats.racesWon) || 0 },
-  { id: 'q_wpm_80', title: 'High Octane', desc: 'Have a career Best WPM of 80 or higher.', target: 80, reward: 250, metric: p => getMyRaceStats(p).bestWpm },
-  { id: 'q_msg_5', title: 'Paddock Chat', desc: 'Send 5 messages in any server channel or DM today.', target: 5, reward: 100, metric: p => (p.dailyStats && p.dailyStats.messagesSent) || 0 }
-];
-
-function renderNpdQuests() {
-  const el = $('quests-view');
-  if (!el || !myProfile) return;
-  const claimed = (myProfile.dailyStats && Array.isArray(myProfile.dailyStats.claimedQuests)) ? myProfile.dailyStats.claimedQuests : [];
-
-  el.innerHTML = `
-    <div class="npd-page-wrap">
-      <div class="npd-section-head-row">
-        <div>
-          <h2 class="npd-section-title">${npdIcon('target')} NPD Daily Quests</h2>
-          <p class="npd-section-sub">Complete racing and community challenges to earn bonus Bottlecaps.</p>
+  const keys = tabFilter === 'all' ? Object.values(MAP) : [MAP[tabFilter] || tabFilter];
+  const cards = [];
+  keys.forEach(k => {
+    const def = SHOP_CATEGORY_DEFS[k];
+    if (!def) return;
+    def.catalog.filter(item => npdOwnsShopItem(myProfile, def.ownedField, item.id)).forEach(item => {
+      const eq = myProfile[def.equipField] === item.id;
+      cards.push(`
+        <div class="bp-tier-card ${eq ? 'reached' : ''}" style="padding:12px;">
+          <div style="font-size:10.5px;color:var(--text-muted);">${esc(def.label)}</div>
+          <div style="font-weight:800;font-size:13.5px;">${esc(item.name)}</div>
+          <button type="button" class="btn-accent-inline slim" data-loc-eq="${esc(k)}:${esc(item.id)}" data-eq="${eq ? '1' : '0'}">${eq ? 'Unequip' : 'Equip'}</button>
         </div>
-        <button type="button" class="btn-primary" id="quests-go-race-btn">${npdIcon('flag')} Go to Race Track</button>
-      </div>
+      `);
+    });
+  });
+  return cards.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;">${cards.join('')}</div>`
+    : '<div class="empty">No owned items in this category yet — visit the Shop!</div>';
+}
 
-      <div class="npd-quests-list">
-        ${NPD_DAILY_QUESTS.map(q => {
-          const prog = Math.min(q.target, q.metric(myProfile));
-          const done = prog >= q.target;
-          const isClaimed = claimed.includes(q.id);
-          const pct = Math.round((prog / q.target) * 100);
-          return `
-            <div class="npd-quest-card ${done ? 'done' : ''}">
-              <div class="npd-quest-info">
-                <div class="npd-quest-title">${esc(q.title)} <span class="npd-quest-reward">+${q.reward} Bottlecaps</span></div>
-                <div class="npd-quest-desc">${esc(q.desc)}</div>
-                <div class="npd-quest-bar"><div class="npd-quest-fill" style="width:${pct}%"></div></div>
-                <div class="npd-quest-prog">${prog} / ${q.target}</div>
-              </div>
-              <div class="npd-quest-action">
-                ${isClaimed
-                  ? `<button type="button" class="btn-secondary slim" disabled>${npdIcon('check')} Claimed</button>`
-                  : done
-                    ? `<button type="button" class="btn-primary slim" data-claim-quest="${esc(q.id)}">Claim +${q.reward} Bottlecaps</button>`
-                    : `<button type="button" class="btn-secondary slim" disabled>In Progress</button>`
-                }
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-
-  $('quests-go-race-btn').onclick = () => navigateToNpdView('race');
-
-  el.querySelectorAll('[data-claim-quest]').forEach(btn => {
+function bindOwnedCosmeticsButtons(root) {
+  root.querySelectorAll('[data-loc-eq]').forEach(btn => {
     btn.onclick = async () => {
-      const q = NPD_DAILY_QUESTS.find(x => x.id === btn.dataset.claimQuest);
-      if (!q) return;
-      btn.disabled = true;
-      try {
-        queueEarn(q.reward);
-        await db.collection('users').doc(myUid).update({
-          'dailyStats.claimedQuests': FieldValue.arrayUnion(q.id)
-        });
-        toast(`Claimed +${q.reward} Bottlecaps from "${q.title}"!`);
-        renderNpdQuests();
-      } catch (e) {
-        btn.disabled = false;
-        toast('Could not claim quest reward.', 'error');
-      }
+      const [cat, id] = btn.dataset.locEq.split(':');
+      const eq = btn.dataset.eq === '1';
+      await equipShopItem(cat, eq ? null : id);
+      renderNpdLocker();
     };
   });
 }
+
+// Legacy alias kept safe if triggered anywhere
+function renderNpdQuests() { renderNpdEventsView(); }

@@ -132,7 +132,7 @@ service cloud.firestore {
     // Your own profile: anything except your rank, sign-in, bans and mutes. A few staff-set fields may only be cleared.
     function selfEdit(m, k, username) {
       return m.name == username
-        && !k.hasAny(['authUid', 'owner', 'coowner', 'admin', 'op', 'username', 'createdAt', 'mutedUntil', 'muteReason', 'purgePerm'])
+        && !k.hasAny(['authUid', 'owner', 'coowner', 'admin', 'op', 'username', 'createdAt', 'mutedUntil', 'muteReason', 'purgePerm', 'giveEverything'])
         && (!k.hasAny(['banned', 'banReason', 'bannedUntil']) || clearingExpiredBan())
         && (!k.hasAny(['redirectUrl', 'redirectNonce']) || !request.resource.data.keys().hasAny(['redirectUrl', 'redirectNonce']))
         && (!k.hasAny(['terminated']) || !('terminated' in request.resource.data))
@@ -140,7 +140,7 @@ service cloud.firestore {
         && plainColors(k, request.resource.data, premiumNow(resource.data))
         && economyOk(k, request.resource.data);
     }
-    function premiumNow(u) { return u.get('premiumUntil', null) is number && u.premiumUntil > request.time.toMillis(); }
+    function premiumNow(u) { return (u.get('premiumUntil', null) is number && u.premiumUntil > request.time.toMillis()) || u.get('giveEverything', false) == true; }
     // Colors everyone else's screen draws from your profile are plain colors (v4.56): a hex color, or a two-color
     // gradient of them, so nothing else (like a web address that would load on their screen) can hide in them. The
     // gradients (a two-color banner or name) are Premium's, so they need Premium running (v4.57).
@@ -169,7 +169,7 @@ service cloud.firestore {
             && wears(k, d, 'equippedBanner', 'ownedBanners') && wears(k, d, 'equippedMusic', 'ownedMusic')));
     }
     // (only checked when that slot changes, so something worn from before still shows until it's taken off)
-    function wears(k, d, eq, owned) { return !k.hasAny([eq]) || d.get(eq, null) == null || d.get(eq, null) in d.get(owned, []); }
+    function wears(k, d, eq, owned) { return !k.hasAny([eq]) || d.get(eq, null) == null || d.get('giveEverything', false) == true || d.get(eq, null) in d.get(owned, []); }
     function clearingExpiredBan() {
       return resource.data.get('banned', false) == true
         && resource.data.get('bannedUntil', null) is number
@@ -186,6 +186,7 @@ service cloud.firestore {
         && !k.hasAny(['owner', 'username', 'createdAt', 'authUid'])
         && (!k.hasAny(['coowner']) || m.rank == 3)
         && (!k.hasAny(['purgePerm']) || m.rank == 3)                 // purge perms: the Owner's alone (v4.59)
+        && (!k.hasAny(['giveEverything']) || m.rank == 3)            // Give Everything switch: the Owner's alone
         && !('password' in request.resource.data)
         && (m.rank >= 2 || k.hasOnly(['premiumUntil', 'orbs', 'banned', 'banReason', 'bannedUntil', 'mutedUntil', 'muteReason', 'raceStats']));
     }
@@ -794,11 +795,15 @@ service cloud.firestore {
       allow delete: if canManageChannels(who(), srv(resource.data.sid));
     }
 
-    // ---------- Live Multiplayer Racing Fallback (Firestore mirror when RTDB is unavailable) ----------
+    // ---------- Live Multiplayer Racing & Global Chat Fallback ----------
     match /raceLobbies/{lobbyId} {
       allow read: if signedIn();
       allow create, update: if active(who());
       allow delete: if isStaff(who());
+      match /messages/{mid} {
+        allow read: if signedIn();
+        allow create: if active(who());
+      }
     }
   }
 }
