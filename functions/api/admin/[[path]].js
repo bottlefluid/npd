@@ -404,11 +404,11 @@ export async function onRequest(ctx) {
     }
 
     if (seg === 'earn') {
-      const want = Math.floor(Number(body.n) || 0);
+      const want = Math.floor(Number(body.n ?? body.amount) || 0);
       if (want < 1) return json({ ok: true, added: 0 });
       const me = await signedInUser(tok, body.token);
       if (me.user.banned === true || (me.user.terminated && me.user.terminated.mode === 'real')) {
-        return json({ error: 'This account cannot earn Orbs.' }, 403);
+        return json({ error: 'This account cannot earn Bottlecaps.' }, 403);
       }
       const userPath = `users/${encodeURIComponent(me.username)}`;
       const dayPath = `orbDays/${encodeURIComponent(me.username)}`;
@@ -437,14 +437,14 @@ export async function onRequest(ctx) {
         return json({ error: 'This account cannot use the Shop.' }, 403);
       }
       const userPath = `users/${encodeURIComponent(me.username)}`;
-      const kind = String(body.kind || '');
+      const kind = String(body.kind || body.cat || '');
 
       if (kind === 'premium') {
         for (let attempt = 0; attempt < 4; attempt++) {
           const uDoc = await getRawDoc(tok, userPath);
           if (!uDoc) return json({ error: 'Account not found.' }, 404);
           const orbs = Math.max(0, Math.floor(Number(uDoc.data.orbs) || 0));
-          if (orbs < PREMIUM_PRICE) return json({ error: `Not enough Orbs — you need ${PREMIUM_PRICE}.` }, 400);
+          if (orbs < PREMIUM_PRICE) return json({ error: `Not enough Bottlecaps — you need ${PREMIUM_PRICE}.` }, 400);
           const now = Date.now(), curUntil = Number(uDoc.data.premiumUntil) || 0;
           const premiumUntil = (curUntil > now ? curUntil : now) + PREMIUM_MS;
           const ok = await commitWrites(tok, [
@@ -456,7 +456,7 @@ export async function onRequest(ctx) {
       }
 
       const cat = SHOP_BUY_CATS[kind];
-      const itemId = String(body.itemId || '').trim();
+      const itemId = String(body.itemId || body.id || '').trim();
       if (!cat || !itemId || itemId.length > 80 || itemId.includes('/')) return json({ error: 'Item not found.' }, 400);
 
       let price = null;
@@ -496,7 +496,7 @@ export async function onRequest(ctx) {
         const owned = Array.isArray(uDoc.data[cat.owned]) ? uDoc.data[cat.owned].filter(x => typeof x === 'string') : [];
         if (owned.includes(itemId)) return json({ error: 'You already own this.' }, 400);
         const orbs = Math.max(0, Math.floor(Number(uDoc.data.orbs) || 0));
-        if (orbs < price) return json({ error: 'Not enough Orbs.' }, 400);
+        if (orbs < price) return json({ error: 'Not enough Bottlecaps.' }, 400);
         if (owned.length >= 500) return json({ error: 'Too many owned items.' }, 400);
         const ok = await commitWrites(tok, [
           patchWrite(userPath, { orbs: orbs - price, [cat.owned]: [...owned, itemId] }, { updateTime: uDoc.updateTime }),
@@ -518,7 +518,7 @@ export async function onRequest(ctx) {
           const uDoc = await getRawDoc(tok, userPath);
           if (!uDoc) return json({ error: 'Account not found.' }, 404);
           const orbs = Math.max(0, Math.floor(Number(uDoc.data.orbs) || 0));
-          if (orbs < PREMIUM_PRICE) return json({ error: `Not enough Orbs — you need ${PREMIUM_PRICE}.` }, 400);
+          if (orbs < PREMIUM_PRICE) return json({ error: `Not enough Bottlecaps — you need ${PREMIUM_PRICE}.` }, 400);
           const code = 'NPD-' + makeCode();
           const now = new Date().toISOString();
           const ok = await commitWrites(tok, [

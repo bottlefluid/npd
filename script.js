@@ -12335,7 +12335,7 @@ async function buyShopItem(key, id) {
     if (showCut) cutsceneActive = true;
     // The server (functions/api/admin/buy) charges the database's price, adds it and equips it right away, matching how
     // Discord's own shop works (v4.57: a page can't add items or Bottlecaps to itself).
-    await orbsCall('buy', { cat: key, id });
+    await orbsCall('buy', { cat: key, kind: key, id, itemId: id });
     toast(`Purchased ${item.name}!`);
     refreshOpenShopPanes();
     if (cuts.length && !showCut) toast('Epilepsy mode is on, so the cutscenes were skipped. You can replay them from the Shop.');
@@ -14412,11 +14412,18 @@ async function orbsCall(route, body) {
   try {
     const r = await fetch(`${ADMIN_API}/${route}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ token, ...body }) });
     const ctype = (r.headers && r.headers.get('content-type')) || '';
-    if (r.ok && ctype.includes('application/json')) {
-      const j = await r.json().catch(() => ({}));
-      if (!j.error) return j;
+    if (ctype.includes('application/json')) {
+      const j = await r.json().catch(() => null);
+      if (r.ok && j && !j.error) return j;
+      if (r.status >= 400 && r.status < 500 && j && typeof j.error === 'string') {
+        throw new Error(j.error);
+      }
     }
-  } catch (_) {}
+  } catch (err) {
+    if (err && err.name !== 'TypeError' && !/failed to fetch|network/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
   return await orbsLocalFallback(route, body || {});
 }
 
@@ -14443,7 +14450,7 @@ async function orbsLocalFallback(route, body) {
     };
     const catKey = ALIAS[rawKind] || rawKind;
     const def = SHOP_CATEGORY_DEFS[catKey];
-    const id = body.id;
+    const id = body.id || body.itemId;
     if (!def || !id) throw new Error('Invalid shop item.');
     const item = def.catalog.find(x => x.id === id);
     if (!item) throw new Error('Item not found.');
@@ -14451,9 +14458,10 @@ async function orbsLocalFallback(route, body) {
     await db.runTransaction(async tx => {
       const uSnap = await tx.get(uRef);
       const u = uSnap.data() || {};
+      const hasAll = npdHasEverything(u);
       if (item.premiumOnly && !isPremium(u)) throw new Error('NPD Premium required for this item.');
       const owned = Array.isArray(u[def.ownedField]) ? u[def.ownedField] : [];
-      if (!owned.includes(id)) {
+      if (!owned.includes(id) && !hasAll) {
         if ((u.orbs || 0) < price) throw new Error('Not enough Bottlecaps.');
         const up = { orbs: (u.orbs || 0) - price, [def.ownedField]: FieldValue.arrayUnion(id) };
         if (def.equipField) up[def.equipField] = id;
@@ -14465,29 +14473,38 @@ async function orbsLocalFallback(route, body) {
     return { ok: true };
   }
   if (route === 'code') {
-    const rawCode = String(body.code || '').trim().toUpperCase();
+    const rawCode = String(body.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
     if (!rawCode) throw new Error('Enter a code.');
-    const cRef = db.collection('codes').doc(rawCode);
-    let result = { type: 'orbs', amount: 0, days: 0 };
+    const cRef = db.collection('redeemCodes').doc(rawCode);
+    let result = { ok: true, type: 'orbs', value: 0, amount: 0, days: 0 };
     await db.runTransaction(async tx => {
       const [cSnap, uSnap] = await Promise.all([tx.get(cRef), tx.get(uRef)]);
       if (!cSnap.exists) throw new Error('Invalid or expired code.');
-      const c = cSnap.data();
-      const usedBy = Array.isArray(c.usedBy) ? c.usedBy : [];
-      const maxUses = Number(c.maxUses) || 1;
+      const c = cSnap.data() || {};
+      const nMax = Number(c.maxUses);
+      const maxUses = Number.isFinite(nMax) && nMax >= 0 ? Math.floor(nMax) : 1;
+      const usedBy = Array.isArray(c.usedBy) ? c.usedBy : (Array.isArray(c.redeemedBy) ? c.redeemedBy : (c.redeemedBy ? [c.redeemedBy] : []));
+      const uses = Math.max(Number(c.uses) || 0, usedBy.length, c.redeemed ? 1 : 0);
       if (usedBy.includes(myUid)) throw new Error('You have already redeemed this code.');
-      if (usedBy.length >= maxUses) throw new Error('This code has reached its max uses.');
+      if (maxUses > 0 && uses >= maxUses) throw new Error('This code has reached its max uses.');
       const u = uSnap.data() || {};
-      tx.update(cRef, { usedBy: FieldValue.arrayUnion(myUid), uses: (c.uses || 0) + 1 });
+      const nextUses = uses + 1;
+      tx.update(cRef, {
+        usedBy: FieldValue.arrayUnion(myUid),
+        uses: nextUses,
+        redeemedBy: myUid,
+        redeemed: maxUses > 0 && nextUses >= maxUses,
+        redeemedAt: FieldValue.serverTimestamp(),
+      });
       if (c.type === 'orbs') {
-        const amt = Math.max(1, Number(c.amount) || 0);
+        const amt = Math.max(1, Math.floor(Number(c.value ?? c.amount) || 0));
         tx.update(uRef, { orbs: (u.orbs || 0) + amt });
-        result = { type: 'orbs', amount: amt };
+        result = { ok: true, type: 'orbs', value: amt, amount: amt };
       } else {
-        const days = Math.max(1, Number(c.days) || 30);
+        const days = Math.max(1, Math.floor(Number(c.value ?? c.days) || 30));
         const base = isPremium(u) ? u.premiumUntil : Date.now();
         tx.update(uRef, { premiumUntil: base + days * 86400000 });
-        result = { type: 'premium', days };
+        result = { ok: true, type: 'premium', value: days, days };
       }
     });
     return result;
