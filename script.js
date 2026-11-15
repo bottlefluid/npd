@@ -15936,13 +15936,19 @@ async function completeMyNpdRace() {
     level: cur.levelInfo.level,
     isPrem: isPremium(myProfile),
     prevXp: cur.xp
-  });
+  }) || {};
+  const capsGain = Number(rew.capsEarned ?? rew.caps) || 0;
+  const xpGain = Number(rew.xpEarned ?? rew.xp) || 0;
+  const bpGain = Number(rew.bpXpEarned ?? rew.bpXp) || 0;
+  const newLv = Number(rew.newLv ?? rew.newLevel ?? cur.levelInfo.level);
+  const leveledUp = !!(rew.levelsGained > 0 || rew.leveledUp);
+  const nextTotalXp = Math.max(cur.xp, Number(rew.newTotalXp) || (cur.xp + xpGain));
 
   if ($('race-arena-card')) $('race-arena-card').classList.add('hidden');
   if ($('race-results-card')) $('race-results-card').classList.remove('hidden');
   if ($('race-results-title')) $('race-results-title').textContent = `${npdOrdinal(myPlace)} Place Finish${myPlace === 1 ? ' — Victory!' : '!'}`;
   if ($('race-results-reward')) {
-    $('race-results-reward').innerHTML = `+${rew.caps.toLocaleString()} Caps · +${rew.xp.toLocaleString()} XP · +${rew.bpXp} BP XP${rew.leveledUp ? ` · LEVEL UP ${npdFormatLevel(rew.newLevel)}!` : ''}`;
+    $('race-results-reward').innerHTML = `+${capsGain.toLocaleString()} Caps · +${xpGain.toLocaleString()} XP · +${bpGain} BP XP${leveledUp ? ` · LEVEL UP ${npdFormatLevel(newLv)}!` : ''}`;
   }
   if ($('res-wpm')) $('res-wpm').textContent = `${wpm} WPM`;
   if ($('res-acc')) $('res-acc').textContent = `${acc}%`;
@@ -15971,19 +15977,27 @@ async function completeMyNpdRace() {
 
   // Persist stats & rewards cleanly
   try {
-    queueEarn(rew.caps);
+    queueEarn(capsGain);
     flushEarn();
     const newRaces = cur.races + 1;
     const newWins = cur.wins + (myPlace === 1 ? 1 : 0);
     const newBest = Math.max(cur.bestWpm, wpm);
     const newAvgWpm = Math.round(((cur.avgWpm * cur.races) + wpm) / newRaces);
     const newAvgAcc = Math.round((((cur.avgAcc * cur.races) + acc) / newRaces) * 10) / 10;
-    const histEntry = { at: finishNow, wpm, acc, place: myPlace, caps: rew.caps, xp: rew.xp, mode: npdRaceState.mode, tier: npdRaceState.textTier };
+    const histEntry = { at: finishNow, wpm, acc, place: myPlace, caps: capsGain, xp: xpGain, mode: npdRaceState.mode, tier: npdRaceState.textTier };
     const nextHist = [histEntry, ...cur.history].slice(0, 30);
 
+    // Update local state immediately so consecutive views reflect new XP/BP/Stats without waiting for snapshot
+    myProfile.xp = nextTotalXp;
+    myProfile.bpXp = cur.bpXp + bpGain;
+    myProfile.raceStats = Object.assign({}, myProfile.raceStats, {
+      races: newRaces, wins: newWins, bestWpm: newBest, avgWpm: newAvgWpm, avgAcc: newAvgAcc,
+      equippedCar: cur.equippedCar, equippedPaint: cur.equippedPaint, history: nextHist
+    });
+
     await db.collection('users').doc(myUid).update({
-      xp: Math.max(cur.xp, rew.newTotalXp),
-      bpXp: cur.bpXp + rew.bpXp,
+      xp: nextTotalXp,
+      bpXp: cur.bpXp + bpGain,
       'raceStats.races': newRaces,
       'raceStats.wins': newWins,
       'raceStats.bestWpm': newBest,
@@ -15993,7 +16007,7 @@ async function completeMyNpdRace() {
       'raceStats.equippedPaint': cur.equippedPaint,
       'raceStats.history': nextHist
     });
-    if (rew.leveledUp) toast(`LEVEL UP! You reached Level ${npdFormatLevel(rew.newLevel)}!`, 'success');
+    if (leveledUp) toast(`LEVEL UP! You reached Level ${npdFormatLevel(newLv)}!`, 'success');
   } catch (e) {
     console.warn('Could not save race stats:', e);
   }

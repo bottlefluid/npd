@@ -101,17 +101,25 @@
     const levelsGained = Math.max(0, newLv - oldLv);
     const levelUpBonusCaps = levelsGained > 0 ? Math.min(5000, levelsGained * (35 + tier.tier * 15)) : 0;
 
+    const totalCaps = capsEarned + levelUpBonusCaps;
+    const newTotalXp = prevXp + xpEarned;
     return {
       tier: tier.tier,
       tierName: tier.name,
-      capsEarned: capsEarned + levelUpBonusCaps,
+      capsEarned: totalCaps,
+      caps: totalCaps,
       raceCaps: capsEarned,
       levelUpBonusCaps,
       xpEarned,
+      xp: xpEarned,
       bpXpEarned,
+      bpXp: bpXpEarned,
       oldLv,
       newLv,
-      levelsGained
+      newLevel: newLv,
+      levelsGained,
+      leveledUp: levelsGained > 0,
+      newTotalXp
     };
   }
 

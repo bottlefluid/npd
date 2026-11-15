@@ -693,7 +693,7 @@
       }
     };
 
-    const render = () => {
+    const drawFrame = () => {
       if (destroyed) return;
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -886,7 +886,12 @@
       ctx.fillText(`3D STUDIO · DRAG TO ORBIT · SCROLL TO ZOOM`, Math.round(12 * dpr), Math.round(18 * dpr));
 
       if (state.autoSpin && !dragging) state.yaw += 0.008;
-      rafId = requestAnimationFrame(render);
+    };
+
+    const tickLoop = () => {
+      if (destroyed) return;
+      drawFrame();
+      rafId = requestAnimationFrame(tickLoop);
     };
 
     const onDown = e => {
@@ -919,11 +924,13 @@
     window.addEventListener('touchend', onUp);
     canvas.addEventListener('wheel', onWheel, { passive: false });
 
-    rafId = requestAnimationFrame(render);
+    drawFrame();
+    rafId = requestAnimationFrame(tickLoop);
 
     return {
       update(next) {
         Object.assign(state, next || {});
+        drawFrame();
       },
       getState() {
         return { ...state };
